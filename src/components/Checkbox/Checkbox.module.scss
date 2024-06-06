@@ -1,0 +1,61 @@
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  cursor: pointer;
+
+  &Label {
+    font-weight: 500;
+    font-size: 1em;
+  }
+  &Input {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+  &Wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff;
+    position: relative;
+    width: 1.6875em;
+    height: 1.6875em;
+    border: 2.5px solid rgba(74, 81, 95, 1);
+    border-radius: 0.25em;
+    transition: all 150ms;
+    z-index: 1;
+    &.checked {
+      background-color: #fff;
+      border-color: rgba(74, 81, 95, 1);
+      .checkboxWrapperIcon {
+        polyline {
+          stroke-dashoffset: 0;
+        }
+      }
+    }
+    &Icon {
+      fill: none;
+      stroke: rgba(74, 81, 95, 1);
+      stroke-width: 2.5px;
+      position: relative;
+      z-index: 10;
+      polyline {
+        fill: none;
+        stroke: rgba(74, 81, 95, 1);
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 1.125em;
+        stroke-dashoffset: 1.125em;
+        transition: all 0.3s ease;
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+.input {
+  width: 100%;
+  border: 0.0625em solid rgba(219, 219, 219, 1);
+  color: rgba(28, 28, 28, 1);
+  font-size: 1em;
+  padding: 1em 0.875em;
+  border-radius: 0.5em;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+  &:hover,
+  &:focus {
+    border-color: rgba(74, 81, 95, 1);
+  }
+  &::placeholder {
+    color: rgba(132, 138, 146, 1);
+  }
+
+  &:disabled {
+    background-color: rgba(219, 219, 219, 1);
+    color: rgba(132, 138, 146, 1);
+  }
+
+  &.error {
+    border-color: rgba(241, 35, 35, 1);
+  }
+
+  &Label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  &Error {
+    font-size: 0.8125rem;
+    padding-left: 0.875em;
+    color: rgba(241, 35, 35, 1);
+  }
+
+  &Wrap {
+    margin-bottom: 1.5em;
+  }
+}

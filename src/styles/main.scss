@@ -1,0 +1,66 @@
+@import "./_reset.scss";
+
+body {
+  height: 100%;
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 16px;
+  color: #000;
+  background-color: #f6f6f4;
+}
+
+#root {
+  height: 100%;
+}
+
+.tabs {
+  &__list {
+    background-color: #181846;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    overflow: auto;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  &__name {
+    color: #ffffffb6;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 1.5rem 1rem;
+    border-bottom: 0.2rem solid transparent;
+    transition:
+      color 0.2s,
+      border-color 0.2s;
+    white-space: nowrap;
+    outline: none;
+    &.react-tabs__tab--selected {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    &:hover {
+      color: #ffffffe6;
+    }
+  }
+  &__panel {
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .tabs {
+    &__list {
+      justify-content: flex-start;
+      gap: 0.25rem;
+      padding: 0 0.5rem;
+    }
+    &__name {
+      padding: 1rem 0.5rem;
+      font-size: 0.8125rem;
+    }
+  }
+}

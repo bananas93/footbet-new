@@ -1,0 +1,36 @@
+.row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.imgCol {
+  flex: 0 0 50%;
+  max-width: 50%;
+  font-size: 0;
+}
+
+.contentCol {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.img {
+  object-fit: cover;
+  object-position: top;
+  height: 100%;
+  width: 100%;
+}
+
+@media screen and (max-width: 48em) {
+  .row {
+    flex-direction: column;
+  }
+  .imgCol,
+  .contentCol {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .img {
+    height: 50vh;
+  }
+}

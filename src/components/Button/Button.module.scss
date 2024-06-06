@@ -1,0 +1,64 @@
+.button {
+  border-radius: 0.5em;
+  font-weight: 500;
+  font-size: 1;
+  line-height: 1.5em;
+  padding: 0.65625em 1.25em;
+  width: 100%;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+  &.primary {
+    background-color: rgba(28, 28, 28, 1);
+    border: 0.0625em solid rgba(28, 28, 28, 1);
+    color: rgba(255, 255, 255, 1);
+    &:hover {
+      background-color: rgba(55, 58, 65, 1);
+    }
+    &:active {
+      background-color: rgba(1, 1, 1, 1);
+    }
+    &:disabled,
+    &.loading {
+      background-color: rgba(144, 148, 158, 1);
+      border-color: rgba(144, 148, 158, 1);
+      cursor: not-allowed;
+    }
+  }
+  &.secondary {
+    border: 0.125em solid rgba(28, 28, 28, 1);
+    color: rgba(28, 28, 28, 1);
+    &:hover {
+      border-color: rgba(55, 58, 65, 1);
+      color: rgba(55, 58, 65, 1);
+    }
+    &:active {
+      border-color: rgba(1, 1, 1, 1);
+      color: rgba(1, 1, 1, 1);
+    }
+    &:disabled,
+    &.loading {
+      color: rgba(144, 148, 158, 1);
+      border-color: rgba(144, 148, 158, 1);
+      cursor: not-allowed;
+    }
+  }
+  &.link {
+    padding: 0;
+    width: auto;
+    font-weight: 400;
+    color: rgba(64, 176, 158, 1);
+    &:hover {
+      color: rgba(0, 140, 117, 1);
+    }
+    &:active {
+      color: rgba(30, 102, 90, 1);
+    }
+    &:disabled,
+    &.loading {
+      color: rgba(144, 148, 158, 1);
+      cursor: not-allowed;
+    }
+  }
+}

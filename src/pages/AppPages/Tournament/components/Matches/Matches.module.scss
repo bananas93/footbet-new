@@ -1,0 +1,18 @@
+.container {
+  padding: 2rem;
+}
+
+.matches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(25rem, 1fr));
+  gap: 1rem;
+}
+
+@media screen and (max-width: 48em) {
+  .container {
+    padding: 1rem;
+  }
+  .matches {
+    grid-template-columns: initial;
+  }
+}

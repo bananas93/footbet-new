@@ -1,0 +1,10 @@
+{
+  "eslint.format.enable": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.codeAction.showDocumentation": {
+    "enable": true
+  },
+  "editor.formatOnSave": true
+}

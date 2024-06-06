@@ -1,0 +1,34 @@
+.login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  &Title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+  &Form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 100%;
+    width: 30rem;
+    padding: 1rem;
+  }
+  &ForgotPassword {
+    text-align: right;
+    margin-left: auto;
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .login {
+    margin-top: 2rem;
+    &Title {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+  }
+}

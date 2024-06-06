@@ -1,0 +1,188 @@
+.match {
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+  &Toast {
+    position: absolute;
+    top: -3rem;
+    right: 0;
+    left: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    background-color: #2fbe2f;
+    text-align: center;
+    padding: 0.5rem 0;
+    font-size: 0.8125rem;
+    color: #fff;
+    &.shown {
+      top: 0;
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  &Wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.2rem;
+    margin-bottom: 1.5rem;
+  }
+  &Group {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #000;
+  }
+  &Date {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #000;
+    &Divider {
+      padding: 0 0.2rem;
+    }
+  }
+  &Predict {
+    display: flex;
+    gap: 1rem;
+    flex: 0 0 40%;
+    &Live {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    &Predict {
+      display: flex;
+      gap: 1rem;
+      flex: 0 0 40%;
+      span {
+        width: 100%;
+        border: 0.0625em solid rgb(219, 219, 219);
+        color: rgb(28, 28, 28);
+        font-size: 1em;
+        padding: 1em 0.875em;
+        border-radius: 0.5em;
+        text-align: center;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    }
+    div > {
+      input {
+        text-align: center;
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+    }
+  }
+
+  &Score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    margin-top: 0.5rem;
+    font-weight: 500;
+    &.live {
+      color: #ee0202;
+    }
+    > span {
+      font-size: 1.125rem;
+    }
+  }
+  &Minute {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #ee0202;
+    span {
+      animation: blink 1s infinite;
+    }
+  }
+  &Team {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2rem;
+    &Wrap {
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 0 0 30%;
+    }
+    &Logo {
+      width: 3.5em;
+      height: 3.5em;
+    }
+    &Name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #000;
+    }
+  }
+  &Points {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background-color: #555555;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &.success {
+      background-color: #2fbe2f;
+    }
+    &.norm {
+      background-color: #9b7f00;
+    }
+    &.bad {
+      background-color: #ee0202;
+    }
+    > span {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .match {
+    padding: 1rem 0.5rem;
+    &Team {
+      padding: 0;
+      &Wrap {
+        flex: 0 0 32%;
+      }
+      &Logo {
+        width: 3em;
+        height: 3em;
+      }
+      &Name {
+        font-size: 0.875rem;
+      }
+    }
+    &Predict {
+      gap: 0.5rem;
+      flex: 0 0 36%;
+      div > {
+        input {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
