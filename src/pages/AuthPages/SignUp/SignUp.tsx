@@ -102,6 +102,12 @@ const SignUp: React.FC = () => {
         <Button loading={isLoading} onClick={handleSubmit}>
           {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
         </Button>
+        <div>
+          Вже зареєстровані?{' '}
+          <Button variant="link" href="/signin">
+            Увійти
+          </Button>
+        </div>
       </div>
     </div>
   );

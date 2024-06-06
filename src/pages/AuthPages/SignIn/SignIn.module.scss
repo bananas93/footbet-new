@@ -4,6 +4,15 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+  &Google {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: auto;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
   &Title {
     font-size: 1.5rem;
     font-weight: 700;

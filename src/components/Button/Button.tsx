@@ -9,10 +9,11 @@ interface Props {
   loading?: boolean;
   onClick?: () => void;
   href?: string;
+  className?: string;
   children: React.ReactNode;
 }
 
-const Button: React.FC<Props> = ({ variant = 'primary', href, disabled, loading, onClick, children }) => {
+const Button: React.FC<Props> = ({ variant = 'primary', href, disabled, loading, onClick, className, children }) => {
   if (href) {
     return (
       <Link to={href} className={cn(styles.button, styles.link)}>
@@ -30,6 +31,7 @@ const Button: React.FC<Props> = ({ variant = 'primary', href, disabled, loading,
         [styles.secondary]: variant === 'secondary',
         [styles.link]: variant === 'link',
         [styles.loading]: loading,
+        [className || '']: true,
       })}>
       {children}
     </button>

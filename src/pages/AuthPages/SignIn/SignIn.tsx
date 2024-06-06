@@ -2,7 +2,10 @@ import { Button, TextInput } from 'components';
 import { useForm } from 'hooks';
 import styles from './SignIn.module.scss';
 import { useAppDispatch, useAppSelector } from 'store';
-import { signInUser } from 'store/slices/auth';
+import { setIsAuthenticated, signInUser } from 'store/slices/auth';
+import { GoogleIcon } from 'assets/icons';
+import { http, saveAccessToken, saveRefreshToken } from 'helpers';
+import { useEffect } from 'react';
 
 const validationRules = {
   email: (value: string) => {
@@ -33,6 +36,17 @@ const SignIn: React.FC = () => {
     },
   );
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('accessToken');
+    const refreshToken = urlParams.get('refreshToken');
+    if (token && refreshToken) {
+      saveAccessToken(token);
+      saveRefreshToken(refreshToken);
+      dispatch(setIsAuthenticated());
+    }
+  }, [dispatch]);
+
   const handleLogin = async (formValues: FormValues) => {
     try {
       await dispatch(signInUser(formValues)).unwrap();
@@ -42,10 +56,23 @@ const SignIn: React.FC = () => {
     }
   };
 
+  const handleGoogleLogin = () => {
+    http.auth.get('/auth/auth');
+  };
+
   return (
     <div className={styles.login}>
       <h1 className={styles.loginTitle}>Вхід</h1>
       <div className={styles.loginForm}>
+        <div>
+          <Button
+            variant="link"
+            href={`${process.env.REACT_APP_API_URL}/api/auth/auth`}
+            onClick={handleGoogleLogin}
+            className={styles.loginGoogle}>
+            Увійти за допомогою <GoogleIcon />
+          </Button>
+        </div>
         <TextInput
           name="email"
           type="email"
@@ -72,6 +99,12 @@ const SignIn: React.FC = () => {
         <Button loading={isLoading} onClick={handleSubmit}>
           {isLoading ? 'Входимо...' : 'Вхід'}
         </Button>
+        <div>
+          Не маєте акаунту?{' '}
+          <Button variant="link" href="/signup">
+            Зареєструватись
+          </Button>
+        </div>
       </div>
     </div>
   );
