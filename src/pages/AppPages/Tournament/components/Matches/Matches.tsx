@@ -4,6 +4,7 @@ import { useTournament } from '../../Tournament';
 import MatchCard from './MatchCard/MatchCard';
 import { normalizeKnockoutRoundName, sliceMatches } from 'helpers';
 import styles from './Matches.module.scss';
+import { Card } from 'components';
 
 const Matches: React.FC = () => {
   const { tournament } = useTournament();
@@ -15,7 +16,13 @@ const Matches: React.FC = () => {
   const { groupMatches, knockoutMatches } = sliceMatches(matches, groupMatchNumber);
 
   if (matches.length === 0) {
-    return <div>No matches</div>;
+    return (
+      <div className={styles.container}>
+        <Card>
+          <div className={styles.empty}>No matches</div>
+        </Card>
+      </div>
+    );
   }
 
   return (

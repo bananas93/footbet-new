@@ -21,6 +21,36 @@
       visibility: visible;
     }
   }
+  &Live {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    &Block {
+      display: block;
+      width: 3.5rem;
+      height: 1.5rem;
+      background-color: #ee0202;
+      border-radius: 0.5rem;
+      text-align: right;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.2rem;
+      span {
+        width: 0.5rem;
+        height: 0.5rem;
+        background-color: #fff;
+        border-radius: 50%;
+        display: inline-block;
+      }
+    }
+  }
   &Wrap {
     display: flex;
     flex-direction: column;
@@ -57,14 +87,14 @@
       flex: 0 0 40%;
       span {
         width: 100%;
-        border: 0.0625em solid rgb(219, 219, 219);
+        border: 0.0625em solid #e5e5e5;
         color: rgb(28, 28, 28);
-        font-size: 1em;
         padding: 1em 0.875em;
         border-radius: 0.5em;
         text-align: center;
         font-weight: 600;
         font-size: 1.125rem;
+        background-color: #e5e5e5;
       }
     }
     div > {
@@ -81,13 +111,14 @@
     align-items: center;
     justify-content: center;
     gap: 0.2rem;
-    margin-top: 0.5rem;
     font-weight: 500;
     &.live {
-      color: #ee0202;
+      > span {
+        color: #ee0202;
+      }
     }
     > span {
-      font-size: 1.125rem;
+      font-size: 0.875rem;
     }
   }
   &Minute {

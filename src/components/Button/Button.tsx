@@ -9,14 +9,24 @@ interface Props {
   loading?: boolean;
   onClick?: () => void;
   href?: string;
+  target?: string;
   className?: string;
   children: React.ReactNode;
 }
 
-const Button: React.FC<Props> = ({ variant = 'primary', href, disabled, loading, onClick, className, children }) => {
+const Button: React.FC<Props> = ({
+  variant = 'primary',
+  href,
+  disabled,
+  loading,
+  onClick,
+  target,
+  className,
+  children,
+}) => {
   if (href) {
     return (
-      <Link to={href} className={cn(styles.button, styles.link)}>
+      <Link to={href} target={target} className={cn(styles.button, styles.link)}>
         {children}
       </Link>
     );

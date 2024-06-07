@@ -1,0 +1,80 @@
+.user {
+  padding: 2rem;
+  &Form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    &Control {
+    }
+    &Button {
+      width: auto;
+    }
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  &List {
+    flex: 0 1 30%;
+    max-width: 30%;
+  }
+  &Item {
+    font-weight: 500;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    outline: none;
+    margin-bottom: 0.5rem;
+    &:global(.react-tabs__tab--selected) {
+      background-color: #f4f4f4;
+    }
+    &:hover {
+      background-color: #f4f4f4;
+    }
+  }
+  &Items {
+    flex: 0 1 70%;
+    max-width: 70%;
+    padding: 0 2rem;
+  }
+  &Panel {
+  }
+  &Logout {
+    padding: 1rem !important;
+  }
+}
+
+.privacy {
+  h1 {
+    font-weight: 600;
+    font-size: 2.25rem;
+  }
+  h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    margin-top: 2rem;
+  }
+  h3 {
+    font-size: 1.25em;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    margin-top: 1rem;
+  }
+  p {
+    margin-bottom: 1.25em;
+  }
+  ul {
+    list-style-type: disc;
+    margin-bottom: 1.25em;
+    margin-top: 1.25em;
+    padding-left: 1.625em;
+  }
+  li {
+    padding-left: 0.375em;
+    margin-bottom: 0.5em;
+    margin-top: 0.5em;
+  }
+}

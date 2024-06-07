@@ -69,6 +69,18 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   return (
     <Card className={styles.match}>
       <div className={cn(styles.matchToast, { [styles.shown]: toastShown })}>Прогноз збережено</div>
+      {match.status === 'Live' && (
+        <div className={styles.matchLive}>
+          <span className={styles.matchLiveBlock}>
+            <span></span>
+            Live
+          </span>
+          <span className={styles.matchMinute}>
+            {matchMinute}
+            <span>'</span>
+          </span>
+        </div>
+      )}
       <div key={match.id}>
         {match.status !== 'Scheduled' && (
           <div
@@ -88,10 +100,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           )}
           <div className={styles.matchDate}>
             {match.status === 'Live' ? (
-              <span className={styles.matchMinute}>
-                {matchMinute}
-                <span>'</span>
-              </span>
+              <div className={cn(styles.matchScore, { [styles.live]: match.status === 'Live' })}>
+                <span>{match.homeScore}</span>
+                <span>-</span>
+                <span>{match.awayScore}</span>
+              </div>
             ) : match.status === 'Finished' ? (
               <span>Завершено</span>
             ) : (
@@ -137,11 +150,6 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                 <div className={styles.matchPredictPredict}>
                   <span>{homeScore}</span>
                   <span>{awayScore}</span>
-                </div>
-                <div className={cn(styles.matchScore, { [styles.live]: match.status === 'Live' })}>
-                  <span>{match.homeScore}</span>
-                  <span>-</span>
-                  <span>{match.awayScore}</span>
                 </div>
               </div>
             )}

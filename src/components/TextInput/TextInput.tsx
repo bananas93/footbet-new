@@ -4,13 +4,13 @@ import styles from './TextInput.module.scss';
 export interface Props {
   name: string;
   label?: string;
-  placeholder: string;
+  placeholder?: string;
   type?: 'text' | 'email' | 'password' | 'tel' | 'number';
   value: string;
   pattern?: string;
   autoFocus?: boolean;
   maxLength?: number;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   clearError?: () => void;
   disabled?: boolean;
