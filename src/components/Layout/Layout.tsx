@@ -1,7 +1,6 @@
 import { useAppDispatch } from 'store';
 import styles from './Layout.module.scss';
 import { getTournaments } from 'store/slices/tournament';
-import { getRooms } from 'store/slices/room';
 import { useEffect, useState } from 'react';
 import Header from './Header/Header';
 import Button from 'components/Button/Button';
@@ -19,7 +18,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await Promise.all([dispatch(getTournaments()), dispatch(getUserProfile())]);
+      await Promise.all([dispatch(getTournaments()), dispatch(getUserProfile(false))]);
       setIsLoading(false);
     };
 

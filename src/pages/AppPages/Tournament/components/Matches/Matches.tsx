@@ -25,26 +25,28 @@ const Matches: React.FC = () => {
     );
   }
 
+  console.log('groupMatches', groupMatches.length);
+
   return (
     <Tabs className="tabs">
       <TabList className="tabs__list">
-        {Array.from({ length: groupMatchNumber }, (_, i) => (
+        {Array.from({ length: groupMatches.length }, (_, i) => (
           <Tab className="tabs__name" key={i + 1}>
             Тур {i + 1}
           </Tab>
         ))}
         {knockoutMatches.length > 0 &&
           Array.from({ length: knockoutRounds.length }, (_, i) => (
-            <Tab className="tabs__name" key={groupMatchNumber + i + 1}>
+            <Tab className="tabs__name" key={groupMatches.length + i + 1}>
               {knockoutRounds[i]}
             </Tab>
           ))}
       </TabList>
-      {Array.from({ length: groupMatchNumber }, (_, i) => (
+      {Array.from({ length: groupMatches.length }, (_, i) => (
         <TabPanel className="tabs__panel" key={i + 1}>
           <div className={styles.container}>
             <div className={styles.matches}>
-              {groupMatches[i].data.map((match) => (
+              {groupMatches[i]?.data.map((match) => (
                 <MatchCard key={match.id} match={match} tournament={tournament} />
               ))}
             </div>
@@ -53,10 +55,10 @@ const Matches: React.FC = () => {
       ))}
       {knockoutMatches.length > 0 &&
         Array.from({ length: knockoutRounds.length }, (_, i) => (
-          <TabPanel className="tabs__panel" key={groupMatchNumber + i + 1}>
+          <TabPanel className="tabs__panel" key={groupMatches.length + i + 1}>
             <div className={styles.container}>
               <div className={styles.matches}>
-                {knockoutMatches[i].data.map((match) => (
+                {knockoutMatches[i]?.data.map((match) => (
                   <MatchCard key={match.id} match={match} tournament={tournament} />
                 ))}
               </div>

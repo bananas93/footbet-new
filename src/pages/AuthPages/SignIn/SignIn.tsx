@@ -65,13 +65,12 @@ const SignIn: React.FC = () => {
       <h1 className={styles.loginTitle}>Вхід</h1>
       <div className={styles.loginForm}>
         <div>
-          <Button
-            variant="link"
+          <a
             href={`${process.env.REACT_APP_API_URL}/api/auth/auth`}
             onClick={handleGoogleLogin}
             className={styles.loginGoogle}>
             Увійти за допомогою <GoogleIcon />
-          </Button>
+          </a>
         </div>
         <TextInput
           name="email"

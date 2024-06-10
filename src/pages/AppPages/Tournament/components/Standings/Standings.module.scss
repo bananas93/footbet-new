@@ -112,7 +112,6 @@
     text-align: center;
   }
 }
-
 @media screen and (max-width: 48em) {
   .container {
     padding: 1rem;
@@ -120,6 +119,9 @@
   .groups {
     grid-template-columns: 1fr;
   }
+}
+
+@media screen and (max-width: 40em) {
   .group {
     padding: 0;
     &Info {

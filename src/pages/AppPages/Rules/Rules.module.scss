@@ -1,0 +1,31 @@
+.rules {
+  padding: 2rem;
+  &Title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+  &Card {
+    margin-bottom: 2rem;
+    &Title {
+      margin-bottom: 1rem;
+    }
+    &Note {
+      display: block;
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: #666;
+    }
+  }
+  ol {
+    list-style-type: decimal;
+    padding-left: 3rem;
+    li {
+      margin-bottom: 1rem;
+      list-style: decimal;
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

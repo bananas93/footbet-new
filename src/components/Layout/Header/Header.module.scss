@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1rem 2rem;
   background-color: #f4f4f4;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
@@ -45,20 +45,22 @@
     }
   }
   &Nav {
-    &List {
-      display: flex;
-      gap: 1.5rem;
-      &Item {
-        list-style: none;
-        > a {
-          text-decoration: none;
-          color: #333;
-          font-weight: 500;
-          &:hover {
-            color: #007bff;
-          }
-        }
+    display: flex;
+    gap: 1rem;
+    &Link {
+      color: #000;
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      &:hover {
+        text-decoration: underline;
       }
     }
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .header {
+    padding: 0.5rem 1rem;
   }
 }

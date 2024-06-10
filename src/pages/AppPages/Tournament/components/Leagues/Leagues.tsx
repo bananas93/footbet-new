@@ -14,10 +14,10 @@ const Leagues: React.FC = () => {
         <Card title="Загальна таблиця">
           <div className={styles.table}>
             <div className={cn(styles.tableCol, styles.head)}>Ім'я</div>
-            <div className={cn(styles.tableCol, styles.head)}>Рахунки (x5)</div>
-            <div className={cn(styles.tableCol, styles.head)}>Результати (x2)</div>
-            <div className={cn(styles.tableCol, styles.head)}>Різниці (x1)</div>
-            <div className={cn(styles.tableCol, styles.head)}>5+ голів (x1)</div>
+            <div className={cn(styles.tableCol, styles.head, styles.hidden)}>Рахунки (x5)</div>
+            <div className={cn(styles.tableCol, styles.head, styles.hidden)}>Результати (x2)</div>
+            <div className={cn(styles.tableCol, styles.head, styles.hidden)}>Різниці (x1)</div>
+            <div className={cn(styles.tableCol, styles.head, styles.hidden)}>5+ голів (x1)</div>
             <div className={cn(styles.tableCol, styles.head)}>Очки</div>
           </div>
           {table.map((item) => (
@@ -25,11 +25,11 @@ const Leagues: React.FC = () => {
               <div className={styles.tableCol}>
                 <strong>{item.name}</strong>
               </div>
-              <div className={styles.tableCol}>{item.correctScore}</div>
-              <div className={styles.tableCol}>{item.correctResult}</div>
-              <div className={styles.tableCol}>{item.correctDifference}</div>
-              <div className={styles.tableCol}>{item.fivePlusGoals}</div>
-              <div className={styles.tableCol}>{item.points}</div>
+              <div className={cn(styles.tableCol, styles.hidden)}>{item.correctScore}</div>
+              <div className={cn(styles.tableCol, styles.hidden)}>{item.correctResult}</div>
+              <div className={cn(styles.tableCol, styles.hidden)}>{item.correctDifference}</div>
+              <div className={cn(styles.tableCol, styles.hidden)}>{item.fivePlusGoals}</div>
+              <div className={cn(styles.tableCol)}>{item.points}</div>
             </div>
           ))}
         </Card>

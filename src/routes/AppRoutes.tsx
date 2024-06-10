@@ -1,4 +1,5 @@
 import { Home, Tournament, User } from 'pages';
+import Rules from 'pages/AppPages/Rules/Rules';
 import Leagues from 'pages/AppPages/Tournament/components/Leagues/Leagues';
 import Matches from 'pages/AppPages/Tournament/components/Matches/Matches';
 import Standings from 'pages/AppPages/Tournament/components/Standings/Standings';
@@ -8,6 +9,7 @@ export enum RoutesEnum {
   Home = '/',
   Tournament = '/tournament/:tournamentId',
   User = '/user',
+  Rules = '/rules',
 }
 
 export const AppRoutes = () => {
@@ -24,6 +26,7 @@ export const AppRoutes = () => {
       ],
     },
     { path: RoutesEnum.User, element: <User /> },
+    { path: RoutesEnum.Rules, element: <Rules /> },
     { path: '*', element: <Navigate to={RoutesEnum.Home} /> },
   ]);
   return routes;

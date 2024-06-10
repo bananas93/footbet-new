@@ -19,7 +19,6 @@ const Tournament: React.FC = () => {
   const { isLoading } = useAppSelector((state) => state.match.getMatchesRequest);
 
   useEffect(() => {
-    document.title = `${tournament?.name} | Tournament`;
     const getStandings = async () => {
       await Promise.all([
         dispatch(getTournamentStandings(Number(tournamentId))),
@@ -29,6 +28,13 @@ const Tournament: React.FC = () => {
     };
     getStandings();
   }, [dispatch, tournament?.name, tournamentId]);
+
+  useEffect(() => {
+    document.title = `${tournament?.name} | Tournament`;
+    return () => {
+      document.title = 'Турнір прогнозистів | Footbet';
+    };
+  }, [tournament?.name]);
 
   if (!tournament) {
     return <div>Tournament not found</div>;
@@ -57,13 +63,15 @@ const Tournament: React.FC = () => {
                 Прогнози
               </NavLink>
             </li>
-            <li className={styles.tournamentNavListItem}>
-              <NavLink
-                className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament.id}/standings`}>
-                Турнірна таблиця
-              </NavLink>
-            </li>
+            {tournament.hasTable && (
+              <li className={styles.tournamentNavListItem}>
+                <NavLink
+                  className={({ isActive }) => (isActive ? styles.active : '')}
+                  to={`/tournament/${tournament.id}/standings`}>
+                  Турнірна таблиця
+                </NavLink>
+              </li>
+            )}
             <li className={styles.tournamentNavListItem}>
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}

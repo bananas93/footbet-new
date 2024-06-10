@@ -2,14 +2,32 @@ import { useAppDispatch, useAppSelector } from 'store';
 import styles from './User.module.scss';
 import { Button, Card, TextInput } from 'components';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import { useForm } from 'hooks';
-import { editUserProfile } from 'store/slices/user';
+import { useForm, useMobile } from 'hooks';
+import { changeUserPassword, editUserProfile } from 'store/slices/user';
 import { notify } from 'helpers';
 import { logout } from 'store/slices/auth';
+import { useEffect } from 'react';
 
 const validationRules = {
   name: (value: string) => {
     if (!value) return "Потрібно вказати ім'я";
+    return '';
+  },
+};
+
+const changePassValidationRules = {
+  oldPassword: (value: string) => {
+    if (!value) return 'Потрібно вказати пароль';
+    return '';
+  },
+  password: (value: string) => {
+    if (!value) return 'Потрібно вказати пароль';
+    if (!/(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/.test(value)) return 'Пароль некоректний';
+    return '';
+  },
+  confirmPassword: (value: string, values: any) => {
+    if (!value) return 'Потрібно підтвердити пароль';
+    if (value !== values.password) return 'Паролі не збігаються';
     return '';
   },
 };
@@ -21,14 +39,26 @@ interface FormValues {
   avatar: string;
 }
 
+interface ChangePasswordFormValues {
+  oldPassword: string;
+  password: string;
+  confirmPassword: string;
+}
+
 const User: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
   const { isLoading } = useAppSelector((state) => state.user.editUserProfileRequest);
 
+  const isMobile = useMobile();
+
   const handleSaveProfile = async (formValues: FormValues) => {
-    await dispatch(editUserProfile(formValues)).unwrap();
-    notify.success('Профіль збережено');
+    try {
+      await dispatch(editUserProfile(formValues)).unwrap();
+      notify.success('Профіль збережено');
+    } catch (err: any) {
+      notify.error(err.message);
+    }
   };
 
   const { values, errors, handleChange, handleSubmit } = useForm<FormValues>(
@@ -43,6 +73,36 @@ const User: React.FC = () => {
       handleSaveProfile(submittedValues);
     },
   );
+
+  const {
+    values: passValues,
+    errors: passErrors,
+    handleChange: handlePassChange,
+    handleSubmit: handlePassSubmit,
+    clearForm: clearPassForm,
+  } = useForm<ChangePasswordFormValues>(
+    {
+      oldPassword: '',
+      password: '',
+      confirmPassword: '',
+    },
+    changePassValidationRules,
+    (submittedValues: ChangePasswordFormValues) => {
+      handleChangePassword(submittedValues);
+    },
+  );
+
+  const handleChangePassword = async (formValues: ChangePasswordFormValues) => {
+    try {
+      await dispatch(
+        changeUserPassword({ oldPassword: formValues.oldPassword, password: formValues.password }),
+      ).unwrap();
+      notify.success('Пароль змінено');
+      clearPassForm();
+    } catch (err: any) {
+      notify.error(err.message);
+    }
+  };
 
   const isFormChanged = () => {
     const formValues = {
@@ -59,7 +119,12 @@ const User: React.FC = () => {
     localStorage.removeItem('reduxState');
   };
 
-  console.log('isLoading', isLoading);
+  useEffect(() => {
+    document.title = 'Профіль | Footbet';
+    return () => {
+      document.title = 'Турнір прогнозистів | Footbet';
+    };
+  }, []);
 
   if (!user) {
     return <div>Loading...</div>;
@@ -71,10 +136,13 @@ const User: React.FC = () => {
         <Tabs className={styles.tabs}>
           <TabList className={styles.tabsList}>
             <Tab className={styles.tabsItem}>Деталі профілю</Tab>
+            <Tab className={styles.tabsItem}>Зміна паролю</Tab>
             <Tab className={styles.tabsItem}>Політика конфіденційності</Tab>
-            <Button className={styles.tabsLogout} variant="link" onClick={handleLogout}>
-              Вийти
-            </Button>
+            {!isMobile && (
+              <Button className={styles.tabsLogout} variant="link" onClick={handleLogout}>
+                Вийти
+              </Button>
+            )}
           </TabList>
           <div className={styles.tabsItems}>
             <TabPanel className={styles.tabsPanel}>
@@ -107,9 +175,9 @@ const User: React.FC = () => {
                     value={values.phone}
                   />
                 </div>
-                <div className={styles.userFormControl}>
+                {/* <div className={styles.userFormControl}>
                   <input type="file" name="avatar" accept="image/*" />
-                </div>
+                </div> */}
                 <div className={styles.userFormControl}>
                   <Button
                     className={styles.userFormButton}
@@ -118,6 +186,45 @@ const User: React.FC = () => {
                     disabled={!isChanged}
                     loading={isLoading}>
                     {isLoading ? 'Збереження...' : 'Зберегти'}
+                  </Button>
+                </div>
+              </div>
+            </TabPanel>
+            <TabPanel className={styles.tabsPanel}>
+              <div className={styles.userForm}>
+                <div className={styles.passwordFormControl}>
+                  <TextInput
+                    name="oldPassword"
+                    label="Поточний пароль"
+                    type="password"
+                    onChange={(e) => handlePassChange('oldPassword', e.target.value)}
+                    value={passValues.oldPassword}
+                    error={passErrors.oldPassword}
+                  />
+                </div>
+                <div className={styles.passwordFormControl}>
+                  <TextInput
+                    name="password"
+                    label="Новий пароль"
+                    type="password"
+                    onChange={(e) => handlePassChange('password', e.target.value)}
+                    value={passValues.password}
+                    error={passErrors.password}
+                  />
+                </div>
+                <div className={styles.passwordFormControl}>
+                  <TextInput
+                    name="confirmPassword"
+                    label="Підтвердження нового паролю"
+                    type="password"
+                    onChange={(e) => handlePassChange('confirmPassword', e.target.value)}
+                    value={passValues.confirmPassword}
+                    error={passErrors.confirmPassword}
+                  />
+                </div>
+                <div className={styles.passwordFormControl}>
+                  <Button variant="primary" onClick={handlePassSubmit}>
+                    Змінити пароль
                   </Button>
                 </div>
               </div>
@@ -220,6 +327,13 @@ const User: React.FC = () => {
           </div>
         </Tabs>
       </Card>
+      {isMobile && (
+        <div className={styles.logout}>
+          <Button variant="link" onClick={handleLogout}>
+            Вийти
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

@@ -27,3 +27,18 @@
     }
   }
 }
+@media screen and (max-width: 48em) {
+  .container {
+    padding: 1rem;
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .table {
+    &Col {
+      &.hidden {
+        display: none;
+      }
+    }
+  }
+}

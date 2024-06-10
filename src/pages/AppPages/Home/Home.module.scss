@@ -1,14 +1,11 @@
 .home {
   padding: 2rem;
   &Row {
-    display: flex;
-    justify-content: space-between;
-    gap: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
+    gap: 1rem;
   }
   &Col {
-    flex: 0 1 50%;
-    max-width: 50%;
-    box-sizing: border-box;
   }
   &Tournament {
     a {
@@ -18,8 +15,18 @@
     }
     img {
       width: auto;
+      max-width: 15rem;
       height: 10rem;
-      object-fit: cover;
+      object-fit: contain;
+    }
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .home {
+    padding: 2rem;
+    &Row {
+      grid-template-columns: initial;
     }
   }
 }

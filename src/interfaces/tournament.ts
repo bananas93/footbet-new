@@ -9,6 +9,8 @@ export interface ITournament {
   groupMatchNumber: number;
   knockoutRound: number;
   thirdPlaceMatch: boolean;
+  hasTable: boolean;
+  leagues: number;
   status: TournamentStatus;
   logo?: string;
   type: TournamentType;

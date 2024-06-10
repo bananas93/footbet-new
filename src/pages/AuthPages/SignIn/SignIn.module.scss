@@ -5,12 +5,19 @@
   justify-content: center;
   height: 100%;
   &Google {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 1rem;
-    width: auto;
+    gap: 0.5rem;
+    border: 1px solid #dbdbdb;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    color: #000;
+    transition: opacity 0.2s;
     &:hover {
-      opacity: 0.6;
+      opacity: 0.4;
+    }
+    &:active {
+      opacity: 0.8;
     }
   }
   &Title {

@@ -1,19 +1,22 @@
 import { Link } from 'react-router-dom';
 import styles from './Header.module.scss';
 import { useAppSelector } from 'store';
-import Button from 'components/Button/Button';
 import { RoutesEnum } from 'routes/AppRoutes';
+import { NavLink } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
 
   return (
     <header className={styles.header}>
-      <h1>
-        <Button variant="link" href="/">
-          Footbet
-        </Button>
-      </h1>
+      <nav className={styles.headerNav}>
+        <NavLink to={RoutesEnum.Home} className={styles.headerNavLink}>
+          Головна
+        </NavLink>
+        <NavLink to={RoutesEnum.Rules} className={styles.headerNavLink}>
+          Правила
+        </NavLink>
+      </nav>
       {user && (
         <Link to={RoutesEnum.User} className={styles.headerUser}>
           <span className={styles.headerUserName}>{user.nickname || user.name}</span>

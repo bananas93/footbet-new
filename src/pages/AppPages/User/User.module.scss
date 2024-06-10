@@ -4,12 +4,15 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    &Control {
-    }
     &Button {
       width: auto;
     }
   }
+}
+
+.logout {
+  padding: 1rem;
+  text-align: center;
 }
 
 .tabs {
@@ -38,8 +41,6 @@
     flex: 0 1 70%;
     max-width: 70%;
     padding: 0 2rem;
-  }
-  &Panel {
   }
   &Logout {
     padding: 1rem !important;
@@ -76,5 +77,51 @@
     padding-left: 0.375em;
     margin-bottom: 0.5em;
     margin-top: 0.5em;
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .tabs {
+    flex-direction: column;
+    &List {
+      flex: 0 1 100%;
+      max-width: 100%;
+      display: flex;
+      width: 100%;
+      overflow-x: auto;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+    &Item {
+      margin: 0;
+      white-space: nowrap;
+      font-size: 0.8125rem;
+      padding: 0;
+      background-color: transparent;
+      &:global(.react-tabs__tab--selected) {
+        background-color: transparent;
+        font-weight: 600;
+      }
+      &:hover {
+        background-color: transparent;
+      }
+    }
+    &Logout {
+      padding: 0rem !important;
+    }
+    &Items {
+      flex: 0 1 100%;
+      max-width: 100%;
+      padding: 0;
+    }
+  }
+  .user {
+    padding: 1rem;
+    &Form {
+      padding: 0rem;
+    }
   }
 }
