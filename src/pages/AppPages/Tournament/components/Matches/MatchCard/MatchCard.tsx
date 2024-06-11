@@ -2,7 +2,7 @@ import { useState } from 'react';
 import cn from 'classnames';
 import { Card, TextInput } from 'components';
 import { IMatch, ITournament } from 'interfaces';
-import { normalizeMatchDate, normalizeMatchTime } from 'helpers';
+import { normalizeMatchDate, normalizeMatchTime, notify } from 'helpers';
 import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
 import styles from './MatchCard.module.scss';
@@ -33,7 +33,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
       };
       await dispatch(setPredict(predict)).unwrap();
     } catch (err: any) {
-      console.log(err.message);
+      notify.error(err.message);
     }
   };
 

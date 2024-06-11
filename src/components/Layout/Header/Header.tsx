@@ -25,8 +25,8 @@ const Header: React.FC = () => {
               <img src={`http://localhost:3000/uploads/${user.avatar}`} alt={user.name} />
             ) : (
               <span className={styles.headerUserAvatarName}>
-                {user.name[0]}
-                {user.name[1]}
+                {user?.name[0]}
+                {user?.name[1]}
               </span>
             )}
           </div>

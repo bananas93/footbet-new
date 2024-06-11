@@ -25,8 +25,6 @@ const Matches: React.FC = () => {
     );
   }
 
-  console.log('groupMatches', groupMatches.length);
-
   return (
     <Tabs className="tabs">
       <TabList className="tabs__list">
