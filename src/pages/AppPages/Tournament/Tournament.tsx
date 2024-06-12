@@ -7,6 +7,7 @@ import { NavLink } from 'react-router-dom';
 import styles from './Tournament.module.scss';
 import { ITournament } from 'interfaces';
 import { getPredictsTable } from 'store/slices/predict';
+import Skeleton from 'react-loading-skeleton';
 
 type ContextType = {
   tournament: ITournament;
@@ -22,7 +23,7 @@ const Tournament: React.FC = () => {
     const getStandings = async () => {
       await Promise.all([
         dispatch(getTournamentStandings(Number(tournamentId))),
-        dispatch(getMatches({ tournamentId: Number(tournamentId) })),
+        dispatch(getMatches({ tournamentId: Number(tournamentId), _background: true })),
         dispatch(getPredictsTable(Number(tournamentId))),
       ]);
     };
@@ -36,22 +37,16 @@ const Tournament: React.FC = () => {
     };
   }, [tournament?.name]);
 
-  console.log(`${process.env.REACT_APP_UPLOAD_URL}`);
-
-  if (!tournament) {
-    return <div>Tournament not found</div>;
-  }
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div className={styles.tournament}>
       <header className={styles.tournamentHeader}>
         <div className={styles.tournamentHead}>
           <div className={styles.tournamentLogo}>
-            <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo}`} alt={tournament.name} />
+            {!tournament?.logo ? (
+              <Skeleton />
+            ) : (
+              <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament?.logo}`} alt={tournament?.name} />
+            )}
           </div>
           <h1 className={styles.tournamentName}>{tournament?.name}</h1>
         </div>
@@ -60,12 +55,12 @@ const Tournament: React.FC = () => {
             <li className={styles.tournamentNavListItem}>
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament.id}`}
+                to={`/tournament/${tournament?.id}`}
                 end>
                 Прогнози
               </NavLink>
             </li>
-            {tournament.hasTable && (
+            {tournament?.hasTable && (
               <li className={styles.tournamentNavListItem}>
                 <NavLink
                   className={({ isActive }) => (isActive ? styles.active : '')}
@@ -77,7 +72,7 @@ const Tournament: React.FC = () => {
             <li className={styles.tournamentNavListItem}>
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament.id}/leagues`}>
+                to={`/tournament/${tournament?.id}/leagues`}>
                 Ліги
               </NavLink>
             </li>
@@ -92,10 +87,16 @@ const Tournament: React.FC = () => {
         </nav>
         <div
           className={styles.tournamentOverlay}
-          style={{ backgroundImage: `url(${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo})` }}
+          style={{ backgroundImage: `url(${process.env.REACT_APP_UPLOAD_URL}/${tournament?.logo})` }}
         />
       </header>
-      <Outlet context={{ tournament } satisfies ContextType} />
+      {isLoading || !tournament ? (
+        <div className={styles.tournamentHeader}>
+          <Skeleton height={300} />
+        </div>
+      ) : (
+        <Outlet context={{ tournament } satisfies ContextType} />
+      )}
     </div>
   );
 };

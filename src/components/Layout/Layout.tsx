@@ -1,7 +1,7 @@
 import { useAppDispatch } from 'store';
 import styles from './Layout.module.scss';
 import { getTournaments } from 'store/slices/tournament';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Header from './Header/Header';
 import Button from 'components/Button/Button';
 import { getUserProfile } from 'store/slices/user';
@@ -12,14 +12,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const dispatch = useAppDispatch();
-  const [isLoading, setIsLoading] = useState(true);
 
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const fetchData = async () => {
       await Promise.all([dispatch(getTournaments()), dispatch(getUserProfile(false))]);
-      setIsLoading(false);
     };
 
     fetchData();
@@ -28,7 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className={styles.layout}>
       <Header />
-      <main className={styles.main}>{isLoading ? 'Loading...' : children}</main>
+      <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
         <p className={styles.footerCopy}>
           Footbet.pp.ua &copy; {currentYear} Created by David Amerov |{' '}

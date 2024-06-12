@@ -15,7 +15,7 @@ interface IMatchesState {
   matches: {
     [key: string]: IGames[];
   };
-  getMatchesRequest: IHttpRequestResult<IGames>;
+  getMatchesRequest: IHttpRequestResult<IGames[]>;
 }
 
 const initialState: IMatchesState = {
