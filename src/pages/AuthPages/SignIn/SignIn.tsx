@@ -4,8 +4,10 @@ import styles from './SignIn.module.scss';
 import { useAppDispatch, useAppSelector } from 'store';
 import { setIsAuthenticated, signInUser } from 'store/slices/auth';
 import { GoogleIcon } from 'assets/icons';
-import { http, saveAccessToken, saveRefreshToken } from 'helpers';
+import { http, notify, saveAccessToken, saveRefreshToken } from 'helpers';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { AuthRoutesEnum } from 'routes/AuthRoutes';
 
 const validationRules = {
   email: (value: string) => {
@@ -51,8 +53,11 @@ const SignIn: React.FC = () => {
     try {
       await dispatch(signInUser(formValues)).unwrap();
     } catch (err: any) {
-      setFieldError('email', '');
-      setFieldError('password', 'Не правильний email або пароль');
+      if (err.status === 401) {
+        setFieldError('email', '');
+        setFieldError('password', 'Не правильний email або пароль');
+      }
+      notify.error(err.message || 'Помилка відправлення посилання для відновлення паролю');
     }
   };
 
@@ -91,9 +96,7 @@ const SignIn: React.FC = () => {
           placeholder="Ваш пароль"
         />
         <div className={styles.loginForgotPassword}>
-          <Button variant="link" href="/">
-            Забули пароль?
-          </Button>
+          <Link to={AuthRoutesEnum.ForgotPassword}>Забули пароль?</Link>
         </div>
         <Button loading={isLoading} onClick={handleSubmit}>
           {isLoading ? 'Входимо...' : 'Вхід'}

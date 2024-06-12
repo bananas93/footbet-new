@@ -3,6 +3,7 @@ import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { signUpUser } from 'store/slices/auth';
 import styles from './SignUp.module.scss';
+import { notify } from 'helpers';
 
 const validationRules = {
   name: (value: string) => {
@@ -16,7 +17,8 @@ const validationRules = {
   },
   password: (value: string) => {
     if (!value) return 'Потрібно вказати пароль';
-    if (!/(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{12,})/.test(value)) return 'Пароль некоректний';
+    if (!/(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/.test(value))
+      return 'Пароль має містити принаймні 8 символів, одну велику літеру та один спецсимвол';
     return '';
   },
   confirmPassword: (value: string, values: any) => {
@@ -47,7 +49,12 @@ const SignUp: React.FC = () => {
   );
 
   const handleSignUp = async (formValues: FormValues) => {
-    await dispatch(signUpUser(formValues)).unwrap();
+    try {
+      await dispatch(signUpUser(formValues)).unwrap();
+      notify.success('Ви успішно зареєструвались');
+    } catch (err: any) {
+      notify.error(err.message);
+    }
   };
 
   return (
