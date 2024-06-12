@@ -22,7 +22,7 @@ const Header: React.FC = () => {
           <span className={styles.headerUserName}>{user.nickname || user.name}</span>
           <div className={styles.headerUserAvatar}>
             {user.avatar ? (
-              <img src={`http://localhost:3000/uploads/${user.avatar}`} alt={user.name} />
+              <img src={`${process.env.REACT_APP_UPLOAD_URL}/${user.avatar}`} alt={user.name} />
             ) : (
               <span className={styles.headerUserAvatarName}>
                 {user?.name[0]}

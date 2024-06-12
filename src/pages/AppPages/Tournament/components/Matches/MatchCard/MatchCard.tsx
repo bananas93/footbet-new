@@ -117,7 +117,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
         <div className={styles.matchTeam}>
           <div className={styles.matchTeamWrap}>
             <img
-              src={`http://localhost:3000/uploads/${match.homeTeam.logo}`}
+              src={`${process.env.REACT_APP_UPLOAD_URL}/${match.homeTeam.logo}`}
               alt="home team logo"
               className={styles.matchTeamLogo}
             />
@@ -156,7 +156,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           </div>
           <div className={styles.matchTeamWrap}>
             <img
-              src={`http://localhost:3000/uploads/${match.awayTeam.logo}`}
+              src={`${process.env.REACT_APP_UPLOAD_URL}/${match.awayTeam.logo}`}
               alt="away team logo"
               className={styles.matchTeamLogo}
             />

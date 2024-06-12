@@ -13,7 +13,7 @@ const Home: React.FC = () => {
           <Card title={tournament.name} className={styles.homeCol} key={tournament.id}>
             <div className={styles.homeTournament}>
               <Link to={`/tournament/${tournament.id}`}>
-                <img src={`http://localhost:3000/uploads/${tournament.logo}`} alt={tournament.name} />
+                <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo}`} alt={tournament.name} />
               </Link>
             </div>
           </Card>

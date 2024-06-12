@@ -51,7 +51,7 @@ const Standings: React.FC = () => {
                       {index + 1}
                     </p>
                     <img
-                      src={`http://localhost:3000/uploads/${item.logo}`}
+                      src={`${process.env.REACT_APP_UPLOAD_URL}/${item.logo}`}
                       className={styles.groupLogo}
                       alt={item.team}
                     />

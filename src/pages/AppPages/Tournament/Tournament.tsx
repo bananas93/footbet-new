@@ -36,6 +36,8 @@ const Tournament: React.FC = () => {
     };
   }, [tournament?.name]);
 
+  console.log(`${process.env.REACT_APP_UPLOAD_URL}`);
+
   if (!tournament) {
     return <div>Tournament not found</div>;
   }
@@ -49,7 +51,7 @@ const Tournament: React.FC = () => {
       <header className={styles.tournamentHeader}>
         <div className={styles.tournamentHead}>
           <div className={styles.tournamentLogo}>
-            <img src={`http://localhost:3000/uploads/${tournament.logo}`} alt={tournament.name} />
+            <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo}`} alt={tournament.name} />
           </div>
           <h1 className={styles.tournamentName}>{tournament?.name}</h1>
         </div>
@@ -90,7 +92,7 @@ const Tournament: React.FC = () => {
         </nav>
         <div
           className={styles.tournamentOverlay}
-          style={{ backgroundImage: `url(http://localhost:3000/uploads/${tournament.logo})` }}
+          style={{ backgroundImage: `url(${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo})` }}
         />
       </header>
       <Outlet context={{ tournament } satisfies ContextType} />
