@@ -17,8 +17,7 @@ const validationRules = {
   },
   password: (value: string) => {
     if (!value) return 'Потрібно вказати пароль';
-    if (!/(?=.*[A-Z])(?=.*[!@#$%^&*])(?=.{8,})/.test(value))
-      return 'Пароль має містити принаймні 8 символів, одну велику літеру та один спецсимвол';
+    if (value.length < 7) return 'Пароль має містити принаймні 8 символів';
     return '';
   },
   confirmPassword: (value: string, values: any) => {
