@@ -5,4 +5,5 @@ export interface IUser {
   name: string;
   nickname?: string;
   avatar?: string;
+  role: string;
 }

@@ -5,8 +5,6 @@
     grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
     gap: 1rem;
   }
-  &Col {
-  }
   &Tournament {
     a {
       display: flex;
@@ -24,7 +22,7 @@
 
 @media screen and (max-width: 40em) {
   .home {
-    padding: 2rem;
+    padding: 1rem;
     &Row {
       grid-template-columns: initial;
     }
