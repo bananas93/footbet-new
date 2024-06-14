@@ -7,6 +7,9 @@ import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
 import styles from './MatchCard.module.scss';
 import { useMatchMinute } from 'hooks';
+import ShowPredicts from '../ShowPredicts/ShowPredicts';
+import useModal from 'hooks/useModal';
+import { MoreIcon } from 'assets/icons';
 
 interface MatchCardProps {
   match: IMatch;
@@ -16,6 +19,8 @@ interface MatchCardProps {
 const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const dispatch = useAppDispatch();
   const matchMinute = useMatchMinute(match);
+
+  const { isOpen, openModal, closeModal } = useModal();
 
   const [homeScore, setHomeScore] = useState<string>(match?.predict?.homeScore.toString() || '');
   const [awayScore, setAwayScore] = useState<string>(match?.predict?.awayScore.toString() || '');
@@ -67,104 +72,111 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   };
 
   return (
-    <Card className={styles.match}>
-      <div className={cn(styles.matchToast, { [styles.shown]: toastShown })}>Прогноз збережено</div>
-      {match.status === 'Live' && (
-        <div className={styles.matchLive}>
-          <span className={styles.matchLiveBlock}>
-            <span></span>
-            Live
-          </span>
-          <span className={styles.matchMinute}>
-            {matchMinute}
-            <span>'</span>
-          </span>
-        </div>
-      )}
-      <div key={match.id}>
-        {match.status !== 'Scheduled' && (
-          <div
-            className={cn(styles.matchPoints, {
-              [styles.success]: match?.predict?.points > 4,
-              [styles.norm]: match?.predict?.points > 0 && match?.predict?.points < 5,
-              [styles.bad]: match?.predict?.points === 0,
-            })}>
-            <span>{match?.predict?.points || 0}</span>
+    <>
+      <Card className={styles.match}>
+        <div className={cn(styles.matchToast, { [styles.shown]: toastShown })}>Прогноз збережено</div>
+        {match.status === 'Live' && (
+          <div className={styles.matchLive}>
+            <span className={styles.matchLiveBlock}>
+              <span></span>
+              Live
+            </span>
+            <span className={styles.matchMinute}>
+              {matchMinute}
+              <span>'</span>
+            </span>
           </div>
         )}
-        <div className={styles.matchWrap}>
-          {match.groupName && (
-            <div className={styles.matchGroup}>
-              <span className={styles.matchGroupName}>Група {match.groupName}</span>
+        <div key={match.id}>
+          {match.status !== 'Scheduled' && (
+            <div className={styles.matchPoints}>
+              <div
+                className={cn(styles.matchPointsReward, {
+                  [styles.success]: match?.predict?.points > 4,
+                  [styles.norm]: match?.predict?.points > 0 && match?.predict?.points < 5,
+                  [styles.bad]: match?.predict?.points === 0,
+                })}>
+                <span>{match?.predict?.points || 0}</span>
+              </div>
+              <button className={styles.matchPredicts} onClick={openModal}>
+                <MoreIcon />
+              </button>
             </div>
           )}
-          <div className={styles.matchDate}>
-            {match.status === 'Live' ? (
-              <div className={cn(styles.matchScore, { [styles.live]: match.status === 'Live' })}>
-                <span>{match.homeScore}</span>
-                <span>-</span>
-                <span>{match.awayScore}</span>
+          <div className={styles.matchWrap}>
+            {match.groupName && (
+              <div className={styles.matchGroup}>
+                <span className={styles.matchGroupName}>Група {match.groupName}</span>
               </div>
-            ) : match.status === 'Finished' ? (
-              <span>Завершено</span>
-            ) : (
-              <>
-                <span>{normalizeMatchDate(match.matchDate)}</span> <span>{normalizeMatchTime(match.matchDate)}</span>
-              </>
             )}
-          </div>
-        </div>
-        <div className={styles.matchTeam}>
-          <div className={styles.matchTeamWrap}>
-            <img
-              src={`${process.env.REACT_APP_UPLOAD_URL}/${match.homeTeam.logo}`}
-              alt="home team logo"
-              className={styles.matchTeamLogo}
-            />
-            <span className={styles.matchTeamName}>{match.homeTeam.name}</span>
-          </div>
-          <div className={styles.matchPredict}>
-            {match.status === 'Scheduled' ? (
-              <>
-                <TextInput
-                  name="home"
-                  placeholder=""
-                  type="tel"
-                  value={homeScore}
-                  onChange={handleChange}
-                  pattern="[0-9]"
-                  maxLength={1}
-                />
-                <TextInput
-                  placeholder=""
-                  name="away"
-                  type="tel"
-                  value={awayScore}
-                  onChange={handleChange}
-                  pattern="[0-9]"
-                  maxLength={1}
-                />
-              </>
-            ) : (
-              <div className={styles.matchPredictLive}>
-                <div className={styles.matchPredictPredict}>
-                  <span>{homeScore}</span>
-                  <span>{awayScore}</span>
+            <div className={styles.matchDate}>
+              {match.status !== 'Scheduled' ? (
+                <div className={cn(styles.matchScore, { [styles.live]: match.status === 'Live' })}>
+                  {match.status === 'Finished' && 'Результат: '}
+                  <span>{match.homeScore}</span>
+                  <span>-</span>
+                  <span>{match.awayScore}</span>
                 </div>
-              </div>
-            )}
+              ) : (
+                <>
+                  <span>{normalizeMatchDate(match.matchDate)}</span> <span>{normalizeMatchTime(match.matchDate)}</span>
+                </>
+              )}
+            </div>
           </div>
-          <div className={styles.matchTeamWrap}>
-            <img
-              src={`${process.env.REACT_APP_UPLOAD_URL}/${match.awayTeam.logo}`}
-              alt="away team logo"
-              className={styles.matchTeamLogo}
-            />
-            <span className={styles.matchTeamName}>{match.awayTeam.name}</span>
+          <div className={styles.matchTeam}>
+            <div className={styles.matchTeamWrap}>
+              <img
+                src={`${process.env.REACT_APP_UPLOAD_URL}/${match.homeTeam.logo}`}
+                alt="home team logo"
+                className={styles.matchTeamLogo}
+              />
+              <span className={styles.matchTeamName}>{match.homeTeam.name}</span>
+            </div>
+            <div className={styles.matchPredict}>
+              {match.status === 'Scheduled' ? (
+                <>
+                  <TextInput
+                    name="home"
+                    placeholder=""
+                    type="tel"
+                    value={homeScore}
+                    onChange={handleChange}
+                    pattern="[0-9]"
+                    maxLength={1}
+                  />
+                  <TextInput
+                    placeholder=""
+                    name="away"
+                    type="tel"
+                    value={awayScore}
+                    onChange={handleChange}
+                    pattern="[0-9]"
+                    maxLength={1}
+                  />
+                </>
+              ) : (
+                <div className={styles.matchPredictLive}>
+                  <div className={styles.matchPredictPredict}>
+                    <span>{homeScore}</span>
+                    <span>{awayScore}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className={styles.matchTeamWrap}>
+              <img
+                src={`${process.env.REACT_APP_UPLOAD_URL}/${match.awayTeam.logo}`}
+                alt="away team logo"
+                className={styles.matchTeamLogo}
+              />
+              <span className={styles.matchTeamName}>{match.awayTeam.name}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+      {isOpen && <ShowPredicts match={match} isOpen={isOpen} onClose={closeModal} />}
+    </>
   );
 };
 

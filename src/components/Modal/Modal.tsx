@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './Modal.module.scss';
 import { CloseIcon } from 'assets/icons';
@@ -16,6 +16,13 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       onClose();
     }
   };
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, []);
 
   if (!isOpen) return null;
 

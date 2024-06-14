@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Outlet, useOutletContext, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getMatches } from 'store/slices/match';
 import { getTournamentStandings } from 'store/slices/tournament';
 import { NavLink } from 'react-router-dom';
 import styles from './Tournament.module.scss';
-import { ITournament } from 'interfaces';
+import { IMatch, ITournament } from 'interfaces';
 import { getPredictsTable } from 'store/slices/predict';
 import Skeleton from 'react-loading-skeleton';
+import socket from 'socket';
+import { notify, playNotification } from 'helpers';
 
 type ContextType = {
   tournament: ITournament;
@@ -19,16 +21,17 @@ const Tournament: React.FC = () => {
   const tournament = useAppSelector((state) => state.tournament.tournaments.find((t) => t.id === Number(tournamentId)));
   const { isLoading } = useAppSelector((state) => state.match.getMatchesRequest);
 
+  const getStandings = useCallback(async () => {
+    await Promise.all([
+      dispatch(getTournamentStandings(Number(tournamentId))),
+      dispatch(getMatches({ tournamentId: Number(tournamentId), _background: true })),
+      dispatch(getPredictsTable(Number(tournamentId))),
+    ]);
+  }, [dispatch, tournamentId]);
+
   useEffect(() => {
-    const getStandings = async () => {
-      await Promise.all([
-        dispatch(getTournamentStandings(Number(tournamentId))),
-        dispatch(getMatches({ tournamentId: Number(tournamentId), _background: true })),
-        dispatch(getPredictsTable(Number(tournamentId))),
-      ]);
-    };
     getStandings();
-  }, [dispatch, tournament?.name, tournamentId]);
+  }, [getStandings]);
 
   useEffect(() => {
     document.title = `${tournament?.name} | Tournament`;
@@ -36,6 +39,20 @@ const Tournament: React.FC = () => {
       document.title = 'Турнір прогнозистів | Footbet';
     };
   }, [tournament?.name]);
+
+  useEffect(() => {
+    socket.on('matchUpdated', (updatedMatch: IMatch) => {
+      playNotification();
+      notify.success(
+        `${updatedMatch.homeTeam.name} ${updatedMatch.homeScore}-${updatedMatch.awayScore} ${updatedMatch.awayTeam.name}`,
+        5000,
+      );
+      getStandings();
+    });
+    return () => {
+      socket.off('matchUpdated');
+    };
+  }, [getStandings]);
 
   return (
     <div className={styles.tournament}>

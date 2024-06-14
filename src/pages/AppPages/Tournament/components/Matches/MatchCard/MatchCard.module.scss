@@ -152,29 +152,39 @@
   }
   &Points {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background-color: #555555;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
+    top: 0.5rem;
+    right: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    &.success {
-      background-color: #2fbe2f;
+    &Reward {
+      background-color: #555555;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &.success {
+        background-color: #2fbe2f;
+      }
+      &.norm {
+        background-color: #9b7f00;
+      }
+      &.bad {
+        background-color: #ee0202;
+      }
+      > span {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #fff;
+      }
     }
-    &.norm {
-      background-color: #9b7f00;
-    }
-    &.bad {
-      background-color: #ee0202;
-    }
-    > span {
-      font-size: 1rem;
-      font-weight: 600;
-      color: #fff;
-    }
+  }
+  &Predicts {
+    padding: 0;
+    transform: rotate(90deg);
+    padding: 0.5rem;
   }
 }
 

@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import Header from './Header/Header';
 import Button from 'components/Button/Button';
 import { getUserProfile } from 'store/slices/user';
+import socket from 'socket';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,6 +23,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     fetchData();
   }, [dispatch]);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on('connect', () => {
+      console.log('Connected to socket server');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Disconnected from socket server');
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   return (
     <div className={styles.layout}>

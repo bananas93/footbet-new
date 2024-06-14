@@ -13,3 +13,8 @@ export const sliceMatches = (matches: IGames[], groupMatchNumber: number) => {
   const knockoutMatches = matches.slice(groupMatchNumber);
   return { groupMatches, knockoutMatches };
 };
+
+export const playNotification = () => {
+  const audio = new Audio('/notification.mp3');
+  audio.play();
+};

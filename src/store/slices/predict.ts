@@ -43,9 +43,15 @@ export const getPredictsTable = createAsyncThunk('predict/getPredictsTable', asy
   return response.data;
 });
 
+export const getMatchPredicts = createAsyncThunk('predict/getMatchPredicts', async (matchId: number) => {
+  const response: AxiosResponse<IPredict[]> = await http.api.get(`/predict/match/${matchId}`);
+  return response.data;
+});
+
 interface IPredictState {
   setPredictRequest: IHttpRequestResult<ISetPredictResponse>;
   getPredictsTableRequest: IHttpRequestResult<IPredictTableResponse[]>;
+  getMatchPredictsRequest: IHttpRequestResult<IPredict[]>;
   table: {
     [key: number]: IPredictTableResponse[];
   };
@@ -54,6 +60,7 @@ interface IPredictState {
 const initialState: IPredictState = {
   setPredictRequest: createHttpRequestInitResult(),
   getPredictsTableRequest: createHttpRequestInitResult(),
+  getMatchPredictsRequest: createHttpRequestInitResult(),
   table: {},
 };
 
@@ -67,6 +74,7 @@ export const PredictSlice = createSlice({
       const tournamentId = action.meta.arg;
       state.table[tournamentId] = action.payload || [];
     });
+    createExtraReducersForResponses(builder, getMatchPredicts, 'getMatchPredictsRequest');
   },
 });
 

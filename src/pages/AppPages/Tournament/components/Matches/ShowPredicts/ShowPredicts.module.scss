@@ -1,0 +1,42 @@
+.table {
+  display: flex;
+  justify-content: space-between;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #ebebeb;
+  &:last-of-type,
+  &:first-of-type {
+    border-bottom: none;
+  }
+  &Col {
+    flex: 1;
+    padding: 1rem 1rem 1rem 0;
+    &:first-child {
+      flex: 0 0 55%;
+      max-width: 55%;
+      text-align: left;
+    }
+    &:last-child {
+      text-align: right;
+    }
+    &.head {
+      font-size: 0.8125rem;
+      font-weight: 500;
+    }
+  }
+}
+
+.result {
+  margin-bottom: 1rem;
+}
+
+@media screen and (max-width: 40em) {
+  .table {
+    &Col {
+      padding: 0.75rem 0.5rem 0.75rem 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 0.875rem;
+    }
+  }
+}

@@ -35,6 +35,6 @@ export const MatchSlice = createSlice({
   },
 });
 
-// export const {} = MatchSlice.actions;
+// export const { } = MatchSlice.actions;
 
 export default MatchSlice.reducer;

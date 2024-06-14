@@ -5,6 +5,7 @@ import matchReducer from './slices/match';
 import roomReducer from './slices/room';
 import predictReducer from './slices/predict';
 import userReducer from './slices/user';
+import socketReducer from './slices/socket';
 
 const saveState = (state: RootState) => {
   try {
@@ -35,6 +36,7 @@ const rootReducer = combineReducers({
   room: roomReducer,
   predict: predictReducer,
   user: userReducer,
+  socket: socketReducer,
 });
 
 const preloadedState = loadState();
