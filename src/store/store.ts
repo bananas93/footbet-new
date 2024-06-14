@@ -10,7 +10,7 @@ import socketReducer from './slices/socket';
 const saveState = (state: RootState) => {
   try {
     const serializedState = JSON.stringify(state);
-    localStorage.setItem('reduxState', serializedState);
+    sessionStorage.setItem('reduxState', serializedState);
   } catch (e) {
     console.error('Could not save state', e);
   }
@@ -18,7 +18,7 @@ const saveState = (state: RootState) => {
 
 const loadState = () => {
   try {
-    const serializedState = localStorage.getItem('reduxState');
+    const serializedState = sessionStorage.getItem('reduxState');
     if (serializedState === null) {
       return undefined;
     }
