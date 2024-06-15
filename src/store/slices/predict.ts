@@ -7,7 +7,6 @@ import { getMatches } from './match';
 
 interface ISetPredictPayload {
   matchId: number;
-  userId: number;
   homeScore: number;
   awayScore: number;
   tournamentId: number;

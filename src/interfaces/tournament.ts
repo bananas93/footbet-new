@@ -29,6 +29,7 @@ export interface IStandingsItem {
   goalsScored: number;
   goalsAgainst: number;
   points: number;
+  form: string[];
 }
 
 export interface IStandings {

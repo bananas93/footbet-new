@@ -73,15 +73,15 @@
         border-radius: 999px;
         height: 1rem;
         width: 1rem;
-        &.win {
+        &.won {
           background-color: #14b168;
           border-color: #14b168;
         }
-        &.draw {
+        &.drawn {
           background-color: #a4a9b3;
           border-color: #a4a9b3;
         }
-        &.lose {
+        &.lost {
           background-color: #c7361f;
           border-color: #c7361f;
         }

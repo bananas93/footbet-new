@@ -31,7 +31,6 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
     try {
       const predict = {
         matchId: match.id,
-        userId: 1,
         homeScore: Number(home),
         awayScore: Number(away),
         tournamentId: tournament.id,

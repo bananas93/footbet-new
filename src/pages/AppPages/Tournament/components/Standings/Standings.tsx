@@ -2,9 +2,9 @@ import cn from 'classnames';
 import { useAppSelector } from 'store';
 import { useTournament } from '../../Tournament';
 import { IStandingsItem } from 'interfaces';
-import styles from './Standings.module.scss';
 import { Card } from 'components';
 import { useMobile } from 'hooks';
+import styles from './Standings.module.scss';
 
 const Standings: React.FC = () => {
   const { tournament } = useTournament();
@@ -65,9 +65,9 @@ const Standings: React.FC = () => {
                     <p className={styles.groupInfo}>{`${item.goalsScored}:${item.goalsAgainst}`}</p>
                     <p className={styles.groupInfo}>
                       <div className={styles.groupInfoForm}>
-                        <span />
-                        <span />
-                        <span />
+                        {item.form.map((form) => (
+                          <span className={cn(styles[form])} />
+                        ))}
                       </div>
                     </p>
                     <p className={styles.groupInfo}>{item.points}</p>
