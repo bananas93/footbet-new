@@ -33,5 +33,8 @@ export interface IStandingsItem {
 }
 
 export interface IStandings {
-  [key: string]: IStandingsItem[];
+  standings: {
+    [key: string]: IStandingsItem[];
+  };
+  thirdPlacesStandings: IStandingsItem[];
 }

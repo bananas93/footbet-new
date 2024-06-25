@@ -34,18 +34,19 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
           {match.homeScore} - {match.awayScore}
         </strong>
       </div>
-      {isLoading ? (
-        <div>
-          <Skeleton count={5} />
+
+      <div>
+        <div className={styles.table}>
+          <div className={cn(styles.tableCol, styles.head)}>Ім'я</div>
+          <div className={cn(styles.tableCol, styles.head)}>Прогноз</div>
+          <div className={cn(styles.tableCol, styles.head)}>Очки</div>
         </div>
-      ) : (
-        <div>
-          <div className={styles.table}>
-            <div className={cn(styles.tableCol, styles.head)}>Ім'я</div>
-            <div className={cn(styles.tableCol, styles.head)}>Прогноз</div>
-            <div className={cn(styles.tableCol, styles.head)}>Очки</div>
+        {isLoading ? (
+          <div>
+            <Skeleton count={7} className={styles.loading} />
           </div>
-          {data?.map((item) => (
+        ) : (
+          data?.map((item) => (
             <div className={styles.table} key={item.id}>
               <div className={styles.tableCol}>
                 <strong>{item.user.name}</strong>
@@ -59,9 +60,9 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
             <div className={styles.table}>
               <div className={styles.tableCol}>Прогнозів немає</div>
             </div>
-          )}
-        </div>
-      )}
+          )
+        )}
+      </div>
     </Modal>
   );
 };

@@ -21,6 +21,12 @@
   &Col {
     flex: 1;
     padding: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    &:first-child {
+      font-weight: 600;
+    }
     &.head {
       font-size: 0.8125rem;
       font-weight: 500;
@@ -36,6 +42,22 @@
 @media screen and (max-width: 40em) {
   .table {
     &Col {
+      padding: 1rem 0.5rem;
+      text-align: right;
+      &:first-child {
+        flex: 0 0 42%;
+        max-width: 42%;
+        text-align: left;
+        font-size: 0.875rem;
+      }
+      &:nth-child(2) {
+        flex: 0 0 15%;
+        max-width: 15%;
+      }
+      &:last-child {
+        flex: 0 0 18%;
+        max-width: 18%;
+      }
       &.hidden {
         display: none;
       }

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useAppSelector } from 'store';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useTournament } from '../../Tournament';
@@ -5,15 +6,37 @@ import MatchCard from './MatchCard/MatchCard';
 import { normalizeKnockoutRoundName, sliceMatches } from 'helpers';
 import styles from './Matches.module.scss';
 import { Card } from 'components';
+import { useEffect, useState } from 'react';
 
 const Matches: React.FC = () => {
   const { tournament } = useTournament();
+
+  const [activeTab, setActiveTab] = useState<number>(0);
+
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
+  };
 
   const matches = useAppSelector((state) => state.match.matches)[tournament.id] || [];
   const { groupMatchNumber, knockoutRound, thirdPlaceMatch } = tournament;
   const knockoutRounds = normalizeKnockoutRoundName(knockoutRound, thirdPlaceMatch);
 
   const { groupMatches, knockoutMatches } = sliceMatches(matches, groupMatchNumber);
+
+  useEffect(() => {
+    if (matches.length > 0) {
+      const currentDate = new Date();
+      matches.forEach((group, index) => {
+        const { startDate, endDate } = group;
+        if (
+          new Date(startDate).getTime() <= currentDate.getTime() &&
+          currentDate.getTime() <= new Date(endDate).getTime()
+        ) {
+          setActiveTab(index);
+        }
+      });
+    }
+  }, []);
 
   if (matches.length === 0) {
     return (
@@ -26,7 +49,7 @@ const Matches: React.FC = () => {
   }
 
   return (
-    <Tabs className="tabs">
+    <Tabs className="tabs" selectedIndex={activeTab} onSelect={handleTabChange}>
       <TabList className="tabs__list">
         {Array.from({ length: groupMatches.length }, (_, i) => (
           <Tab className="tabs__name" key={i + 1}>

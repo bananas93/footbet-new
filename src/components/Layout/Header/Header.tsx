@@ -7,8 +7,6 @@ import { NavLink } from 'react-router-dom';
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
 
-  console.log(user);
-
   return (
     <header className={styles.header}>
       <nav className={styles.headerNav}>

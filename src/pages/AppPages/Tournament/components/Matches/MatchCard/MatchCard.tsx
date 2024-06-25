@@ -5,11 +5,10 @@ import { IMatch, ITournament } from 'interfaces';
 import { normalizeMatchDate, normalizeMatchTime, notify } from 'helpers';
 import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
-import styles from './MatchCard.module.scss';
-import { useMatchMinute } from 'hooks';
 import ShowPredicts from '../ShowPredicts/ShowPredicts';
 import useModal from 'hooks/useModal';
 import { MoreIcon } from 'assets/icons';
+import styles from './MatchCard.module.scss';
 
 interface MatchCardProps {
   match: IMatch;
@@ -18,7 +17,6 @@ interface MatchCardProps {
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const dispatch = useAppDispatch();
-  const matchMinute = useMatchMinute(match);
 
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -72,17 +70,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
 
   return (
     <>
-      <Card className={styles.match}>
+      <Card className={cn(styles.match, { [styles.live]: match.status === 'Live' })}>
         <div className={cn(styles.matchToast, { [styles.shown]: toastShown })}>Прогноз збережено</div>
         {match.status === 'Live' && (
           <div className={styles.matchLive}>
             <span className={styles.matchLiveBlock}>
               <span></span>
               Live
-            </span>
-            <span className={styles.matchMinute}>
-              {matchMinute}
-              <span>'</span>
             </span>
           </div>
         )}
@@ -93,7 +87,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                 className={cn(styles.matchPointsReward, {
                   [styles.success]: match?.predict?.points > 4,
                   [styles.norm]: match?.predict?.points > 0 && match?.predict?.points < 5,
-                  [styles.bad]: match?.predict?.points === 0,
+                  [styles.bad]: Number(match?.predict?.points) === 0,
                 })}>
                 <span>{match?.predict?.points || 0}</span>
               </div>
@@ -106,6 +100,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
             {match.groupName && (
               <div className={styles.matchGroup}>
                 <span className={styles.matchGroupName}>Група {match.groupName}</span>
+              </div>
+            )}
+            {match.stage !== 'Group Stage' && (
+              <div className={styles.matchGroup}>
+                <span className={styles.matchGroupName}>{match.stage}</span>
               </div>
             )}
             <div className={styles.matchDate}>

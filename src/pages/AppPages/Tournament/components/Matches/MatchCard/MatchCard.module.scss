@@ -2,6 +2,10 @@
   padding: 1rem !important;
   position: relative;
   overflow: hidden;
+  border: 1px solid #fff;
+  &.live {
+    border-color: #ee0202;
+  }
   &Toast {
     position: absolute;
     top: -3rem;
@@ -48,6 +52,7 @@
         background-color: #fff;
         border-radius: 50%;
         display: inline-block;
+        animation: blink 1.5s infinite;
       }
     }
   }
@@ -167,17 +172,19 @@
       justify-content: center;
       &.success {
         background-color: #2fbe2f;
+        color: #fff;
       }
       &.norm {
         background-color: #9b7f00;
+        color: #fff;
       }
       &.bad {
-        background-color: #ee0202;
+        background-color: #ad6161;
+        color: #fff;
       }
       > span {
         font-size: 0.8125rem;
         font-weight: 500;
-        color: #fff;
       }
     }
   }

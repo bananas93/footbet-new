@@ -54,6 +54,8 @@ export interface IGames {
   id: number;
   data: IMatch[];
   stage: string;
+  startDate: Date;
+  endDate: Date;
 }
 
 export interface IMatch {

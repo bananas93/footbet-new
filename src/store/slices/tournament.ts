@@ -14,14 +14,14 @@ export const getOneTournament = createAsyncThunk('tournament/getOneTournament', 
 });
 
 export const getTournamentStandings = createAsyncThunk('tournament/getTournamentStandings', async (id: number) => {
-  const response: AxiosResponse<IStandings[]> = await http.api.get(`/tournament/${id}/standings`);
+  const response: AxiosResponse<IStandings> = await http.api.get(`/tournament/${id}/standings`);
   return response.data;
 });
 
 interface ITournamentState {
   tournaments: ITournament[];
   standings: {
-    [key: string]: IStandings[];
+    [key: string]: IStandings;
   };
   getTournamentsRequest: IHttpRequestResult<ITournament>;
   getOneTournamentRequest: IHttpRequestResult<ITournament>;

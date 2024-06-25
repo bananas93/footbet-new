@@ -47,7 +47,7 @@ export const useForm = <T>(
   };
 
   const handleFocus = (fieldName: string) => {
-    //setErrors((prevErrors) => ({ ...prevErrors, [fieldName]: '' }));
+    setErrors((prevErrors) => ({ ...prevErrors, [fieldName]: '' }));
   };
 
   const handleBlur = (fieldName: string) => {
