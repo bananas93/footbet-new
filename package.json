@@ -2,6 +2,7 @@
   "name": "footbet-new",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://bananas93.github.io/footbet-new",
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.5",
     "@testing-library/jest-dom": "^5.17.0",
