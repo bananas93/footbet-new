@@ -15,6 +15,7 @@
     "axios": "^1.7.2",
     "classnames": "^2.5.1",
     "env-cmd": "^10.1.0",
+    "gh-pages": "^6.1.1",
     "i": "^0.3.7",
     "npm": "^10.8.1",
     "react": "^18.3.1",
@@ -36,6 +37,8 @@
     "start": "env-cmd -f .env react-scripts start",
     "build:dev": "env-cmd -f .env.develop react-scripts build",
     "build": "env-cmd -f .env react-scripts build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
