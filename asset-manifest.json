@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/static/css/main.96326310.css",
-    "main.js": "/static/js/main.88fa6645.js",
-    "static/media/login.avif": "/static/media/login.309331660335343547fe.avif",
-    "index.html": "/index.html",
-    "static/media/close.svg": "/static/media/close.b494c1829dff5873cc3735955d4bcf7d.svg",
-    "static/media/google-icon.svg": "/static/media/google-icon.0bf3db0ea1a96c94628ffc2025804830.svg",
-    "static/media/more-icon.svg": "/static/media/more-icon.bbecddd2250c74ee3727e93a2a8eac78.svg",
-    "main.96326310.css.map": "/static/css/main.96326310.css.map",
-    "main.88fa6645.js.map": "/static/js/main.88fa6645.js.map"
+    "main.css": "/footbet-new/static/css/main.96326310.css",
+    "main.js": "/footbet-new/static/js/main.02a68784.js",
+    "static/media/login.avif": "/footbet-new/static/media/login.309331660335343547fe.avif",
+    "index.html": "/footbet-new/index.html",
+    "static/media/close.svg": "/footbet-new/static/media/close.b494c1829dff5873cc3735955d4bcf7d.svg",
+    "static/media/google-icon.svg": "/footbet-new/static/media/google-icon.0bf3db0ea1a96c94628ffc2025804830.svg",
+    "static/media/more-icon.svg": "/footbet-new/static/media/more-icon.bbecddd2250c74ee3727e93a2a8eac78.svg",
+    "main.96326310.css.map": "/footbet-new/static/css/main.96326310.css.map",
+    "main.02a68784.js.map": "/footbet-new/static/js/main.02a68784.js.map"
   },
   "entrypoints": [
     "static/css/main.96326310.css",
-    "static/js/main.88fa6645.js"
+    "static/js/main.02a68784.js"
   ]
 }
