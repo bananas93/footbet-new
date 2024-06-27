@@ -36,7 +36,7 @@ const Matches: React.FC = () => {
         }
       });
     }
-  }, []);
+  }, [matches]);
 
   if (matches.length === 0) {
     return (
