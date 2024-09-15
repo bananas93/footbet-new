@@ -25,6 +25,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     &:first-child {
+      flex: 0 0 3%;
+      max-width: 3%;
+    }
+    &:nth-child(2) {
       font-weight: 600;
     }
     &.head {
@@ -45,12 +49,17 @@
       padding: 1rem 0.5rem;
       text-align: right;
       &:first-child {
+        flex: 0 0 7%;
+        max-width: 7%;
+        font-size: 0.875rem;
+      }
+      &:nth-child(2) {
         flex: 0 0 42%;
         max-width: 42%;
         text-align: left;
         font-size: 0.875rem;
       }
-      &:nth-child(2) {
+      &:nth-child(3) {
         flex: 0 0 15%;
         max-width: 15%;
       }

@@ -6,6 +6,7 @@ import roomReducer from './slices/room';
 import predictReducer from './slices/predict';
 import userReducer from './slices/user';
 import socketReducer from './slices/socket';
+import profileReducer from './slices/profile';
 
 const saveState = (state: RootState) => {
   try {
@@ -34,6 +35,7 @@ const rootReducer = combineReducers({
   tournament: tournamentReducer,
   match: matchReducer,
   room: roomReducer,
+  profile: profileReducer,
   predict: predictReducer,
   user: userReducer,
   socket: socketReducer,

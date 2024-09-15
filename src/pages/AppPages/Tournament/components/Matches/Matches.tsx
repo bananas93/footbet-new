@@ -25,16 +25,29 @@ const Matches: React.FC = () => {
 
   useEffect(() => {
     if (matches.length > 0) {
-      const currentDate = new Date();
-      matches.forEach((group, index) => {
-        const { startDate, endDate } = group;
-        if (
-          new Date(startDate).getTime() <= currentDate.getTime() &&
-          currentDate.getTime() <= new Date(endDate).getTime()
-        ) {
-          setActiveTab(index);
-        }
+      const currentDate = new Date().getTime();
+
+      if (currentDate < new Date(matches[0].startDate).getTime()) {
+        setActiveTab(0);
+        return;
+      }
+
+      if (currentDate > new Date(matches[matches.length - 1].endDate).getTime()) {
+        setActiveTab(matches.length - 1);
+        return;
+      }
+
+      const activeIndex = matches.findIndex(({ startDate, endDate }) => {
+        const start = new Date(startDate).getTime();
+        const end = new Date(endDate).getTime();
+        return start <= currentDate && currentDate <= end;
       });
+
+      if (activeIndex !== -1) {
+        setActiveTab(activeIndex);
+      } else {
+        setActiveTab(0);
+      }
     }
   }, [matches]);
 

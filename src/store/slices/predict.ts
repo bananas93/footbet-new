@@ -20,6 +20,7 @@ interface ISetPredictResponse {
 export interface IPredictTableResponse {
   id: number;
   name: string;
+  totalMatches: number;
   points: number;
   correctScore: number;
   correctDifference: number;

@@ -6,6 +6,9 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  &.one {
+    grid-template-columns: 1fr;
+  }
   &:not(:last-child) {
     margin-bottom: 2rem;
   }
@@ -42,7 +45,7 @@
         background-color: #0b5102;
         color: #fff;
       }
-      &.third {
+      &.knockout {
         background-color: rgb(34, 24, 175);
         color: #fff;
       }

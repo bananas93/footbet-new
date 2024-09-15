@@ -96,7 +96,7 @@ const Tournament: React.FC = () => {
             {/* <li className={styles.tournamentNavListItem}>
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament.id}/achievements`}>
+                to={`/tournament/${tournament?.id}/achievements`}>
                 Досягнення
               </NavLink>
             </li> */}

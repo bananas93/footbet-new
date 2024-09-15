@@ -8,6 +8,8 @@ export interface ITournament {
   groupNumber: number;
   groupMatchNumber: number;
   knockoutRound: number;
+  directNextRound: number;
+  playoffRound: number;
   thirdPlaceMatch: boolean;
   hasTable: boolean;
   leagues: number;
