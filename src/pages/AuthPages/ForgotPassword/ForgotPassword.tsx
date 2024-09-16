@@ -4,7 +4,7 @@ import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { resetPassword } from 'store/slices/auth';
 import styles from './ForgotPassword.module.scss';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 
 interface FormValues {
@@ -20,6 +20,7 @@ const validationRules = {
 };
 
 const ForgotPassword: React.FC = () => {
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.resetPasswordRequest);
 
@@ -34,6 +35,7 @@ const ForgotPassword: React.FC = () => {
   const handleResetPassword = async (formValues: FormValues) => {
     try {
       await dispatch(resetPassword(formValues)).unwrap();
+      navigate(AuthRoutesEnum.CheckCode, { state: formValues.email });
       notify.success('Посилання для відновлення паролю відправлено на ваш email');
     } catch (err: any) {
       notify.error(err.message || 'Помилка відправлення посилання для відновлення паролю');
