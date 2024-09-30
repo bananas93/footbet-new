@@ -1,5 +1,5 @@
 .home {
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   &Row {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
@@ -22,7 +22,7 @@
 
 @media screen and (max-width: 40em) {
   .home {
-    padding: 1rem;
+    padding: 4rem 1rem 1rem;
     &Row {
       grid-template-columns: initial;
     }

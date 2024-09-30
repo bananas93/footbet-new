@@ -69,8 +69,8 @@ const Standings: React.FC = () => {
                     <p className={styles.groupInfo}>{`${item.goalsScored}:${item.goalsAgainst}`}</p>
                     <div className={styles.groupInfo}>
                       <div className={styles.groupInfoForm}>
-                        {item.form.map((form) => (
-                          <span key={form} className={cn(styles[form])} />
+                        {item.form.slice(isMobile ? -3 : 0).map((form, index) => (
+                          <span key={index} className={cn(styles[form])} />
                         ))}
                       </div>
                     </div>
@@ -128,8 +128,8 @@ const Standings: React.FC = () => {
                   <p className={styles.groupInfo}>{`${item.goalsScored}:${item.goalsAgainst}`}</p>
                   <p className={styles.groupInfo}>
                     <div className={styles.groupInfoForm}>
-                      {item.form.map((form) => (
-                        <span key={form} className={cn(styles[form])} />
+                      {item.form.map((form, index) => (
+                        <span key={index} className={cn(styles[form])} />
                       ))}
                     </div>
                   </p>

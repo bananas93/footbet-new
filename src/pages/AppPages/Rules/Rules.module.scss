@@ -1,5 +1,5 @@
 .rules {
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
   &Title {
     font-size: 2rem;
     font-weight: 700;
@@ -27,5 +27,11 @@
         margin-bottom: 0;
       }
     }
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .rules {
+    padding: 4rem 1rem 1rem;
   }
 }

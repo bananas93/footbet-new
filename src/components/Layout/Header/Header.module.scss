@@ -1,13 +1,16 @@
 .header {
+  align-items: center;
+  background-color: #f4f4f469;
+  box-shadow: 0 2px 4px #0000001a;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 1rem 2rem;
-  background-color: #f4f4f4;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky;
+  position: fixed;
+  right: 0;
+  left: 0;
   top: 0;
   z-index: 100;
+  backdrop-filter: blur(20px);
   &User {
     display: flex;
     align-items: center;

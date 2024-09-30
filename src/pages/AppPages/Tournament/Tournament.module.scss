@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   &Header {
-    padding: 1rem 2rem;
+    padding: 5rem 2rem 1rem;
     overflow: hidden;
     position: relative;
   }
@@ -99,7 +99,7 @@
 @media screen and (max-width: 48em) {
   .tournament {
     &Header {
-      padding: 1rem 1rem 0;
+      padding: 4rem 1rem 0;
     }
     &Head {
       gap: 1rem;
@@ -108,8 +108,9 @@
       font-size: 1.5rem;
     }
     &Logo {
-      width: 6rem;
-      height: 6rem;
+      height: 5rem;
+      width: 5rem;
+      flex: 0 0 5rem;
     }
     &Nav {
       position: static;
