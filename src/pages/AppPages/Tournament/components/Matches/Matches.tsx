@@ -1,20 +1,27 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useAppSelector } from 'store';
+import { useAppDispatch, useAppSelector } from 'store';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useTournament } from '../../Tournament';
 import MatchCard from './MatchCard/MatchCard';
 import { normalizeKnockoutRoundName, sliceMatches } from 'helpers';
 import styles from './Matches.module.scss';
-import { Card } from 'components';
+import { Card, Switcher } from 'components';
 import { useEffect, useState } from 'react';
+import { toggleOnlyLiveMatches } from 'store/slices/user';
 
 const Matches: React.FC = () => {
+  const dispatch = useAppDispatch();
   const { tournament } = useTournament();
 
   const [activeTab, setActiveTab] = useState<number>(0);
 
   const handleTabChange = (index: number) => {
     setActiveTab(index);
+  };
+
+  const { onlyLiveMatches } = useAppSelector((state) => state.user);
+  const toggleLiveMatches = () => {
+    dispatch(toggleOnlyLiveMatches());
   };
 
   const matches = useAppSelector((state) => state.match.matches)[tournament.id] || [];
@@ -24,20 +31,22 @@ const Matches: React.FC = () => {
   const { groupMatches, knockoutMatches } = sliceMatches(matches, groupMatchNumber);
 
   useEffect(() => {
-    if (matches.length > 0) {
-      const today = new Date().setHours(0, 0, 0, 0);
-      const activeIndex = matches.findIndex((match, index) => {
-        const matchStartDate = new Date(match.startDate).setHours(0, 0, 0, 0);
-        const nextMatchStartDate =
-          index < matches.length - 1
-            ? new Date(matches[index + 1].startDate).setHours(0, 0, 0, 0)
-            : new Date(match.endDate).setHours(0, 0, 0, 0);
+    setTimeout(() => {
+      if (matches.length > 0) {
+        const today = new Date().setHours(0, 0, 0, 0);
+        const activeIndex = matches.findIndex((match, index) => {
+          const matchStartDate = new Date(match.startDate).setHours(0, 0, 0, 0);
+          const nextMatchStartDate =
+            index < matches.length - 1
+              ? new Date(matches[index + 1].startDate).setHours(0, 0, 0, 0)
+              : new Date(match.endDate).setHours(0, 0, 0, 0);
 
-        return today >= matchStartDate && today < nextMatchStartDate;
-      });
+          return today >= matchStartDate && today < nextMatchStartDate;
+        });
 
-      setActiveTab(activeIndex !== -1 ? activeIndex : 0);
-    }
+        setActiveTab(activeIndex !== -1 ? activeIndex : 0);
+      }
+    }, 0);
   }, []);
 
   if (matches.length === 0) {
@@ -68,10 +77,13 @@ const Matches: React.FC = () => {
       {Array.from({ length: groupMatches.length }, (_, i) => (
         <TabPanel className="tabs__panel" key={i + 1}>
           <div className={styles.container}>
+            <Switcher label="Live" value={onlyLiveMatches} onChange={toggleLiveMatches} className={styles.switcher} />
             <div className={styles.matches}>
-              {groupMatches[i]?.data.map((match) => (
-                <MatchCard key={match.id} match={match} tournament={tournament} />
-              ))}
+              {groupMatches[i]?.data
+                .filter((match) => (onlyLiveMatches ? match.status === 'Live' : match))
+                .map((match) => (
+                  <MatchCard key={match.id} match={match} tournament={tournament} />
+                ))}
             </div>
           </div>
         </TabPanel>
@@ -80,10 +92,13 @@ const Matches: React.FC = () => {
         Array.from({ length: knockoutRounds.length }, (_, i) => (
           <TabPanel className="tabs__panel" key={groupMatches.length + i + 1}>
             <div className={styles.container}>
+              <Switcher label="Live" value={onlyLiveMatches} onChange={toggleLiveMatches} className={styles.switcher} />
               <div className={styles.matches}>
-                {knockoutMatches[i]?.data.map((match) => (
-                  <MatchCard key={match.id} match={match} tournament={tournament} />
-                ))}
+                {knockoutMatches[i]?.data
+                  .filter((match) => (onlyLiveMatches ? match.status === 'Live' : match))
+                  .map((match) => (
+                    <MatchCard key={match.id} match={match} tournament={tournament} />
+                  ))}
               </div>
             </div>
           </TabPanel>

@@ -25,6 +25,7 @@ export const changeUserPassword = createAsyncThunk('user/changeUserPassword', as
 
 interface IUserState {
   user: IUser | null;
+  onlyLiveMatches: boolean;
   getUserProfileRequest: IHttpRequestResult<IUser>;
   editUserProfileRequest: IHttpRequestResult<IUser>;
   changeUserPasswordRequest: IHttpRequestResult<void>;
@@ -32,6 +33,7 @@ interface IUserState {
 
 const initialState: IUserState = {
   user: null,
+  onlyLiveMatches: localStorage.getItem('onlyLiveMatches') === '1',
   getUserProfileRequest: createHttpRequestInitResult(),
   editUserProfileRequest: createHttpRequestInitResult(),
   changeUserPasswordRequest: createHttpRequestInitResult(),
@@ -40,7 +42,12 @@ const initialState: IUserState = {
 export const UserSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    toggleOnlyLiveMatches: (state) => {
+      state.onlyLiveMatches = !state.onlyLiveMatches;
+      localStorage.setItem('onlyLiveMatches', state.onlyLiveMatches ? '1' : '0');
+    },
+  },
   extraReducers: (builder) => {
     createExtraReducersForResponses(builder, getUserProfile, 'getUserProfileRequest', (state, action) => {
       state.user = action.payload;
@@ -50,6 +57,6 @@ export const UserSlice = createSlice({
   },
 });
 
-// export const {} = UserSlice.actions;
+export const { toggleOnlyLiveMatches } = UserSlice.actions;
 
 export default UserSlice.reducer;

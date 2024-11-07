@@ -5,5 +5,6 @@ import Button from './Button/Button';
 import Card from './Card/Card';
 import Modal from './Modal/Modal';
 import Checkbox from './Checkbox/Checkbox';
+import Switcher from './Switcher/Switcher';
 
-export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox };
+export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox, Switcher };
