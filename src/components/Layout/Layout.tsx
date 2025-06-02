@@ -1,11 +1,10 @@
-import { useAppDispatch } from 'store';
-import styles from './Layout.module.scss';
-import { getTournaments } from 'store/slices/tournament';
 import { useEffect } from 'react';
-import Header from './Header/Header';
-import Button from 'components/Button/Button';
-import { getUserProfile } from 'store/slices/user';
 import socket from 'socket';
+import { useAppDispatch } from 'store';
+import { getTournaments } from 'store/slices/tournament';
+import Header from './Header/Header';
+import { getUserProfile } from 'store/slices/user';
+import styles from './Layout.module.scss';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,12 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <Header />
       <main className={styles.main}>{children}</main>
       <footer className={styles.footer}>
-        <p className={styles.footerCopy}>
-          Footbet.pp.ua &copy; {currentYear} Created by David Amerov |{' '}
-          <Button variant="link" target="_blank" href="https://send.monobank.ua/jar/3xKBpcQqCk">
-            Допомогти проєкту
-          </Button>
-        </p>
+        <p className={styles.footerCopy}>Footbet.pp.ua &copy; {currentYear}</p>
       </footer>
     </div>
   );
