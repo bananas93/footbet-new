@@ -49,7 +49,7 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
           data?.map((item) => (
             <div className={styles.table} key={item.id}>
               <div className={styles.tableCol}>
-                <strong>{item.user.name}</strong>
+                <strong>{item.user?.name || 'Unknown user'}</strong>
               </div>
               <div className={styles.tableCol}>
                 {item.homeScore} - {item.awayScore}

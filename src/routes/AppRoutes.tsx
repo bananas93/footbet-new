@@ -4,6 +4,7 @@ import Rules from 'pages/AppPages/Rules/Rules';
 import Achievements from 'pages/AppPages/Tournament/components/Achievements/Achievements';
 import Leagues from 'pages/AppPages/Tournament/components/Leagues/Leagues';
 import Matches from 'pages/AppPages/Tournament/components/Matches/Matches';
+import Rooms from 'pages/AppPages/Tournament/components/Rooms/Rooms';
 import Standings from 'pages/AppPages/Tournament/components/Standings/Standings';
 import { Navigate, useRoutes } from 'react-router-dom';
 
@@ -25,6 +26,7 @@ export const AppRoutes = () => {
         { path: '', element: <Matches /> },
         { path: 'standings', element: <Standings /> },
         { path: 'leagues', element: <Leagues /> },
+        { path: 'rooms', element: <Rooms /> },
         { path: 'achievements', element: <Achievements /> },
       ],
     },

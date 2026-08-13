@@ -4,11 +4,10 @@ export interface IParticipant {
 }
 
 export interface IRoom {
-  id: string;
+  id: number;
   name: string;
   type: 'public' | 'private';
-  password?: string;
-  inviteUrl?: string;
+  inviteCode?: string;
   participants: IParticipant[];
   creator: IParticipant;
   createdAt: string;

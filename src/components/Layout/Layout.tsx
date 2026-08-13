@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import socket from 'socket';
 import { useAppDispatch } from 'store';
 import { getTournaments } from 'store/slices/tournament';
 import Header from './Header/Header';
@@ -22,22 +21,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     fetchData();
   }, [dispatch]);
-
-  useEffect(() => {
-    socket.connect();
-
-    socket.on('connect', () => {
-      console.log('Connected to socket server');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('Disconnected from socket server');
-    });
-
-    return () => {
-      socket.disconnect();
-    };
-  }, []);
 
   return (
     <div className={styles.layout}>

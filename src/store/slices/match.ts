@@ -1,13 +1,119 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, http } from 'helpers';
-import { AxiosResponse } from 'axios';
-import { IGames, IHttpRequestResult } from 'interfaces';
+import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
+import { IGames, IHttpRequestResult, IMatch, MatchStage } from 'interfaces';
 
 export const getMatches = createAsyncThunk(
   'match/getMatches',
   async ({ tournamentId, _background = false }: { tournamentId: number; _background?: boolean }) => {
-    const response: AxiosResponse<IGames[]> = await http.api.get(`/match/all/${tournamentId}`);
-    return response.data;
+    const {
+      data: authData,
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError) {
+      throw new Error(authError.message);
+    }
+
+    const userId = authData.user?.id;
+
+    const { data: matchesRaw, error: matchesError } = await supabase
+      .from('matches')
+      .select(
+        `
+        id,
+        stage,
+        group_tour,
+        status,
+        result,
+        group_name,
+        home_score,
+        away_score,
+        match_date,
+        tournament_id,
+        home_team_id,
+        away_team_id,
+        created_at,
+        updated_at,
+        homeTeam:teams!matches_home_team_id_fkey(id, name, logo),
+        awayTeam:teams!matches_away_team_id_fkey(id, name, logo)
+      `,
+      )
+      .eq('tournament_id', tournamentId)
+      .order('match_date', { ascending: true });
+
+    if (matchesError) {
+      throw new Error(matchesError.message);
+    }
+
+    let predictionsMap: Record<number, any> = {};
+    if (userId) {
+      const { data: predictionsRaw, error: predictionsError } = await supabase
+        .from('predictions')
+        .select('id, match_id, home_score, away_score, points')
+        .eq('tournament_id', tournamentId)
+        .eq('user_id', userId);
+
+      if (predictionsError) {
+        throw new Error(predictionsError.message);
+      }
+
+      predictionsMap = (predictionsRaw || []).reduce((acc: Record<number, any>, item: any) => {
+        acc[item.match_id] = item;
+        return acc;
+      }, {});
+    }
+
+    const matches = (matchesRaw || []).map((match: any) => {
+      const ownPredict = predictionsMap[match.id];
+
+      return {
+        id: match.id,
+        stage: match.stage,
+        groupTour: match.group_tour,
+        status: match.status,
+        result: match.result,
+        groupName: match.group_name,
+        homeScore: match.home_score,
+        awayScore: match.away_score,
+        matchDate: match.match_date,
+        tournamentId: match.tournament_id,
+        homeTeamId: match.home_team_id,
+        awayTeamId: match.away_team_id,
+        createdAt: match.created_at,
+        updatedAt: match.updated_at,
+        homeTeam: match.homeTeam,
+        awayTeam: match.awayTeam,
+        predict: ownPredict
+          ? {
+              id: ownPredict.id,
+              homeScore: ownPredict.home_score,
+              awayScore: ownPredict.away_score,
+              points: ownPredict.points,
+            }
+          : undefined,
+      } as IMatch;
+    });
+
+    const groupedMatches: Record<string, IMatch[]> = {};
+
+    matches.forEach((match) => {
+      const stage = match.stage === MatchStage.GROUP_STAGE ? match.groupTour : match.stage;
+      if (!groupedMatches[stage]) {
+        groupedMatches[stage] = [];
+      }
+      groupedMatches[stage].push(match);
+    });
+
+    let groupId = 1;
+    return Object.keys(groupedMatches).map((stage) => {
+      const stageMatches = groupedMatches[stage];
+      return {
+        id: groupId++,
+        stage,
+        startDate: stageMatches[0].matchDate,
+        endDate: stageMatches[stageMatches.length - 1].matchDate,
+        data: stageMatches,
+      } as IGames;
+    });
   },
 );
 

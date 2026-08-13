@@ -1,7 +1,7 @@
 import { Button, TextInput } from 'components';
 import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import styles from './SetPassword.module.scss';
 import { changePassword } from 'store/slices/auth';
@@ -27,8 +27,6 @@ const validationRules = {
 
 const SetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { email, code } = state as { email: string; code: string };
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.changePasswordRequest);
 
@@ -36,19 +34,13 @@ const SetPassword: React.FC = () => {
     { password: '', confirmPassword: '' },
     validationRules,
     (submittedValues: any) => {
-      console.log(submittedValues);
       handleChangePassword(submittedValues);
     },
   );
 
   const handleChangePassword = async (submittedValues: any) => {
     try {
-      const data = {
-        password: submittedValues.password,
-        code,
-        email,
-      };
-      await dispatch(changePassword(data)).unwrap();
+      await dispatch(changePassword({ password: submittedValues.password })).unwrap();
       navigate(AuthRoutesEnum.SignIn);
       notify.success('Пароль успішно змінено');
     } catch (error: any) {

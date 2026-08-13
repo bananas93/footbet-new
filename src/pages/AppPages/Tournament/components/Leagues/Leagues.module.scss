@@ -1,52 +1,99 @@
 .container {
-  padding: 2rem;
+  padding: 1.5rem;
+  display: block;
 }
 
-.row {
+.leagueHeader {
   display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.leagueHint {
+  margin: 0;
+  color: #5f6675;
+  font-size: 0.9rem;
+}
+
+.empty {
+  margin: 0.5rem 0;
+  color: #7a808d;
+  font-size: 0.9rem;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.counter {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  color: #646b78;
+}
+
+.tableWrap {
+  border: 1px solid #e8edf4;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.moreWrap {
+  margin-top: 1rem;
 }
 
 .table {
   display: flex;
   transition: background-color 0.2s;
-  border-bottom: 1px solid #ebebeb;
+  border-bottom: 1px solid #edf2f7;
   &:hover:not(:first-of-type) {
-    background-color: #f5f5f5;
+    background-color: #f8fafc;
     cursor: pointer;
   }
-  &:last-of-type,
-  &:first-of-type {
+  &:last-of-type {
     border-bottom: none;
   }
   &Col {
     flex: 1;
-    padding: 1rem;
+    padding: 0.8rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     &:first-child {
-      flex: 0 0 3%;
-      max-width: 3%;
+      flex: 0 0 8%;
+      max-width: 8%;
     }
     &:nth-child(2) {
       font-weight: 600;
+      flex: 1.2;
     }
     &.head {
-      font-size: 0.8125rem;
-      font-weight: 500;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.02em;
+      background: #f8fafc;
     }
   }
 }
+
 @media screen and (max-width: 48em) {
   .container {
     padding: 1rem;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
   }
 }
 
 @media screen and (max-width: 40em) {
   .table {
     &Col {
-      padding: 1rem 0.5rem;
+      padding: 0.75rem 0.45rem;
       text-align: right;
       &:first-child {
         flex: 0 0 7%;

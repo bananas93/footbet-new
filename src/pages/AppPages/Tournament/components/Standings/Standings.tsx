@@ -4,6 +4,7 @@ import { useTournament } from '../../Tournament';
 import { IStandingsItem } from 'interfaces';
 import { Card } from 'components';
 import { useMobile } from 'hooks';
+import { resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
 
 const Standings: React.FC = () => {
@@ -55,7 +56,7 @@ const Standings: React.FC = () => {
                       {index + 1}
                     </p>
                     <img
-                      src={`${process.env.REACT_APP_UPLOAD_URL}/${item.logo}`}
+                      src={resolveAssetUrl(item.logo)}
                       className={styles.groupLogo}
                       alt={item.team}
                     />
@@ -114,7 +115,7 @@ const Standings: React.FC = () => {
                     {index + 1}
                   </p>
                   <img
-                    src={`${process.env.REACT_APP_UPLOAD_URL}/${item.logo}`}
+                    src={resolveAssetUrl(item.logo)}
                     className={styles.groupLogo}
                     alt={item.team}
                   />

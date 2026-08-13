@@ -35,8 +35,8 @@ const ForgotPassword: React.FC = () => {
   const handleResetPassword = async (formValues: FormValues) => {
     try {
       await dispatch(resetPassword(formValues)).unwrap();
-      navigate(AuthRoutesEnum.CheckCode, { state: formValues.email });
-      notify.success('Посилання для відновлення паролю відправлено на ваш email');
+      navigate(AuthRoutesEnum.SignIn);
+      notify.success('Лист для відновлення паролю відправлено на ваш email');
     } catch (err: any) {
       notify.error(err.message || 'Помилка відправлення посилання для відновлення паролю');
     }

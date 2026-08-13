@@ -2,12 +2,12 @@ import { Button, TextInput } from 'components';
 import { useForm } from 'hooks';
 import styles from './SignIn.module.scss';
 import { useAppDispatch, useAppSelector } from 'store';
-import { setIsAuthenticated, signInUser } from 'store/slices/auth';
+import { signInUser, signInWithGoogle } from 'store/slices/auth';
 import { GoogleIcon } from 'assets/icons';
-import { http, notify, saveAccessToken, saveRefreshToken } from 'helpers';
-import { useEffect } from 'react';
+import { notify } from 'helpers';
 import { Link } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
+import { useState } from 'react';
 
 const validationRules = {
   email: (value: string) => {
@@ -29,6 +29,7 @@ interface FormValues {
 const SignIn: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.signInUserRequest);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const { values, errors, handleChange, setFieldError, handleSubmit } = useForm<FormValues>(
     { email: '', password: '' },
@@ -38,31 +39,26 @@ const SignIn: React.FC = () => {
     },
   );
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('accessToken');
-    const refreshToken = urlParams.get('refreshToken');
-    if (token && refreshToken) {
-      saveAccessToken(token);
-      saveRefreshToken(refreshToken);
-      dispatch(setIsAuthenticated());
-    }
-  }, [dispatch]);
-
   const handleLogin = async (formValues: FormValues) => {
     try {
       await dispatch(signInUser(formValues)).unwrap();
     } catch (err: any) {
-      if (err.status === 401) {
+      if (err.message?.toLowerCase().includes('invalid login credentials')) {
         setFieldError('email', '');
         setFieldError('password', 'Не правильний email або пароль');
       }
-      notify.error(err.message || 'Помилка відправлення посилання для відновлення паролю');
+      notify.error(err.message || 'Помилка входу');
     }
   };
 
-  const handleGoogleLogin = () => {
-    http.auth.get('/auth/auth');
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await dispatch(signInWithGoogle()).unwrap();
+    } catch (err: any) {
+      notify.error(err.message || 'Не вдалося увійти через Google');
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -70,12 +66,9 @@ const SignIn: React.FC = () => {
       <h1 className={styles.loginTitle}>Вхід</h1>
       <div className={styles.loginForm}>
         <div>
-          <a
-            href={`${process.env.REACT_APP_API_URL}/api/auth/auth`}
-            onClick={handleGoogleLogin}
-            className={styles.loginGoogle}>
-            Увійти за допомогою <GoogleIcon />
-          </a>
+          <button type="button" onClick={handleGoogleLogin} className={styles.loginGoogle} disabled={isGoogleLoading}>
+            {isGoogleLoading ? 'Переходимо до Google...' : 'Увійти за допомогою'} <GoogleIcon />
+          </button>
         </div>
         <TextInput
           name="email"

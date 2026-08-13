@@ -54,8 +54,8 @@ export interface IGames {
   id: number;
   data: IMatch[];
   stage: string;
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
 }
 
 export interface IMatch {
@@ -67,12 +67,12 @@ export interface IMatch {
   groupName: MatchGroupName;
   homeScore: number;
   awayScore: number;
-  matchDate: Date;
+  matchDate: string;
   tournamentId: number;
   homeTeamId: number;
   awayTeamId: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   homeTeam: ITeam;
   awayTeam: ITeam;
   predict: IPredict;

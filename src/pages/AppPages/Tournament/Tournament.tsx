@@ -5,11 +5,10 @@ import { getMatches } from 'store/slices/match';
 import { getTournamentStandings } from 'store/slices/tournament';
 import { NavLink } from 'react-router-dom';
 import styles from './Tournament.module.scss';
-import { IMatch, ITournament } from 'interfaces';
+import { ITournament } from 'interfaces';
 import { getPredictsTable } from 'store/slices/predict';
 import Skeleton from 'react-loading-skeleton';
-import socket from 'socket';
-import { notify, playNotification } from 'helpers';
+import { notify, playNotification, resolveAssetUrl, supabase } from 'helpers';
 
 type ContextType = {
   tournament: ITournament;
@@ -41,18 +40,68 @@ const Tournament: React.FC = () => {
   }, [tournament?.name]);
 
   useEffect(() => {
-    socket.on('matchUpdated', (updatedMatch: IMatch) => {
-      playNotification();
-      notify.success(
-        `${updatedMatch.homeTeam.name} ${updatedMatch.homeScore}-${updatedMatch.awayScore} ${updatedMatch.awayTeam.name}`,
-        5000,
-      );
-      getStandings();
-    });
+    if (!tournamentId) {
+      return;
+    }
+
+    const tournamentIdNumber = Number(tournamentId);
+    const channel = supabase
+      .channel(`tournament-matches-${tournamentIdNumber}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matches',
+          filter: `tournament_id=eq.${tournamentIdNumber}`,
+        },
+        async (payload) => {
+          const updatedMatchId = payload.new.id as number;
+          const { data: updatedMatch } = await supabase
+            .from('matches')
+            .select(
+              `
+                home_score,
+                away_score,
+                homeTeam:teams!matches_home_team_id_fkey(name),
+                awayTeam:teams!matches_away_team_id_fkey(name)
+              `,
+            )
+            .eq('id', updatedMatchId)
+            .maybeSingle();
+
+          if (!updatedMatch) {
+            playNotification();
+            notify.success('Матч оновлено', 5000);
+            getStandings();
+            return;
+          }
+
+          const matchData: any = updatedMatch;
+
+          const homeTeamName = Array.isArray(matchData.homeTeam)
+            ? matchData.homeTeam[0]?.name
+            : matchData.homeTeam?.name;
+          const awayTeamName = Array.isArray(matchData.awayTeam)
+            ? matchData.awayTeam[0]?.name
+            : matchData.awayTeam?.name;
+
+          playNotification();
+          if (homeTeamName && awayTeamName) {
+            notify.success(`${homeTeamName} ${updatedMatch.home_score}-${updatedMatch.away_score} ${awayTeamName}`, 5000);
+          } else {
+            notify.success('Матч оновлено', 5000);
+          }
+
+          getStandings();
+        },
+      )
+      .subscribe();
+
     return () => {
-      socket.off('matchUpdated');
+      supabase.removeChannel(channel);
     };
-  }, [getStandings]);
+  }, [getStandings, tournamentId]);
 
   return (
     <div className={styles.tournament}>
@@ -62,7 +111,7 @@ const Tournament: React.FC = () => {
             {!tournament?.logo ? (
               <Skeleton />
             ) : (
-              <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament?.logo}`} alt={tournament?.name} />
+              <img src={resolveAssetUrl(tournament?.logo)} alt={tournament?.name} />
             )}
           </div>
           <h1 className={styles.tournamentName}>{tournament?.name}</h1>
@@ -90,7 +139,14 @@ const Tournament: React.FC = () => {
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}
                 to={`/tournament/${tournament?.id}/leagues`}>
-                Ліги
+                Загальна ліга
+              </NavLink>
+            </li>
+            <li className={styles.tournamentNavListItem}>
+              <NavLink
+                className={({ isActive }) => (isActive ? styles.active : '')}
+                to={`/tournament/${tournament?.id}/rooms`}>
+                Кімнати
               </NavLink>
             </li>
             {/* <li className={styles.tournamentNavListItem}>
@@ -104,7 +160,7 @@ const Tournament: React.FC = () => {
         </nav>
         <div
           className={styles.tournamentOverlay}
-          style={{ backgroundImage: `url(${process.env.REACT_APP_UPLOAD_URL}/${tournament?.logo})` }}
+          style={{ backgroundImage: `url(${resolveAssetUrl(tournament?.logo)})` }}
         />
       </header>
       {isLoading || !tournament ? (

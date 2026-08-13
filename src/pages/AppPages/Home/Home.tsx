@@ -2,6 +2,7 @@ import Skeleton from 'react-loading-skeleton';
 import { Link } from 'react-router-dom';
 import { Card } from 'components';
 import { useAppSelector } from 'store';
+import { resolveAssetUrl } from 'helpers';
 import styles from './Home.module.scss';
 
 const Home: React.FC = () => {
@@ -31,7 +32,7 @@ const Home: React.FC = () => {
             <Card title={tournament.name} className={styles.homeCol} key={tournament.id}>
               <div className={styles.homeTournament}>
                 <Link to={`/tournament/${tournament.id}`}>
-                  <img src={`${process.env.REACT_APP_UPLOAD_URL}/${tournament.logo}`} alt={tournament.name} />
+                  <img src={resolveAssetUrl(tournament.logo)} alt={tournament.name} />
                 </Link>
               </div>
             </Card>

@@ -1,6 +1,5 @@
-import { AxiosResponse } from 'axios';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, http } from 'helpers/http';
+import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
 import { IHttpRequestResult } from 'interfaces/api';
 import { IPredict } from 'interfaces';
 import { getMatches } from './match';
@@ -18,7 +17,7 @@ interface ISetPredictResponse {
 }
 
 export interface IPredictTableResponse {
-  id: number;
+  id: string;
   name: string;
   totalMatches: number;
   points: number;
@@ -29,23 +28,100 @@ export interface IPredictTableResponse {
 }
 
 export const setPredict = createAsyncThunk('predict/setPredict', async (predict: ISetPredictPayload, thunkAPI) => {
-  try {
-    const response: AxiosResponse<ISetPredictResponse> = await http.api.post(`/predict`, predict);
-    await thunkAPI.dispatch(getMatches({ tournamentId: predict.tournamentId, _background: true }));
-    return response.data;
-  } catch (err: any) {
-    thunkAPI.rejectWithValue(err.response.data);
+  const {
+    data: authData,
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    throw new Error(authError.message);
   }
+
+  const userId = authData.user?.id;
+  if (!userId) {
+    throw new Error('Користувач не авторизований');
+  }
+
+  const { data, error } = await supabase
+    .from('predictions')
+    .upsert(
+      {
+        match_id: predict.matchId,
+        tournament_id: predict.tournamentId,
+        user_id: userId,
+        home_score: predict.homeScore,
+        away_score: predict.awayScore,
+      },
+      { onConflict: 'match_id,user_id' },
+    )
+    .select('id, home_score, away_score, points')
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await thunkAPI.dispatch(getMatches({ tournamentId: predict.tournamentId, _background: true }));
+
+  return {
+    predict: {
+      id: data.id,
+      homeScore: data.home_score,
+      awayScore: data.away_score,
+      points: data.points,
+    },
+    message: 'Predict successfully saved',
+  } as ISetPredictResponse;
 });
 
 export const getPredictsTable = createAsyncThunk('predict/getPredictsTable', async (tournamentId: number) => {
-  const response: AxiosResponse<IPredictTableResponse[]> = await http.api.get(`/predict/tournament/${tournamentId}`);
-  return response.data;
+  const { data, error } = await supabase
+    .from('tournament_leaderboard_all')
+    .select('user_id, name, total_matches, points, correct_score, correct_difference, five_plus_goals, correct_result')
+    .eq('tournament_id', tournamentId)
+    .order('points', { ascending: false })
+    .order('correct_score', { ascending: false })
+    .order('correct_result', { ascending: false })
+    .order('correct_difference', { ascending: false })
+    .order('five_plus_goals', { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []).map((item: any) => ({
+    id: item.user_id,
+    name: item.name,
+    totalMatches: item.total_matches,
+    points: item.points,
+    correctScore: item.correct_score,
+    correctDifference: item.correct_difference,
+    fivePlusGoals: item.five_plus_goals,
+    correctResult: item.correct_result,
+  })) as IPredictTableResponse[];
 });
 
 export const getMatchPredicts = createAsyncThunk('predict/getMatchPredicts', async (matchId: number) => {
-  const response: AxiosResponse<IPredict[]> = await http.api.get(`/predict/match/${matchId}`);
-  return response.data;
+  const { data, error } = await supabase
+    .from('predictions')
+    .select('id, home_score, away_score, points, user:profiles!predictions_user_id_fkey(id, name)')
+    .eq('match_id', matchId)
+    .order('points', { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []).map((item: any) => ({
+    id: item.id,
+    homeScore: item.home_score,
+    awayScore: item.away_score,
+    points: item.points,
+    user: {
+      id: item.user?.id,
+      name: item.user?.name || 'Unknown user',
+    },
+  })) as IPredict[];
 });
 
 interface IPredictState {

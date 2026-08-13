@@ -2,7 +2,7 @@ import { useState } from 'react';
 import cn from 'classnames';
 import { Card, TextInput } from 'components';
 import { IMatch, ITournament } from 'interfaces';
-import { normalizeMatchDate, normalizeMatchTime, notify } from 'helpers';
+import { normalizeMatchDate, normalizeMatchTime, notify, resolveAssetUrl } from 'helpers';
 import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
 import ShowPredicts from '../ShowPredicts/ShowPredicts';
@@ -125,7 +125,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           <div className={styles.matchTeam}>
             <div className={styles.matchTeamWrap}>
               <img
-                src={`${process.env.REACT_APP_UPLOAD_URL}/${match.homeTeam.logo}`}
+                src={resolveAssetUrl(match.homeTeam.logo)}
                 alt="home team logo"
                 className={styles.matchTeamLogo}
               />
@@ -164,7 +164,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
             </div>
             <div className={styles.matchTeamWrap}>
               <img
-                src={`${process.env.REACT_APP_UPLOAD_URL}/${match.awayTeam.logo}`}
+                src={resolveAssetUrl(match.awayTeam.logo)}
                 alt="away team logo"
                 className={styles.matchTeamLogo}
               />

@@ -1,0 +1,240 @@
+.container {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(18rem, 1fr);
+  gap: 1rem;
+}
+
+.mainSection,
+.sideSection {
+  display: block;
+}
+
+.topActions {
+  display: grid;
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.modalForm {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.hint {
+  margin: 0 0 0.8rem;
+  color: #5f6675;
+  font-size: 0.9rem;
+}
+
+.selectedRoomActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.subTitle {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
+.roomsList {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.roomItem {
+  border: 1px solid #e8edf4;
+  border-radius: 0.5rem;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.55rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    border-color: #d5dfef;
+    background: #fafcff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #2a70ff;
+    outline-offset: 2px;
+  }
+}
+
+.roomItemActive {
+  border-color: #c9d9ff;
+  background: #f7faff;
+}
+
+.roomName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.roomMeta {
+  margin: 0.2rem 0 0;
+  color: #6b7280;
+  font-size: 0.82rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.actionInline {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #4b5565;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #1f2937;
+  }
+
+  &:active {
+    opacity: 0.75;
+  }
+}
+
+.actionDanger {
+  color: #b23a3a;
+
+  &:hover {
+    color: #8a1f1f;
+  }
+}
+
+.empty {
+  margin: 0.5rem 0;
+  color: #7a808d;
+  font-size: 0.9rem;
+}
+
+.tableWrap {
+  border: 1px solid #e8edf4;
+  border-radius: 0.6rem;
+  overflow: hidden;
+  background: #fff;
+}
+
+.table {
+  display: flex;
+  transition: background-color 0.2s;
+  border-bottom: 1px solid #edf2f7;
+
+  &:hover:not(:first-of-type) {
+    background-color: #f8fafc;
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  &Col {
+    flex: 1;
+    padding: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:first-child {
+      flex: 0 0 8%;
+      max-width: 8%;
+    }
+
+    &:nth-child(2) {
+      font-weight: 600;
+      flex: 1.2;
+    }
+
+    &.head {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.02em;
+      background: #f8fafc;
+    }
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .container {
+    padding: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .sideSection {
+    order: -1;
+  }
+}
+
+@media screen and (max-width: 40em) {
+  .selectedRoomActions {
+    display: grid;
+  }
+
+  .table {
+    &Col {
+      padding: 0.75rem 0.45rem;
+      text-align: right;
+
+      &:first-child {
+        flex: 0 0 7%;
+        max-width: 7%;
+        font-size: 0.875rem;
+      }
+
+      &:nth-child(2) {
+        flex: 0 0 42%;
+        max-width: 42%;
+        text-align: left;
+        font-size: 0.875rem;
+      }
+
+      &:nth-child(3) {
+        flex: 0 0 15%;
+        max-width: 15%;
+      }
+
+      &:last-child {
+        flex: 0 0 18%;
+        max-width: 18%;
+      }
+
+      &.hidden {
+        display: none;
+      }
+    }
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .modalActions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,7 +5,7 @@ import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { useForm, useMobile } from 'hooks';
 import { changeUserPassword, editUserProfile } from 'store/slices/user';
 import { notify } from 'helpers';
-import { logout } from 'store/slices/auth';
+import { signOutUser } from 'store/slices/auth';
 import { useEffect } from 'react';
 
 const validationRules = {
@@ -114,8 +114,8 @@ const User: React.FC = () => {
 
   const isChanged = isFormChanged();
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    await dispatch(signOutUser());
     localStorage.removeItem('reduxState');
   };
 

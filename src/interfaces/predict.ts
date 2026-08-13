@@ -3,8 +3,8 @@ export interface IPredict {
   homeScore: number;
   awayScore: number;
   points: number;
-  user: {
-    id: number;
+  user?: {
+    id: string;
     name: string;
   };
 }

@@ -3,6 +3,7 @@ import styles from './Header.module.scss';
 import { useAppSelector } from 'store';
 import { RoutesEnum } from 'routes/AppRoutes';
 import { NavLink } from 'react-router-dom';
+import { resolveAssetUrl } from 'helpers';
 
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
@@ -31,7 +32,7 @@ const Header: React.FC = () => {
           <span className={styles.headerUserName}>{user.nickname || user.name}</span>
           <div className={styles.headerUserAvatar}>
             {user.avatar ? (
-              <img src={`${process.env.REACT_APP_UPLOAD_URL}/${user.avatar}`} alt={user.name} />
+              <img src={resolveAssetUrl(user.avatar)} alt={user.name} />
             ) : (
               <span className={styles.headerUserAvatarName}>
                 {user?.name[0]}
