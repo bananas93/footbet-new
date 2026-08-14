@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { Button, Card, Modal, TextInput } from 'components';
 import { notify } from 'helpers';
 import useModal from 'hooks/useModal';
-import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
 import {
   createRoom,
@@ -24,13 +24,11 @@ const Rooms: React.FC = () => {
   const roomTable = useAppSelector((state) => state.room.roomTable);
   const isRoomLoading = useAppSelector((state) => state.room.getRoomLeaderboardRequest.isLoading);
 
-  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [roomName, setRoomName] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [invitePassword, setInvitePassword] = useState('');
-  const [autoJoinAttemptedCode, setAutoJoinAttemptedCode] = useState<string | null>(null);
   const createRoomModal = useModal<void>();
   const joinRoomModal = useModal<void>();
 
@@ -95,12 +93,11 @@ const Rooms: React.FC = () => {
     }
   };
 
-  const handleJoinByInvite = async (providedInviteCode?: unknown) => {
-    const rawInviteCode = typeof providedInviteCode === 'string' ? providedInviteCode : inviteCode;
-    const normalizedInviteCode = rawInviteCode.trim();
+  const handleJoinByInvite = async () => {
+    const normalizedInviteCode = inviteCode.trim();
 
     if (!normalizedInviteCode) {
-      notify.error('Вкажіть invite code');
+      notify.error('Вкажіть код кімнати');
       return;
     }
 
@@ -116,20 +113,13 @@ const Rooms: React.FC = () => {
       setInvitePassword('');
       joinRoomModal.closeModal();
 
-      if (searchParams.get('inviteCode')) {
-        setSearchParams((prev) => {
-          prev.delete('inviteCode');
-          return prev;
-        });
-      }
-
       if (result?.roomId) {
         setSelectedRoomId(result.roomId);
       }
 
       notify.success('Ви приєдналися до кімнати');
     } catch (error: any) {
-      notify.error(error.message || 'Невірний invite code або пароль');
+      notify.error(error.message || 'Невірний код кімнати або пароль');
     }
   };
 
@@ -157,51 +147,24 @@ const Rooms: React.FC = () => {
     }
   };
 
-  const copyInviteLink = async (code?: string) => {
+  const copyInviteCode = async (code?: string) => {
     if (!code) return;
 
-    const link = `${window.location.origin}/tournament/${tournament.id}/rooms?inviteCode=${encodeURIComponent(code)}`;
     try {
-      await navigator.clipboard.writeText(link);
-      notify.success('Посилання-запрошення скопійовано');
+      await navigator.clipboard.writeText(code);
+      notify.success('Код кімнати скопійовано');
     } catch {
-      notify.error('Не вдалося скопіювати посилання');
+      notify.error('Не вдалося скопіювати код кімнати');
     }
   };
-
-  useEffect(() => {
-    const urlInviteCode = searchParams.get('inviteCode');
-    if (!urlInviteCode || autoJoinAttemptedCode === urlInviteCode) return;
-
-    setAutoJoinAttemptedCode(urlInviteCode);
-    setInviteCode(urlInviteCode);
-
-    dispatch(
-      joinRoomByInviteCode({
-        inviteCode: urlInviteCode,
-      }),
-    )
-      .unwrap()
-      .then((result) => {
-        if (result?.roomId) {
-          setSelectedRoomId(result.roomId);
-        }
-        setSearchParams((prev) => {
-          prev.delete('inviteCode');
-          return prev;
-        });
-        notify.success('Ви приєдналися до кімнати за запрошенням');
-      })
-      .catch(() => {
-        notify.error('Для цієї кімнати може знадобитися пароль. Введіть пароль та повторіть спробу.');
-      });
-  }, [autoJoinAttemptedCode, dispatch, searchParams, setSearchParams]);
 
   return (
     <div className={styles.container}>
       <section className={styles.mainSection}>
         <Card title={selectedRoom ? `Ліга кімнати: ${selectedRoom.name}` : 'Кімнату не обрано'}>
-          {!selectedRoom && <p className={styles.empty}>Оберіть кімнату зі списку праворуч, щоб переглянути її таблицю.</p>}
+          {!selectedRoom && (
+            <p className={styles.empty}>Оберіть кімнату зі списку праворуч, щоб переглянути її таблицю.</p>
+          )}
           {selectedRoomId && isRoomLoading ? <p className={styles.empty}>Завантаження таблиці кімнати...</p> : null}
 
           {selectedRoom && (
@@ -231,7 +194,13 @@ const Rooms: React.FC = () => {
                 {leaderboard.map((item, index) => (
                   <div className={styles.table} key={item.id}>
                     <div className={styles.tableCol}>{index + 1}</div>
-                    <div className={styles.tableCol}>{item.name}</div>
+                    <div className={styles.tableCol}>
+                      <Link
+                        to={`/tournament/${tournament.id}/achievements?userId=${item.id}`}
+                        className={styles.userLink}>
+                        {item.name}
+                      </Link>
+                    </div>
                     <div className={styles.tableCol}>{item.totalMatches}</div>
                     <div className={styles.tableCol}>{item.correctScore}</div>
                     <div className={styles.tableCol}>{item.correctResult}</div>
@@ -253,7 +222,7 @@ const Rooms: React.FC = () => {
             <Button onClick={() => joinRoomModal.openModal()} variant="secondary">
               Приєднатися за кодом
             </Button>
-            <Button onClick={() => createRoomModal.openModal()}>Створити приватну кімнату</Button>
+            <Button onClick={() => createRoomModal.openModal()}>Створити кімнату</Button>
           </div>
 
           <h3 className={styles.subTitle}>Мої кімнати</h3>
@@ -287,9 +256,9 @@ const Rooms: React.FC = () => {
                         className={styles.actionInline}
                         onClick={(e) => {
                           e.stopPropagation();
-                          copyInviteLink(room.inviteCode);
+                          copyInviteCode(room.inviteCode);
                         }}>
-                        Invite link
+                        Скопіювати код кімнати
                       </button>
                     )}
                     {isCreator ? (
@@ -356,14 +325,14 @@ const Rooms: React.FC = () => {
           <div className={styles.modalForm}>
             <TextInput
               name="inviteCode"
-              label="Invite code"
+              label="Код кімнати"
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              placeholder="Вставте invite code"
+              placeholder="Вставте код кімнати"
             />
             <TextInput
               name="invitePassword"
-              label="Пароль (якщо є)"
+              label="Пароль"
               type="password"
               value={invitePassword}
               onChange={(e) => setInvitePassword(e.target.value)}
@@ -373,7 +342,7 @@ const Rooms: React.FC = () => {
               <Button variant="secondary" onClick={joinRoomModal.closeModal}>
                 Скасувати
               </Button>
-              <Button onClick={() => handleJoinByInvite()}>Приєднатися</Button>
+              <Button onClick={handleJoinByInvite}>Приєднатися</Button>
             </div>
           </div>
         </Modal>

@@ -34,6 +34,15 @@
   color: #646b78;
 }
 
+.userLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .tableWrap {
   border: 1px solid #e8edf4;
   border-radius: 0.6rem;

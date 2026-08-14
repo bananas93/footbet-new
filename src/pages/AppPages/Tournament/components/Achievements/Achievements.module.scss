@@ -1,3 +1,176 @@
 .container {
   padding: 2rem;
 }
+
+.empty {
+  color: #5c6476;
+  font-size: 0.95rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.achievement {
+  border: 1px solid #e3e7f0;
+  border-radius: 0.875rem;
+  padding: 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%);
+}
+
+.achievementTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1b1f3b;
+}
+
+.achievementDescription {
+  margin: 0.5rem 0;
+  color: #5a6278;
+  font-size: 0.875rem;
+  min-height: 2.5rem;
+}
+
+.achievementValue {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #101326;
+}
+
+.achievementWinners {
+  margin: 0.5rem 0 0;
+  color: #232a44;
+  font-weight: 600;
+}
+
+.myPanel {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid #dbe3f3;
+  border-radius: 0.875rem;
+  background: linear-gradient(135deg, #f8fbff 0%, #f2f6ff 100%);
+}
+
+.myTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.myTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: #1b1f3b;
+}
+
+.myBackLink {
+  color: #1f3f8f;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.myStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.myStat {
+  padding: 0.75rem;
+  border-radius: 0.625rem;
+  background-color: #ffffff;
+  border: 1px solid #e4e9f6;
+}
+
+.myLabel {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #69748e;
+}
+
+.myValue {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #151a33;
+}
+
+.myHint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: #5d6883;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badgeIcon {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.leader {
+  background-color: #ffefc2;
+  color: #7a5100;
+}
+
+.top3 {
+  background-color: #dbecff;
+  color: #12457d;
+}
+
+.top10 {
+  background-color: #e8f8e8;
+  color: #19612a;
+}
+
+.participant {
+  background-color: #edf1f8;
+  color: #53607c;
+}
+
+@media screen and (max-width: 64em) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .myStats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .container {
+    padding: 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .myStats {
+    grid-template-columns: 1fr;
+  }
+}

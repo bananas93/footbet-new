@@ -62,7 +62,9 @@
   gap: 0.55rem;
   background: #fff;
   cursor: pointer;
-  transition: border-color 0.2s, background-color 0.2s;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 
   &:hover {
     border-color: #d5dfef;
@@ -129,6 +131,15 @@
   margin: 0.5rem 0;
   color: #7a808d;
   font-size: 0.9rem;
+}
+
+.userLink {
+  color: inherit;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .tableWrap {

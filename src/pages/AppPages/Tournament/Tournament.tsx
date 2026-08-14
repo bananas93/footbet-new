@@ -88,7 +88,10 @@ const Tournament: React.FC = () => {
 
           playNotification();
           if (homeTeamName && awayTeamName) {
-            notify.success(`${homeTeamName} ${updatedMatch.home_score}-${updatedMatch.away_score} ${awayTeamName}`, 5000);
+            notify.success(
+              `${homeTeamName} ${updatedMatch.home_score}-${updatedMatch.away_score} ${awayTeamName}`,
+              5000,
+            );
           } else {
             notify.success('Матч оновлено', 5000);
           }
@@ -108,11 +111,7 @@ const Tournament: React.FC = () => {
       <header className={styles.tournamentHeader}>
         <div className={styles.tournamentHead}>
           <div className={styles.tournamentLogo}>
-            {!tournament?.logo ? (
-              <Skeleton />
-            ) : (
-              <img src={resolveAssetUrl(tournament?.logo)} alt={tournament?.name} />
-            )}
+            {!tournament?.logo ? <Skeleton /> : <img src={resolveAssetUrl(tournament?.logo)} alt={tournament?.name} />}
           </div>
           <h1 className={styles.tournamentName}>{tournament?.name}</h1>
         </div>
@@ -149,13 +148,13 @@ const Tournament: React.FC = () => {
                 Кімнати
               </NavLink>
             </li>
-            {/* <li className={styles.tournamentNavListItem}>
+            <li className={styles.tournamentNavListItem}>
               <NavLink
                 className={({ isActive }) => (isActive ? styles.active : '')}
                 to={`/tournament/${tournament?.id}/achievements`}>
                 Досягнення
               </NavLink>
-            </li> */}
+            </li>
           </ul>
         </nav>
         <div

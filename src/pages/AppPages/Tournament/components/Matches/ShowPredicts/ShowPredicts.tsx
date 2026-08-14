@@ -3,6 +3,7 @@ import { Modal } from 'components';
 import { IMatch } from 'interfaces';
 import { useEffect } from 'react';
 import Skeleton from 'react-loading-skeleton';
+import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getMatchPredicts } from 'store/slices/predict';
 import styles from './ShowPredicts.module.scss';
@@ -49,7 +50,15 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
           data?.map((item) => (
             <div className={styles.table} key={item.id}>
               <div className={styles.tableCol}>
-                <strong>{item.user?.name || 'Unknown user'}</strong>
+                {item.user?.id ? (
+                  <Link
+                    to={`/tournament/${match.tournamentId}/achievements?userId=${item.user.id}`}
+                    className={styles.userLink}>
+                    <strong>{item.user?.name || 'Unknown user'}</strong>
+                  </Link>
+                ) : (
+                  <strong>{item.user?.name || 'Unknown user'}</strong>
+                )}
               </div>
               <div className={styles.tableCol}>
                 {item.homeScore} - {item.awayScore}

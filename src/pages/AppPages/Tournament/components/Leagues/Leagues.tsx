@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
 import { Button, Card, TextInput } from 'components';
 import { useAppSelector } from 'store';
+import { Link } from 'react-router-dom';
 import { useTournament } from '../../Tournament';
 import styles from './Leagues.module.scss';
 
@@ -32,7 +33,6 @@ const Leagues: React.FC = () => {
     <div className={styles.container}>
       <section className={styles.leagueSection}>
         <Card title="Загальна ліга">
-
           <div className={styles.toolbar}>
             <TextInput
               name="searchUser"
@@ -63,7 +63,11 @@ const Leagues: React.FC = () => {
             {shownTable.map((item, index) => (
               <div className={styles.table} key={item.id}>
                 <div className={styles.tableCol}>{index + 1}</div>
-                <div className={styles.tableCol}>{item.name}</div>
+                <div className={styles.tableCol}>
+                  <Link to={`/tournament/${tournament.id}/achievements?userId=${item.id}`} className={styles.userLink}>
+                    {item.name}
+                  </Link>
+                </div>
                 <div className={styles.tableCol}>{item.totalMatches}</div>
                 <div className={styles.tableCol}>{item.correctScore}</div>
                 <div className={styles.tableCol}>{item.correctResult}</div>
