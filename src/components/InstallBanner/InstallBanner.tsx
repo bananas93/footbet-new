@@ -1,0 +1,123 @@
+import { useEffect, useMemo, useState } from 'react';
+import styles from './InstallBanner.module.scss';
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
+const DISMISS_KEY = 'installBannerDismissedAt';
+const INSTALLED_KEY = 'appInstalledFromPrompt';
+const DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+
+const isDismissedRecently = (): boolean => {
+  try {
+    const value = localStorage.getItem(DISMISS_KEY);
+    if (!value) {
+      return false;
+    }
+
+    const dismissedAt = Number(value);
+    if (!Number.isFinite(dismissedAt)) {
+      return false;
+    }
+
+    return Date.now() - dismissedAt < DISMISS_TTL_MS;
+  } catch {
+    return false;
+  }
+};
+
+const isInstalled = (): boolean => {
+  const standalone = window.matchMedia('(display-mode: standalone)').matches;
+  const navigatorStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+  const fromPrompt = localStorage.getItem(INSTALLED_KEY) === '1';
+  return standalone || navigatorStandalone || fromPrompt;
+};
+
+const InstallBanner: React.FC = () => {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [isInstalling, setIsInstalling] = useState(false);
+
+  const canShowBanner = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+
+    return !isInstalled() && !isDismissedRecently();
+  }, []);
+
+  useEffect(() => {
+    if (!canShowBanner) {
+      return;
+    }
+
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setDeferredPrompt(event as BeforeInstallPromptEvent);
+      setIsVisible(true);
+    };
+
+    const handleInstalled = () => {
+      localStorage.setItem(INSTALLED_KEY, '1');
+      setIsVisible(false);
+      setDeferredPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleInstalled);
+    };
+  }, [canShowBanner]);
+
+  const handleDismiss = () => {
+    localStorage.setItem(DISMISS_KEY, String(Date.now()));
+    setIsVisible(false);
+  };
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) {
+      return;
+    }
+
+    setIsInstalling(true);
+    try {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        localStorage.setItem(INSTALLED_KEY, '1');
+        setIsVisible(false);
+      }
+    } finally {
+      setDeferredPrompt(null);
+      setIsInstalling(false);
+    }
+  };
+
+  if (!isVisible || !deferredPrompt) {
+    return null;
+  }
+
+  return (
+    <aside className={styles.banner} role="status" aria-live="polite">
+      <div className={styles.textWrap}>
+        <h3 className={styles.title}>Встанови Footbet на телефон</h3>
+        <p className={styles.text}>Отримуй швидкий доступ з Home Screen і користуйся як застосунком.</p>
+      </div>
+      <div className={styles.actions}>
+        <button type="button" className={styles.secondary} onClick={handleDismiss}>
+          Пізніше
+        </button>
+        <button type="button" className={styles.primary} onClick={handleInstall} disabled={isInstalling}>
+          {isInstalling ? 'Встановлюємо...' : 'Встановити'}
+        </button>
+      </div>
+    </aside>
+  );
+};
+
+export default InstallBanner;

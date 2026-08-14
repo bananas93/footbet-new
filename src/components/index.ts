@@ -8,5 +8,6 @@ import Checkbox from './Checkbox/Checkbox';
 import Switcher from './Switcher/Switcher';
 import CookieConsent from './CookieConsent/CookieConsent';
 import Toast from './Toast/Toast';
+import InstallBanner from './InstallBanner/InstallBanner';
 
-export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox, Switcher, CookieConsent, Toast };
+export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox, Switcher, CookieConsent, Toast, InstallBanner };

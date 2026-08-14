@@ -1,4 +1,4 @@
-import { CookieConsent, Layout, LoginLayout, Toast } from 'components';
+import { CookieConsent, InstallBanner, Layout, LoginLayout, Toast } from 'components';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppRoutes } from 'routes/AppRoutes';
@@ -95,6 +95,7 @@ const App: React.FC = () => {
           <AppRoutes />
           <Toast position="top-center" />
         </Layout>
+        <InstallBanner />
         <CookieConsent />
       </>
     );
@@ -105,6 +106,7 @@ const App: React.FC = () => {
         <AuthRoutes />
         <Toast />
       </LoginLayout>
+      <InstallBanner />
       <CookieConsent />
     </>
   );
