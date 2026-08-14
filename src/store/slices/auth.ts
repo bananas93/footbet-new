@@ -112,6 +112,9 @@ export const signInWithGoogle = createAsyncThunk('auth/signInWithGoogle', async 
     provider: 'google',
     options: {
       redirectTo: buildAuthRedirectUrl('/signin'),
+      queryParams: {
+        prompt: 'select_account',
+      },
     },
   });
 
