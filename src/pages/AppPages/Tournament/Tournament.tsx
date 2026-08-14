@@ -39,7 +39,7 @@ const Tournament: React.FC = () => {
   }, [getStandings]);
 
   useEffect(() => {
-    document.title = `${tournament?.name} | Tournament`;
+    document.title = `${tournament?.name} | Footbet`;
     return () => {
       document.title = 'Турнір прогнозистів | Footbet';
     };

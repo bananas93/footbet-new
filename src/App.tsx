@@ -9,6 +9,22 @@ import { clearUser, getUserProfile } from 'store/slices/user';
 import { supabase } from 'helpers';
 import 'react-toastify/dist/ReactToastify.css';
 
+const DEFAULT_TITLE = 'Турнір прогнозистів | Footbet';
+
+const getRouteTitle = (pathname: string): string => {
+  if (pathname === '/') return 'Головна | Footbet';
+  if (pathname === '/rules') return 'Правила | Footbet';
+  if (pathname === '/user') return 'Профіль | Footbet';
+  if (pathname === '/signin') return 'Вхід | Footbet';
+  if (pathname === '/signup') return 'Реєстрація | Footbet';
+  if (pathname === '/forgot-password') return 'Відновлення пароля | Footbet';
+  if (pathname === '/check-code') return 'Код підтвердження | Footbet';
+  if (pathname === '/set-password') return 'Новий пароль | Footbet';
+  if (pathname.startsWith('/tournament/')) return 'Турнір | Footbet';
+  if (pathname.startsWith('/profile/')) return 'Профіль користувача | Footbet';
+  return DEFAULT_TITLE;
+};
+
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -17,6 +33,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [pathname]);
+
+  useEffect(() => {
+    document.title = getRouteTitle(pathname);
   }, [pathname]);
 
   useEffect(() => {
