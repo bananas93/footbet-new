@@ -142,9 +142,7 @@ const InstallBanner: React.FC = () => {
       <div className={styles.textWrap}>
         <h3 className={styles.title}>Встанови Footbet на телефон</h3>
         <p className={styles.text}>Отримуй швидкий доступ з Home Screen і користуйся як застосунком.</p>
-        {isManualIOSInstall && (
-          <p className={styles.note}>На iPhone: Поділитися → На екран Додому.</p>
-        )}
+        {isManualIOSInstall && <p className={styles.note}>На iPhone: Поділитися → На екран Додому.</p>}
       </div>
       <div className={styles.actions}>
         <button type="button" className={styles.secondary} onClick={handleDismiss}>
