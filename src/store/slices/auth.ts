@@ -14,6 +14,15 @@ interface ISignUpPayload {
   name: string;
 }
 
+const siteUrlFromEnv = process.env.REACT_APP_SITE_URL?.trim();
+const authRedirectBase =
+  siteUrlFromEnv && /^https?:\/\//i.test(siteUrlFromEnv) ? siteUrlFromEnv.replace(/\/+$/, '') : window.location.origin;
+
+const buildAuthRedirectUrl = (path: string) => {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${authRedirectBase}${normalizedPath}`;
+};
+
 export const signInUser = createAsyncThunk(
   'auth/signInUser',
   async ({ email, password }: { email: string; password: string }) => {
@@ -61,7 +70,7 @@ export const signUpUser = createAsyncThunk('auth/signUpUser', async (data: ISign
 
 export const resetPassword = createAsyncThunk('auth/resetPassword', async ({ email }: { email: string }) => {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/set-password`,
+    redirectTo: buildAuthRedirectUrl('/set-password'),
   });
 
   if (error) {
@@ -79,15 +88,12 @@ export const checkVerificationCode = createAsyncThunk(
   },
 );
 
-export const changePassword = createAsyncThunk(
-  'auth/changePassword',
-  async ({ password }: { password: string }) => {
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      throw new Error(error.message);
-    }
-  },
-);
+export const changePassword = createAsyncThunk('auth/changePassword', async ({ password }: { password: string }) => {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    throw new Error(error.message);
+  }
+});
 
 export const hydrateAuth = createAsyncThunk('auth/hydrateAuth', async () => {
   const { data, error } = await supabase.auth.getSession();
@@ -105,7 +111,7 @@ export const signInWithGoogle = createAsyncThunk('auth/signInWithGoogle', async 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/signin`,
+      redirectTo: buildAuthRedirectUrl('/signin'),
     },
   });
 
