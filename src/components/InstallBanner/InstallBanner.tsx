@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { enablePushSubscription, getPushSupportState } from 'helpers';
+import { useAppSelector } from 'store';
 import styles from './InstallBanner.module.scss';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -43,6 +45,7 @@ const isIOSDevice = (): boolean => {
 };
 
 const InstallBanner: React.FC = () => {
+  const userId = useAppSelector((state) => state.user.user?.id || '');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -73,10 +76,25 @@ const InstallBanner: React.FC = () => {
       setIsVisible(true);
     };
 
+    const requestPushAfterInstall = async () => {
+      if (getPushSupportState() !== 'supported') {
+        return;
+      }
+
+      if (Notification.permission === 'default') {
+        await Notification.requestPermission();
+      }
+
+      if (Notification.permission === 'granted' && userId) {
+        await enablePushSubscription(userId);
+      }
+    };
+
     const handleInstalled = () => {
       localStorage.setItem(INSTALLED_KEY, '1');
       setIsVisible(false);
       setDeferredPrompt(null);
+      void requestPushAfterInstall();
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -86,7 +104,7 @@ const InstallBanner: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleInstalled);
     };
-  }, [canShowBanner]);
+  }, [canShowBanner, userId]);
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
