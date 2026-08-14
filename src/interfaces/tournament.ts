@@ -13,6 +13,7 @@ export interface ITournament {
   thirdPlaceMatch: boolean;
   hasTable: boolean;
   leagues: number;
+  isNationsLeague: boolean;
   status: TournamentStatus;
   logo?: string;
   type: TournamentType;

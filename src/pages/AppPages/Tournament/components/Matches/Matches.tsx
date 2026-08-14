@@ -390,7 +390,7 @@ const Matches: React.FC = () => {
         </TabList>
 
         {rounds.map((round) => (
-          <TabPanel className={styles.tabPanel} key={round.key}>
+          <TabPanel className={styles.tabPanel} selectedClassName={styles.tabPanelActive} key={round.key}>
             {renderPanel(round)}
           </TabPanel>
         ))}

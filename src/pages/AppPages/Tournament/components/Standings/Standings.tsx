@@ -7,7 +7,7 @@ import { useMobile } from 'hooks';
 import { getLeagueLabel, resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
 
-type Zone = 'playoff' | 'knockout' | null;
+type Zone = 'playoff' | 'knockout' | 'promotion' | 'promotionPlayoff' | 'relegationPlayoff' | 'relegation' | null;
 
 type GroupEntry = {
   key: string;
@@ -59,6 +59,24 @@ const parseGroupKey = (key: string, items: IStandingsItem[]) => {
     league: toLeagueLabel(first?.league || matched?.[1]),
     group: normalizeGroupName(first?.group || matched?.[2] || key),
   };
+};
+
+const getLeagueSortOrder = (label: string): number => {
+  const raw = (label || '').trim().toUpperCase();
+  if (!raw) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  if (/^\d+$/.test(raw)) {
+    return Number(raw);
+  }
+
+  const code = raw.charCodeAt(0);
+  if (code >= 65 && code <= 90) {
+    return code - 64;
+  }
+
+  return Number.MAX_SAFE_INTEGER;
 };
 
 const TableIcon = () => (
@@ -159,6 +177,7 @@ const Standings: React.FC = () => {
   const standings = useAppSelector((state) => state.tournament.standings)[tournament.id];
   const groups = useMemo(() => Object.entries(standings?.standings || {}), [standings]);
   const thirdPlace = useMemo(() => standings?.thirdPlacesStandings || [], [standings]);
+  const isNationsLeague = !!tournament.isNationsLeague;
 
   const leagues = useMemo<LeagueSection[]>(() => {
     const sections = new Map<string, LeagueSection>();
@@ -179,7 +198,14 @@ const Standings: React.FC = () => {
         ...section,
         groups: [...section.groups].sort((a, b) => a.group.localeCompare(b.group, 'uk', { numeric: true })),
       }))
-      .sort((a, b) => a.label.localeCompare(b.label, 'uk', { numeric: true }));
+      .sort((a, b) => {
+        const byOrder = getLeagueSortOrder(a.label) - getLeagueSortOrder(b.label);
+        if (byOrder !== 0) {
+          return byOrder;
+        }
+
+        return a.label.localeCompare(b.label, 'uk', { numeric: true });
+      });
   }, [groups]);
 
   // Кількість ліг приходить з бекенду, розмітка будується з даних турнірної таблиці
@@ -230,6 +256,43 @@ const Standings: React.FC = () => {
   }, [isMultiLeague, thirdPlace]);
 
   const getGroupZone = (leagueKey: string | null, index: number): Zone => {
+    if (isNationsLeague && isMultiLeague) {
+      const leagueSection = leagues.find((section) => section.key === (leagueKey || ''));
+      const leagueOrder = getLeagueSortOrder(leagueSection?.label || leagueKey || '');
+      const maxLeagueOrder = Math.max(1, Number(tournament.leagues) || 1);
+      const isTopLeague = leagueOrder === 1;
+      const isBottomLeague = leagueOrder >= maxLeagueOrder;
+      const position = index + 1;
+
+      if (isTopLeague) {
+        if (position <= 2) {
+          return 'playoff';
+        }
+        if (position === 3) {
+          return 'relegationPlayoff';
+        }
+        if (position === 4) {
+          return 'relegation';
+        }
+        return null;
+      }
+
+      if (position === 1) {
+        return 'promotion';
+      }
+      if (position === 2) {
+        return 'promotionPlayoff';
+      }
+      if (!isBottomLeague && position === 3) {
+        return 'relegationPlayoff';
+      }
+      if (!isBottomLeague && position === 4) {
+        return 'relegation';
+      }
+
+      return null;
+    }
+
     if (isMultiLeague && leagueKey !== topLeagueKey) {
       return null;
     }
@@ -243,6 +306,81 @@ const Standings: React.FC = () => {
     }
 
     return null;
+  };
+
+  const renderLeagueLegend = (section: LeagueSection) => {
+    if (!isNationsLeague) {
+      if (section.key !== topLeagueKey || (!hasDirectZone && !hasPlayoffZone)) {
+        return null;
+      }
+
+      return (
+        <div className={cn(styles.legend, styles.leagueLegend)}>
+          {hasDirectZone && (
+            <span className={cn(styles.legendItem, styles.playoff)}>
+              <span className={styles.legendDot} />
+              Прямий вихід у наступний раунд
+            </span>
+          )}
+          {hasPlayoffZone && (
+            <span className={cn(styles.legendItem, styles.knockout)}>
+              <span className={styles.legendDot} />
+              Раунд плей-оф
+            </span>
+          )}
+          <span className={styles.legendHint}>Зони виходу діють для цієї ліги</span>
+        </div>
+      );
+    }
+
+    const leagueOrder = getLeagueSortOrder(section.label || section.key);
+    const maxLeagueOrder = Math.max(1, Number(tournament.leagues) || 1);
+    const isTopLeague = leagueOrder === 1;
+    const isBottomLeague = leagueOrder >= maxLeagueOrder;
+
+    return (
+      <div className={cn(styles.legend, styles.leagueLegend)}>
+        {isTopLeague ? (
+          <>
+            <span className={cn(styles.legendItem, styles.playoff)}>
+              <span className={styles.legendDot} />
+              1-2 місце: плей-оф
+            </span>
+            <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
+              <span className={styles.legendDot} />
+              3 місце: стикові матчі
+            </span>
+            <span className={cn(styles.legendItem, styles.relegation)}>
+              <span className={styles.legendDot} />
+              4 місце: пониження
+            </span>
+          </>
+        ) : (
+          <>
+            <span className={cn(styles.legendItem, styles.promotion)}>
+              <span className={styles.legendDot} />
+              1 місце: підвищення
+            </span>
+            <span className={cn(styles.legendItem, styles.promotionPlayoff)}>
+              <span className={styles.legendDot} />
+              2 місце: стики на підвищення
+            </span>
+            {!isBottomLeague && (
+              <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
+                <span className={styles.legendDot} />
+                3 місце: стики на пониження
+              </span>
+            )}
+            {!isBottomLeague && (
+              <span className={cn(styles.legendItem, styles.relegation)}>
+                <span className={styles.legendDot} />
+                4 місце: пониження
+              </span>
+            )}
+          </>
+        )}
+      </div>
+    );
   };
 
   const renderGroupTable = (entry: GroupEntry, section?: LeagueSection) => {
@@ -339,22 +477,49 @@ const Standings: React.FC = () => {
         </div>
       )}
 
-      {!!allTeams.length && (hasDirectZone || hasPlayoffZone) && (
+      {!!allTeams.length && !isMultiLeague && (isNationsLeague || hasDirectZone || hasPlayoffZone) && (
         <div className={styles.legend}>
-          {hasDirectZone && (
-            <span className={cn(styles.legendItem, styles.playoff)}>
-              <span className={styles.legendDot} />
-              Прямий вихід у наступний раунд
-            </span>
-          )}
-          {hasPlayoffZone && (
-            <span className={cn(styles.legendItem, styles.knockout)}>
-              <span className={styles.legendDot} />
-              Раунд плей-оф
-            </span>
+          {isNationsLeague ? (
+            <>
+              <span className={cn(styles.legendItem, styles.playoff)}>
+                <span className={styles.legendDot} />
+                Ліга A: 1-2 місце вихід у плей-оф
+              </span>
+              <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
+                <span className={styles.legendDot} />
+                3 місце: стикові матчі
+              </span>
+              <span className={cn(styles.legendItem, styles.relegation)}>
+                <span className={styles.legendDot} />
+                4 місце: пониження в лігу нижче
+              </span>
+              <span className={cn(styles.legendItem, styles.promotion)}>
+                <span className={styles.legendDot} />
+                Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення
+              </span>
+            </>
+          ) : (
+            <>
+              {hasDirectZone && (
+                <span className={cn(styles.legendItem, styles.playoff)}>
+                  <span className={styles.legendDot} />
+                  Прямий вихід у наступний раунд
+                </span>
+              )}
+              {hasPlayoffZone && (
+                <span className={cn(styles.legendItem, styles.knockout)}>
+                  <span className={styles.legendDot} />
+                  Раунд плей-оф
+                </span>
+              )}
+            </>
           )}
           <span className={styles.legendHint}>
-            {isMultiLeague ? `Зони виходу — лише Ліга ${leagues[0].label}` : 'Форма: останні матчі, зліва найдавніший'}
+            {isNationsLeague
+              ? 'Формат Nations League: підвищення/пониження між лігами A/B/C/D'
+              : isMultiLeague
+                ? `Зони виходу — лише Ліга ${leagues[0].label}`
+                : 'Форма: останні матчі, зліва найдавніший'}
           </span>
         </div>
       )}
@@ -387,14 +552,16 @@ const Standings: React.FC = () => {
                       {section.teams} команд
                     </p>
                   </div>
-                  {section.key === topLeagueKey && (hasDirectZone || hasPlayoffZone) && (
-                    <span className={styles.leagueTag}>Вихід у плей-оф</span>
+                  {section.key === topLeagueKey && (isNationsLeague || hasDirectZone || hasPlayoffZone) && (
+                    <span className={styles.leagueTag}>{isNationsLeague ? 'Плей-оф / стики' : 'Вихід у плей-оф'}</span>
                   )}
                 </header>
 
                 <div className={cn(styles.groups, { [styles.one]: section.groups.length === 1 })}>
                   {section.groups.map((entry) => renderGroupTable(entry, section))}
                 </div>
+
+                {renderLeagueLegend(section)}
               </section>
             );
           })}

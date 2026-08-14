@@ -387,6 +387,10 @@ $live: #e0342b;
 }
 
 .tabPanel {
+  display: none;
+}
+
+.tabPanelActive {
   display: block;
 }
 

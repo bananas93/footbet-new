@@ -135,6 +135,38 @@ $radius: 1.25rem;
   --zone-shadow: rgba(39, 72, 184, 0.3);
 }
 
+.promotion {
+  --zone: #0f7d6a;
+  --zone-bright: #2dc7a9;
+  --zone-soft: #ebfbf8;
+  --zone-border: #c4eee6;
+  --zone-shadow: rgba(15, 125, 106, 0.28);
+}
+
+.promotionPlayoff {
+  --zone: #1d5fb8;
+  --zone-bright: #4f8ef0;
+  --zone-soft: #edf4ff;
+  --zone-border: #cdddfb;
+  --zone-shadow: rgba(29, 95, 184, 0.28);
+}
+
+.relegationPlayoff {
+  --zone: #9a5200;
+  --zone-bright: #e39a35;
+  --zone-soft: #fff6ea;
+  --zone-border: #f3dec2;
+  --zone-shadow: rgba(154, 82, 0, 0.3);
+}
+
+.relegation {
+  --zone: #a03030;
+  --zone-bright: #e15d5d;
+  --zone-soft: #fff0f0;
+  --zone-border: #f2cdcd;
+  --zone-shadow: rgba(160, 48, 48, 0.3);
+}
+
 /* ---------- leagues ---------- */
 
 .toneA {
@@ -319,6 +351,14 @@ $radius: 1.25rem;
   margin-left: auto;
   font-size: 0.8125rem;
   color: $muted;
+}
+
+.leagueLegend {
+  margin-top: 0.85rem;
+
+  .legendHint {
+    margin-left: 0;
+  }
 }
 
 /* ---------- group grid ---------- */
@@ -698,6 +738,10 @@ $radius: 1.25rem;
 
   .legendHint {
     display: none;
+  }
+
+  .leagueLegend {
+    margin-top: 0.65rem;
   }
 
   .tableHead {
