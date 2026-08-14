@@ -35,10 +35,18 @@ const isInstalled = (): boolean => {
   return standalone || navigatorStandalone || fromPrompt;
 };
 
+const isIOSDevice = (): boolean => {
+  const ua = window.navigator.userAgent.toLowerCase();
+  const iOSByUa = /iphone|ipad|ipod/.test(ua);
+  const iPadDesktopMode = window.navigator.platform === 'MacIntel' && window.navigator.maxTouchPoints > 1;
+  return iOSByUa || iPadDesktopMode;
+};
+
 const InstallBanner: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   const canShowBanner = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -53,9 +61,15 @@ const InstallBanner: React.FC = () => {
       return;
     }
 
+    if (isIOSDevice()) {
+      setShowIOSGuide(true);
+      setIsVisible(true);
+    }
+
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
       setDeferredPrompt(event as BeforeInstallPromptEvent);
+      setShowIOSGuide(false);
       setIsVisible(true);
     };
 
@@ -77,6 +91,7 @@ const InstallBanner: React.FC = () => {
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setIsVisible(false);
+    setShowIOSGuide(false);
   };
 
   const handleInstall = async () => {
@@ -98,23 +113,30 @@ const InstallBanner: React.FC = () => {
     }
   };
 
-  if (!isVisible || !deferredPrompt) {
+  if (!isVisible) {
     return null;
   }
+
+  const isManualIOSInstall = showIOSGuide && !deferredPrompt;
 
   return (
     <aside className={styles.banner} role="status" aria-live="polite">
       <div className={styles.textWrap}>
         <h3 className={styles.title}>Встанови Footbet на телефон</h3>
         <p className={styles.text}>Отримуй швидкий доступ з Home Screen і користуйся як застосунком.</p>
+        {isManualIOSInstall && (
+          <p className={styles.note}>На iPhone: Поділитися → На екран Додому.</p>
+        )}
       </div>
       <div className={styles.actions}>
         <button type="button" className={styles.secondary} onClick={handleDismiss}>
           Пізніше
         </button>
-        <button type="button" className={styles.primary} onClick={handleInstall} disabled={isInstalling}>
-          {isInstalling ? 'Встановлюємо...' : 'Встановити'}
-        </button>
+        {!!deferredPrompt && (
+          <button type="button" className={styles.primary} onClick={handleInstall} disabled={isInstalling}>
+            {isInstalling ? 'Встановлюємо...' : 'Встановити'}
+          </button>
+        )}
       </div>
     </aside>
   );
