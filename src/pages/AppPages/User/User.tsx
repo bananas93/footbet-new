@@ -86,6 +86,14 @@ const ShieldIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const SettingsIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <circle cx="12" cy="12" r="2.8" />
+    <path d="M12 5.2v1.6M12 17.2v1.6M5.2 12h1.6M17.2 12h1.6" />
+    <path d="m7.2 7.2 1.1 1.1M15.7 15.7l1.1 1.1M16.8 7.2l-1.1 1.1M8.3 15.7l-1.1 1.1" />
+  </svg>
+);
+
 const LogoutIcon = ({ className }: { className?: string }) => (
   <svg {...iconProps} className={className}>
     <path d="M14.5 8.2V6.5A2 2 0 0 0 12.5 4.5h-5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1.7" />
@@ -404,6 +412,15 @@ const User: React.FC = () => {
               <span className={styles.navMeta}>Як ми працюємо з даними</span>
             </span>
           </Tab>
+          <Tab className={styles.navItem}>
+            <span className={styles.navIcon}>
+              <SettingsIcon />
+            </span>
+            <span className={styles.navText}>
+              <span className={styles.navTitle}>Налаштування</span>
+              <span className={styles.navMeta}>Push і керування акаунтом</span>
+            </span>
+          </Tab>
         </TabList>
 
         <div className={styles.content}>
@@ -473,9 +490,7 @@ const User: React.FC = () => {
               </div>
 
               <div className={styles.panelFooter}>
-                <span className={styles.footerHint}>
-                  {isChanged ? 'Є незбережені зміни' : 'Усі зміни збережено'}
-                </span>
+                <span className={styles.footerHint}>{isChanged ? 'Є незбережені зміни' : 'Усі зміни збережено'}</span>
                 <button
                   type="button"
                   className={styles.submit}
@@ -510,7 +525,8 @@ const User: React.FC = () => {
                     Google OAuth
                   </span>
                   <p>
-                    Для зміни пароля використовуйте налаштування безпеки Google. Після зміни в Google новий пароль автоматично діятиме і для входу у Footbet через Google.
+                    Для зміни пароля використовуйте налаштування безпеки Google. Після зміни в Google новий пароль
+                    автоматично діятиме і для входу у Footbet через Google.
                   </p>
                   <p className={styles.providerHint}>Email акаунту: {user.email}</p>
                 </div>
@@ -551,7 +567,11 @@ const User: React.FC = () => {
 
                   <div className={styles.panelFooter}>
                     <span className={styles.footerHint}>Після зміни паролю сесія залишиться активною</span>
-                    <button type="button" className={styles.submit} onClick={handlePassSubmit} disabled={isPasswordLoading}>
+                    <button
+                      type="button"
+                      className={styles.submit}
+                      onClick={handlePassSubmit}
+                      disabled={isPasswordLoading}>
                       {isPasswordLoading ? 'Змінюємо...' : 'Змінити пароль'}
                     </button>
                   </div>
@@ -574,9 +594,9 @@ const User: React.FC = () => {
 
               <div className={styles.privacy}>
                 <p className={styles.privacyLead}>
-                  Ця Політика конфіденційності визначає, як наш вебсайт (footbet.pp.ua) збирає, використовує, зберігає та
-                  захищає персональні дані користувачів. Сайт призначений для користувачів, які реєструються та ставлять
-                  прогнози на футбольні матчі в рамках некомерційних змагань з іншими гравцями.
+                  Ця Політика конфіденційності визначає, як наш вебсайт (footbet.pp.ua) збирає, використовує, зберігає
+                  та захищає персональні дані користувачів. Сайт призначений для користувачів, які реєструються та
+                  ставлять прогнози на футбольні матчі в рамках некомерційних змагань з іншими гравцями.
                 </p>
                 <h3>1. Збір інформації</h3>
                 <h4>1.1. Персональні дані</h4>
@@ -630,7 +650,8 @@ const User: React.FC = () => {
                 <h3>5. Передача даних третім сторонам</h3>
                 <h4>5.1. Відсутність комерційної передачі</h4>
                 <p>
-                  Ми не продаємо, не передаємо та не обмінюємо ваші персональні дані третім сторонам з комерційною метою.
+                  Ми не продаємо, не передаємо та не обмінюємо ваші персональні дані третім сторонам з комерційною
+                  метою.
                 </p>
                 <h4>5.2. Випадки передачі даних</h4>
                 <p>
@@ -654,15 +675,35 @@ const User: React.FC = () => {
                   опубліковані на цій сторінці. Ми рекомендуємо регулярно переглядати цю сторінку для ознайомлення з
                   актуальною версією Політики конфіденційності.
                 </p>
+                <h3>8. Контактна інформація</h3>
+                <p>
+                  Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка,
+                  зв'яжіться з нами за електронною адресою:{' '}
+                  <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
+                </p>
+              </div>
+            </section>
+          </TabPanel>
 
+          <TabPanel className={styles.tabPanel} selectedClassName={styles.tabPanelSelected}>
+            <section className={styles.panel}>
+              <header className={styles.panelHead}>
+                <span className={styles.panelIcon}>
+                  <SettingsIcon />
+                </span>
+                <div className={styles.panelHeadText}>
+                  <h2 className={styles.panelTitle}>Налаштування</h2>
+                  <p className={styles.panelMeta}>Керуйте push-сповіщеннями та параметрами акаунта</p>
+                </div>
+              </header>
+
+              <div className={styles.privacy}>
                 <div className={styles.pushZone}>
                   <h3>
                     <BellIcon className={styles.pushIcon} />
                     Push-сповіщення
                   </h3>
-                  <p>
-                    Отримуйте миттєві повідомлення про важливі оновлення матчів і турнірів у браузері.
-                  </p>
+                  <p>Отримуйте миттєві повідомлення про важливі оновлення матчів і турнірів у браузері.</p>
                   <p className={styles.pushStatus}>
                     Статус:{' '}
                     {pushSupport === 'insecure'
@@ -693,17 +734,11 @@ const User: React.FC = () => {
                   </div>
                 </div>
 
-                <h3>8. Контактна інформація</h3>
-                <p>
-                  Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка, зв'яжіться
-                  з нами за електронною адресою: <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
-                </p>
-
                 <div className={styles.dangerZone}>
                   <h3>Видалення акаунта</h3>
                   <p>
-                    Після видалення акаунта всі ваші персональні дані, прогнози та членство в кімнатах будуть безповоротно
-                    видалені.
+                    Після видалення акаунта всі ваші персональні дані, прогнози та членство в кімнатах будуть
+                    безповоротно видалені.
                   </p>
                   <button
                     type="button"
