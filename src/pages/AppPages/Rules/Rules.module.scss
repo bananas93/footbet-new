@@ -1,37 +1,398 @@
-.rules {
-  padding: 6rem 2rem 2rem;
-  &Title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 2rem;
+$ink: #0f1230;
+$muted: #6b7590;
+$line: #e9edf6;
+$radius: 1.25rem;
+
+.page {
+  padding: 5.5rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 76rem;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: $radius;
+  padding: 2rem 1.75rem;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(120, 92, 255, 0.5) 0%, rgba(120, 92, 255, 0) 55%),
+    radial-gradient(90% 120% at 0% 100%, rgba(0, 168, 255, 0.35) 0%, rgba(0, 168, 255, 0) 60%),
+    linear-gradient(135deg, #14153a 0%, #1b1b4a 45%, #0f1030 100%);
+  box-shadow: 0 18px 40px -18px rgba(20, 21, 58, 0.55);
+}
+
+.heroGlow {
+  position: absolute;
+  right: -6%;
+  bottom: -60%;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 199, 82, 0.3) 0%, rgba(244, 199, 82, 0) 65%);
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  min-width: 0;
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem 0.3rem 0.5rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffe6ad;
+}
+
+.heroEyebrowIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.heroTitle {
+  margin: 0.85rem 0 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 38rem;
+}
+
+/* ---------- section head ---------- */
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.sectionMeta {
+  font-size: 0.8125rem;
+  color: $muted;
+}
+
+/* ---------- tones ---------- */
+
+.blue {
+  --tone: #175fc4;
+  --tone-bright: #47a0ff;
+  --tone-soft: #eff6ff;
+  --tone-border: #cfe1fb;
+  --tone-glow: rgba(71, 160, 255, 0.26);
+  --tone-shadow: rgba(23, 95, 196, 0.32);
+}
+
+.teal {
+  --tone: #0a7d78;
+  --tone-bright: #2ec4b6;
+  --tone-soft: #ecfbf8;
+  --tone-border: #c3ece7;
+  --tone-glow: rgba(46, 196, 182, 0.26);
+  --tone-shadow: rgba(10, 125, 120, 0.32);
+}
+
+.gold {
+  --tone: #a3730c;
+  --tone-bright: #f4c752;
+  --tone-soft: #fff7e6;
+  --tone-border: #f0dcae;
+  --tone-glow: rgba(244, 199, 82, 0.3);
+  --tone-shadow: rgba(163, 115, 12, 0.35);
+}
+
+.orange {
+  --tone: #b5560d;
+  --tone-bright: #ff9d4d;
+  --tone-soft: #fff5ec;
+  --tone-border: #fbdcc2;
+  --tone-glow: rgba(255, 157, 77, 0.28);
+  --tone-shadow: rgba(181, 86, 13, 0.32);
+}
+
+/* ---------- scoring cards ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border-radius: $radius;
+  background: linear-gradient(160deg, #ffffff 0%, var(--tone-soft) 100%);
+  border: 1px solid var(--tone-border);
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  animation: rise 0.45s ease both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tone-bright) 0%, var(--tone) 100%);
   }
-  &Card {
-    margin-bottom: 2rem;
-    &Title {
-      margin-bottom: 1rem;
-    }
-    &Note {
-      display: block;
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: #666;
-    }
-  }
-  ol {
-    list-style-type: decimal;
-    padding-left: 3rem;
-    li {
-      margin-bottom: 1rem;
-      list-style: decimal;
-      &:last-child {
-        margin-bottom: 0;
-      }
-    }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 36px -22px var(--tone-shadow);
   }
 }
 
-@media screen and (max-width: 40em) {
-  .rules {
-    padding: 4rem 1rem 1rem;
+.cardGlow {
+  position: absolute;
+  top: -50%;
+  right: -15%;
+  width: 14rem;
+  height: 14rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tone-glow) 0%, rgba(255, 255, 255, 0) 68%);
+  pointer-events: none;
+}
+
+.cardPoints {
+  position: relative;
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-size: 2.75rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(135deg, var(--tone-bright) 0%, var(--tone) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.cardUnit {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $muted;
+  -webkit-text-fill-color: $muted;
+}
+
+.cardLabel {
+  position: relative;
+  margin-top: 0.85rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--tone);
+}
+
+.cardTitle {
+  position: relative;
+  margin: 0.3rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: $ink;
+}
+
+/* ---------- note ---------- */
+
+.note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.125rem 1.25rem;
+  border-radius: $radius;
+  background-color: #fff;
+  border: 1px solid $line;
+  border-left: 3px solid #f4c752;
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
+}
+
+.noteIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  color: #a3730c;
+  background-color: #fff7e6;
+  border: 1px solid #f0dcae;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+.noteText {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #46506e;
+}
+
+/* ---------- steps ---------- */
+
+.steps {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.125rem;
+  border-radius: 1rem;
+  background-color: #fff;
+  border: 1px solid $line;
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.04);
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  animation: rise 0.45s ease both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+
+  &:hover {
+    transform: translateX(0.25rem);
+    border-color: #d7dfef;
+    box-shadow: 0 14px 26px -22px rgba(20, 21, 58, 0.6);
+  }
+}
+
+.stepIndex {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(140deg, #33338a 0%, #14153a 100%);
+  box-shadow: 0 8px 16px -10px rgba(20, 21, 58, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepText {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: $ink;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .step {
+    animation: none;
+  }
+
+  .card:hover,
+  .step:hover {
+    transform: none;
+  }
+}
+
+/* ---------- responsive ---------- */
+
+@media screen and (max-width: 64em) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .page {
+    padding: 4.5rem 1rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .hero {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .heroTitle {
+    font-size: 1.65rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    padding: 1.125rem;
+  }
+
+  .cardPoints {
+    font-size: 2.25rem;
+  }
+
+  .note {
+    padding: 1rem;
+  }
+
+  .step {
+    padding: 0.8rem 1rem;
   }
 }

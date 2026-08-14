@@ -1,19 +1,77 @@
 import { useState } from 'react';
 import cn from 'classnames';
-import { Card, TextInput } from 'components';
-import { IMatch, ITournament } from 'interfaces';
+import { IMatch, ITournament, MatchStatus } from 'interfaces';
 import { normalizeMatchDate, normalizeMatchTime, notify, resolveAssetUrl } from 'helpers';
 import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
-import ShowPredicts from '../ShowPredicts/ShowPredicts';
 import useModal from 'hooks/useModal';
-import { MoreIcon } from 'assets/icons';
+import ShowPredicts from '../ShowPredicts/ShowPredicts';
 import styles from './MatchCard.module.scss';
 
 interface MatchCardProps {
   match: IMatch;
   tournament: ITournament;
 }
+
+const stageLabels: Record<string, string> = {
+  'Knockout Playoff': 'Раунд плей-оф',
+  'Round of 16': '1/8 фіналу',
+  Quarterfinals: '1/4 фіналу',
+  Semifinals: '1/2 фіналу',
+  Final: 'Фінал',
+  'Third Place Playoff': 'Матч за 3-тє місце',
+};
+
+const getPointsTone = (points: number) => {
+  if (points >= 6) {
+    return 'orange';
+  }
+
+  if (points >= 5) {
+    return 'gold';
+  }
+
+  if (points >= 3) {
+    return 'teal';
+  }
+
+  if (points >= 2) {
+    return 'blue';
+  }
+
+  return 'neutral';
+};
+
+const CheckIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    className={styles.toastIcon}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+);
+
+const ListIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    className={styles.buttonIcon}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.7}
+    strokeLinecap="round"
+    strokeLinejoin="round">
+    <path d="M9 7h11M9 12h11M9 17h11" />
+    <circle cx="5" cy="7" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="12" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="5" cy="17" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+);
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const dispatch = useAppDispatch();
@@ -24,6 +82,12 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const [awayScore, setAwayScore] = useState<string>(match?.predict?.awayScore.toString() || '');
 
   const [toastShown, setToastShown] = useState<boolean>(false);
+
+  const isScheduled = match.status === MatchStatus.SCHEDULED;
+  const isLive = match.status === MatchStatus.IN_PROGRESS;
+  const points = match?.predict?.points || 0;
+  const hasPredict = homeScore !== '' && awayScore !== '';
+  const stageLabel = match.stage !== 'Group Stage' ? stageLabels[match.stage] || match.stage : '';
 
   const savePredict = async (home: string, away: string) => {
     try {
@@ -68,111 +132,111 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
     }
   };
 
+  const renderTeam = (team: IMatch['homeTeam'], side: 'home' | 'away') => (
+    <div className={styles.team}>
+      <span className={styles.teamLogo}>
+        <img src={resolveAssetUrl(team.logo)} alt={`${side} team logo`} />
+      </span>
+      <span className={styles.teamName} title={team.name}>
+        {team.name}
+      </span>
+    </div>
+  );
+
   return (
     <>
-      <Card className={cn(styles.match, { [styles.live]: match.status === 'Live' })}>
-        <div className={cn(styles.matchToast, { [styles.shown]: toastShown })}>Прогноз збережено</div>
-        {match.status === 'Live' && (
-          <div className={styles.matchLive}>
-            <span className={styles.matchLiveBlock}>
-              <span></span>
+      <article className={cn(styles.card, { [styles.live]: isLive, [styles.finished]: !isScheduled && !isLive })}>
+        <div className={cn(styles.toast, { [styles.toastShown]: toastShown })}>
+          <CheckIcon />
+          Прогноз збережено
+        </div>
+
+        <header className={styles.head}>
+          <div className={styles.headChips}>
+            {match.groupName && <span className={styles.chip}>Група {match.groupName}</span>}
+            {!!stageLabel && <span className={cn(styles.chip, styles.chipStage)}>{stageLabel}</span>}
+          </div>
+
+          {isLive ? (
+            <span className={cn(styles.chip, styles.chipLive)}>
+              <span className={styles.liveDot} />
               Live
             </span>
-          </div>
-        )}
-        <div key={match.id}>
-          {match.status !== 'Scheduled' && (
-            <div className={styles.matchPoints}>
-              <div
-                className={cn(styles.matchPointsReward, {
-                  [styles.success]: match?.predict?.points > 4,
-                  [styles.norm]: match?.predict?.points > 0 && match?.predict?.points < 5,
-                  [styles.bad]: Number(match?.predict?.points) === 0,
-                })}>
-                <span>{match?.predict?.points || 0}</span>
-              </div>
-              <button className={styles.matchPredicts} onClick={openModal}>
-                <MoreIcon />
-              </button>
-            </div>
+          ) : isScheduled ? (
+            <span className={styles.dateChip}>
+              {normalizeMatchDate(match.matchDate)}
+              <span className={styles.dateTime}>{normalizeMatchTime(match.matchDate)}</span>
+            </span>
+          ) : (
+            <span className={styles.chip}>Завершено</span>
           )}
-          <div className={styles.matchWrap}>
-            {match.groupName && (
-              <div className={styles.matchGroup}>
-                <span className={styles.matchGroupName}>Група {match.groupName}</span>
-              </div>
-            )}
-            {match.stage !== 'Group Stage' && (
-              <div className={styles.matchGroup}>
-                <span className={styles.matchGroupName}>{match.stage}</span>
-              </div>
-            )}
-            <div className={styles.matchDate}>
-              {match.status !== 'Scheduled' ? (
-                <div className={cn(styles.matchScore, { [styles.live]: match.status === 'Live' })}>
-                  {match.status === 'Finished' && 'Результат: '}
-                  <span>{match.homeScore}</span>
-                  <span>-</span>
-                  <span>{match.awayScore}</span>
-                </div>
-              ) : (
-                <>
-                  <span>{normalizeMatchDate(match.matchDate)}</span> <span>{normalizeMatchTime(match.matchDate)}</span>
-                </>
-              )}
-            </div>
-          </div>
-          <div className={styles.matchTeam}>
-            <div className={styles.matchTeamWrap}>
-              <img
-                src={resolveAssetUrl(match.homeTeam.logo)}
-                alt="home team logo"
-                className={styles.matchTeamLogo}
-              />
-              <span className={styles.matchTeamName}>{match.homeTeam.name}</span>
-            </div>
-            <div className={styles.matchPredict}>
-              {match.status === 'Scheduled' ? (
-                <>
-                  <TextInput
+        </header>
+
+        <div className={styles.body}>
+          {renderTeam(match.homeTeam, 'home')}
+
+          <div className={styles.center}>
+            {isScheduled ? (
+              <>
+                <span className={styles.centerLabel}>Ваш прогноз</span>
+                <div className={styles.inputs}>
+                  <input
                     name="home"
-                    placeholder=""
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]"
+                    maxLength={1}
                     value={homeScore}
                     onChange={handleChange}
-                    pattern="[0-9]"
-                    maxLength={1}
+                    className={styles.input}
+                    aria-label={`Прогноз для ${match.homeTeam.name}`}
                   />
-                  <TextInput
-                    placeholder=""
+                  <span className={styles.inputsDivider}>:</span>
+                  <input
                     name="away"
                     type="tel"
-                    value={awayScore}
-                    onChange={handleChange}
+                    inputMode="numeric"
                     pattern="[0-9]"
                     maxLength={1}
+                    value={awayScore}
+                    onChange={handleChange}
+                    className={styles.input}
+                    aria-label={`Прогноз для ${match.awayTeam.name}`}
                   />
-                </>
-              ) : (
-                <div className={styles.matchPredictLive}>
-                  <div className={styles.matchPredictPredict}>
-                    <span>{homeScore}</span>
-                    <span>{awayScore}</span>
-                  </div>
                 </div>
-              )}
-            </div>
-            <div className={styles.matchTeamWrap}>
-              <img
-                src={resolveAssetUrl(match.awayTeam.logo)}
-                alt="away team logo"
-                className={styles.matchTeamLogo}
-              />
-              <span className={styles.matchTeamName}>{match.awayTeam.name}</span>
-            </div>
+              </>
+            ) : (
+              <>
+                <div className={cn(styles.score, { [styles.scoreLive]: isLive })}>
+                  <span className={styles.scoreValue}>{match.homeScore}</span>
+                  <span className={styles.scoreDash}>:</span>
+                  <span className={styles.scoreValue}>{match.awayScore}</span>
+                </div>
+                <span className={styles.predictChip}>
+                  {hasPredict ? `Ваш прогноз ${homeScore}:${awayScore}` : 'Прогнозу не було'}
+                </span>
+              </>
+            )}
           </div>
+
+          {renderTeam(match.awayTeam, 'away')}
         </div>
-      </Card>
+
+        {!isScheduled && (
+          <footer className={styles.foot}>
+            <div className={styles.pointsWrap}>
+              <span className={cn(styles.points, styles[getPointsTone(points)])}>{points}</span>
+              <span className={styles.pointsLabel}>{points === 1 ? 'очко' : 'очок'} за прогноз</span>
+            </div>
+
+            <button type="button" className={styles.predictsButton} onClick={openModal}>
+              <ListIcon />
+              Всі прогнози
+            </button>
+          </footer>
+        )}
+      </article>
+
       {isOpen && <ShowPredicts match={match} isOpen={isOpen} onClose={closeModal} />}
     </>
   );

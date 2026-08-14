@@ -1,17 +1,23 @@
-import { useCallback, useEffect } from 'react';
-import { Outlet, useOutletContext, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo } from 'react';
+import cn from 'classnames';
+import { NavLink, Outlet, useOutletContext, useParams } from 'react-router-dom';
+import Skeleton from 'react-loading-skeleton';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getMatches } from 'store/slices/match';
 import { getTournamentStandings } from 'store/slices/tournament';
-import { NavLink } from 'react-router-dom';
-import styles from './Tournament.module.scss';
-import { ITournament } from 'interfaces';
 import { getPredictsTable } from 'store/slices/predict';
-import Skeleton from 'react-loading-skeleton';
+import { ITournament, TournamentStatus } from 'interfaces';
 import { notify, playNotification, resolveAssetUrl, supabase } from 'helpers';
+import styles from './Tournament.module.scss';
 
 type ContextType = {
   tournament: ITournament;
+};
+
+const statusLabels: Record<TournamentStatus, string> = {
+  scheduled: 'Заплановано',
+  live: 'Live',
+  completed: 'Завершено',
 };
 
 const Tournament: React.FC = () => {
@@ -106,65 +112,110 @@ const Tournament: React.FC = () => {
     };
   }, [getStandings, tournamentId]);
 
+  const navItems = useMemo(() => {
+    if (!tournament) {
+      return [];
+    }
+
+    return [
+      { to: `/tournament/${tournament.id}`, label: 'Прогнози', end: true },
+      ...(tournament.hasTable ? [{ to: `/tournament/${tournament.id}/standings`, label: 'Турнірна таблиця' }] : []),
+      { to: `/tournament/${tournament.id}/leagues`, label: 'Загальна ліга' },
+      { to: `/tournament/${tournament.id}/rooms`, label: 'Кімнати' },
+      { to: `/tournament/${tournament.id}/achievements`, label: 'Досягнення' },
+    ];
+  }, [tournament]);
+
+  const logoUrl = tournament?.logo ? resolveAssetUrl(tournament.logo) : '';
+
   return (
     <div className={styles.tournament}>
-      <header className={styles.tournamentHeader}>
-        <div className={styles.tournamentHead}>
-          <div className={styles.tournamentLogo}>
-            {!tournament?.logo ? <Skeleton /> : <img src={resolveAssetUrl(tournament?.logo)} alt={tournament?.name} />}
+      <header className={styles.header}>
+        {!!logoUrl && <div className={styles.backdrop} style={{ backgroundImage: `url(${logoUrl})` }} aria-hidden />}
+        <div className={styles.veil} aria-hidden />
+        <div className={styles.glow} aria-hidden />
+
+        <div className={styles.headerInner}>
+          <div className={styles.identity}>
+            <div className={styles.logo}>
+              {logoUrl ? (
+                <img src={logoUrl} alt={tournament?.name} />
+              ) : (
+                <Skeleton height="100%" containerClassName={styles.logoSkeleton} />
+              )}
+            </div>
+
+            <div className={styles.identityText}>
+              <div className={styles.badges}>
+                {tournament?.status && (
+                  <span className={cn(styles.statusBadge, styles[tournament.status])}>
+                    <span className={styles.statusDot} />
+                    {statusLabels[tournament.status]}
+                  </span>
+                )}
+                {!!tournament && (
+                  <span className={styles.metaBadge}>
+                    {tournament.type === 'national' ? 'Національний' : 'Клубний'}
+                  </span>
+                )}
+                {!!tournament && tournament.groupNumber > 1 && (
+                  <span className={styles.metaBadge}>Груп: {tournament.groupNumber}</span>
+                )}
+                {!!tournament && tournament.knockoutRound > 0 && (
+                  <span className={styles.metaBadge}>Плей-оф: {tournament.knockoutRound}</span>
+                )}
+              </div>
+
+              <h1 className={styles.name}>
+                {tournament?.name || (
+                  <Skeleton
+                    width="60%"
+                    height="2rem"
+                    baseColor="rgba(255, 255, 255, 0.14)"
+                    highlightColor="rgba(255, 255, 255, 0.26)"
+                  />
+                )}
+              </h1>
+            </div>
           </div>
-          <h1 className={styles.tournamentName}>{tournament?.name}</h1>
-        </div>
-        <nav className={styles.tournamentNav}>
-          <ul className={styles.tournamentNavList}>
-            <li className={styles.tournamentNavListItem}>
-              <NavLink
-                className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament?.id}`}
-                end>
-                Прогнози
-              </NavLink>
-            </li>
-            {tournament?.hasTable && (
-              <li className={styles.tournamentNavListItem}>
-                <NavLink
-                  className={({ isActive }) => (isActive ? styles.active : '')}
-                  to={`/tournament/${tournament.id}/standings`}>
-                  Турнірна таблиця
-                </NavLink>
-              </li>
+
+          <nav className={styles.nav}>
+            {!!navItems.length && (
+              <ul className={styles.navList}>
+                {navItems.map((item) => (
+                  <li className={styles.navItem} key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) => cn(styles.navLink, { [styles.active]: isActive })}>
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
             )}
-            <li className={styles.tournamentNavListItem}>
-              <NavLink
-                className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament?.id}/leagues`}>
-                Загальна ліга
-              </NavLink>
-            </li>
-            <li className={styles.tournamentNavListItem}>
-              <NavLink
-                className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament?.id}/rooms`}>
-                Кімнати
-              </NavLink>
-            </li>
-            <li className={styles.tournamentNavListItem}>
-              <NavLink
-                className={({ isActive }) => (isActive ? styles.active : '')}
-                to={`/tournament/${tournament?.id}/achievements`}>
-                Досягнення
-              </NavLink>
-            </li>
-          </ul>
-        </nav>
-        <div
-          className={styles.tournamentOverlay}
-          style={{ backgroundImage: `url(${resolveAssetUrl(tournament?.logo)})` }}
-        />
+
+            {!navItems.length && (
+              <ul className={styles.navList}>
+                {Array.from({ length: 4 }, (_, index) => (
+                  <li className={styles.navItem} key={index}>
+                    <span className={styles.navSkeleton} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </nav>
+        </div>
       </header>
+
       {isLoading || !tournament ? (
-        <div className={styles.tournamentHeader}>
-          <Skeleton height={300} />
+        <div className={styles.contentSkeleton}>
+          <span className={cn(styles.skeletonBlock, styles.skeletonHero)} />
+          <div className={styles.skeletonGrid}>
+            {Array.from({ length: 6 }, (_, index) => (
+              <span className={styles.skeletonBlock} key={index} />
+            ))}
+          </div>
         </div>
       ) : (
         <Outlet context={{ tournament } satisfies ContextType} />

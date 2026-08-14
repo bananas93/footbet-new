@@ -1,30 +1,536 @@
-.home {
-  padding: 6rem 2rem 2rem;
-  &Row {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
-    gap: 1rem;
+$ink: #0f1230;
+$muted: #6b7590;
+$line: #e9edf6;
+$radius: 1.25rem;
+
+.page {
+  padding: 5.5rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---------- hero ---------- */
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: $radius;
+  padding: 2rem 1.75rem;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(120, 92, 255, 0.5) 0%, rgba(120, 92, 255, 0) 55%),
+    radial-gradient(90% 120% at 0% 100%, rgba(0, 168, 255, 0.35) 0%, rgba(0, 168, 255, 0) 60%),
+    linear-gradient(135deg, #14153a 0%, #1b1b4a 45%, #0f1030 100%);
+  box-shadow: 0 18px 40px -18px rgba(20, 21, 58, 0.55);
+}
+
+.heroGlow {
+  position: absolute;
+  right: -6%;
+  bottom: -60%;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 199, 82, 0.32) 0%, rgba(244, 199, 82, 0) 65%);
+  pointer-events: none;
+}
+
+.heroContent {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.heroText {
+  min-width: 0;
+}
+
+.heroEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem 0.3rem 0.5rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffe6ad;
+}
+
+.heroEyebrowIcon {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.heroTitle {
+  margin: 0.85rem 0 0;
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.heroSubtitle {
+  margin: 0.5rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 34rem;
+}
+
+.heroMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  flex: 0 1 26rem;
+}
+
+.heroMetric {
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+  text-align: center;
+}
+
+.heroMetricLive {
+  background-color: rgba(224, 52, 43, 0.18);
+  border-color: rgba(255, 120, 110, 0.45);
+}
+
+.heroMetricValue {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.heroMetricLabel {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.02em;
+}
+
+/* ---------- section head ---------- */
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.sectionMeta {
+  font-size: 0.8125rem;
+  color: $muted;
+}
+
+/* ---------- status tones ---------- */
+
+.live {
+  --tone: #b8281f;
+  --tone-bright: #e0342b;
+  --tone-soft: #fff2f1;
+  --tone-border: #f6d5d2;
+  --tone-glow: rgba(224, 52, 43, 0.22);
+  --tone-shadow: rgba(184, 40, 31, 0.32);
+}
+
+.scheduled {
+  --tone: #a3730c;
+  --tone-bright: #f4c752;
+  --tone-soft: #fff7e6;
+  --tone-border: #f0dcae;
+  --tone-glow: rgba(244, 199, 82, 0.28);
+  --tone-shadow: rgba(163, 115, 12, 0.32);
+}
+
+.completed {
+  --tone: #12794a;
+  --tone-bright: #34c27c;
+  --tone-soft: #edfbf3;
+  --tone-border: #c6e9d6;
+  --tone-glow: rgba(52, 194, 124, 0.24);
+  --tone-shadow: rgba(18, 121, 74, 0.3);
+}
+
+/* ---------- cards ---------- */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border-radius: $radius;
+  background-color: #fff;
+  border: 1px solid $line;
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+  animation: rise 0.45s ease both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--tone-bright) 0%, var(--tone) 100%);
   }
-  &Tournament {
-    a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    img {
-      width: auto;
-      max-width: 15rem;
-      height: 10rem;
-      object-fit: contain;
-    }
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--tone-border);
+    box-shadow: 0 20px 36px -22px var(--tone-shadow);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--tone-bright);
+    outline-offset: 2px;
   }
 }
 
-@media screen and (max-width: 40em) {
-  .home {
-    padding: 4rem 1rem 1rem;
-    &Row {
-      grid-template-columns: initial;
-    }
+.cardGlow {
+  position: absolute;
+  top: -45%;
+  right: -12%;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--tone-glow) 0%, rgba(255, 255, 255, 0) 68%);
+  pointer-events: none;
+}
+
+.cardTop {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.cardLogo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 5.5rem;
+  height: 5.5rem;
+  padding: 0.65rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(150deg, #ffffff 0%, var(--tone-soft) 100%);
+  border: 1px solid var(--tone-border);
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--tone);
+  background-color: var(--tone-soft);
+  border: 1px solid var(--tone-border);
+  white-space: nowrap;
+}
+
+.statusDot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.live .statusDot {
+  animation: pulse 1.8s ease-out infinite;
+}
+
+.cardTitle {
+  position: relative;
+  margin: 0;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: $ink;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.chip {
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #55607d;
+  background-color: #f4f6fb;
+  border: 1px solid $line;
+  white-space: nowrap;
+}
+
+.cardCta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--tone);
+}
+
+.cardCtaIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  transition: transform 0.25s ease;
+}
+
+.card:hover .cardCtaIcon {
+  transform: translateX(0.25rem);
+}
+
+/* ---------- skeletons ---------- */
+
+.skeletonCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-radius: $radius;
+  background-color: #fff;
+  border: 1px solid $line;
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
+}
+
+.skeletonTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.skeletonBlock {
+  display: block;
+  border-radius: 0.6rem;
+  background: linear-gradient(90deg, #f2f5fa 0%, #e9eef7 50%, #f2f5fa 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeletonLogo {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 1.1rem;
+}
+
+.skeletonBadge {
+  width: 5rem;
+  height: 1.4rem;
+  border-radius: 999px;
+}
+
+.skeletonLine {
+  width: 75%;
+  height: 1.35rem;
+}
+
+.skeletonLineShort {
+  width: 45%;
+  height: 1rem;
+}
+
+/* ---------- empty ---------- */
+
+.emptyCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.4rem;
+  padding: 3.5rem 1.5rem;
+  border-radius: $radius;
+  background-color: #fff;
+  border: 1px solid $line;
+  box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
+}
+
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin-bottom: 0.35rem;
+  border-radius: 1.1rem;
+  color: #a3730c;
+  background-color: #fff7e6;
+  border: 1px solid #f0dcae;
+
+  svg {
+    width: 1.9rem;
+    height: 1.9rem;
+  }
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: $muted;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--tone-glow);
+  }
+
+  70% {
+    box-shadow: 0 0 0 0.35rem rgba(224, 52, 43, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 52, 43, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .skeletonBlock,
+  .statusDot {
+    animation: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+
+  .card:hover .cardCtaIcon {
+    transform: none;
+  }
+}
+
+/* ---------- responsive ---------- */
+
+@media screen and (max-width: 64em) {
+  .heroMetrics {
+    flex: 1 1 100%;
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .page {
+    padding: 4.5rem 1rem 1.5rem;
+    gap: 1rem;
+  }
+
+  .hero {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .heroTitle {
+    font-size: 1.65rem;
+  }
+
+  .heroSubtitle {
+    font-size: 0.875rem;
+  }
+
+  .heroMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cardLogo {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .skeletonLogo {
+    width: 4.5rem;
+    height: 4.5rem;
+  }
+
+  .cardTitle {
+    font-size: 1.0625rem;
   }
 }
