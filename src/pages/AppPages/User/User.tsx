@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import cn from 'classnames';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { TextInput } from 'components';
 import { useForm } from 'hooks';
 import { getUserDisplayName, getUserInitials, notify, resolveAssetUrl } from 'helpers';
 import { useAppDispatch, useAppSelector } from 'store';
-import { changeUserPassword, editUserProfile } from 'store/slices/user';
+import { changeUserPassword, deleteUserAccount, editUserProfile } from 'store/slices/user';
 import { signOutUser } from 'store/slices/auth';
 import styles from './User.module.scss';
 
@@ -37,7 +37,6 @@ interface FormValues {
   name: string;
   nickname: string;
   phone: string;
-  avatar: string;
 }
 
 interface ChangePasswordFormValues {
@@ -98,6 +97,15 @@ const TagIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const GoogleIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M15.7 12h-3.8" />
+    <path d="M10.8 8.9a3.7 3.7 0 1 0 0 6.2" />
+    <path d="M15.7 12a3.7 3.7 0 0 1-4.9 3.5" />
+  </svg>
+);
+
 const UserSkeleton = () => (
   <div className={styles.page}>
     <span className={cn(styles.skeletonBlock, styles.skeletonHero)} />
@@ -113,10 +121,13 @@ const User: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
   const { isLoading } = useAppSelector((state) => state.user.editUserProfileRequest);
   const { isLoading: isPasswordLoading } = useAppSelector((state) => state.user.changeUserPasswordRequest);
+  const isDeleteLoading = useAppSelector((state) => state.user.deleteUserAccountRequest?.isLoading || false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const handleSaveProfile = async (formValues: FormValues) => {
     try {
-      await dispatch(editUserProfile(formValues)).unwrap();
+      await dispatch(editUserProfile({ ...formValues, avatarFile })).unwrap();
+      setAvatarFile(null);
       notify.success('Профіль збережено');
     } catch (err: any) {
       notify.error(err.message);
@@ -128,7 +139,6 @@ const User: React.FC = () => {
       name: user?.name || '',
       phone: user?.phone || '',
       nickname: user?.nickname || '',
-      avatar: '',
     },
     validationRules,
     (submittedValues: FormValues) => {
@@ -168,10 +178,18 @@ const User: React.FC = () => {
 
   const isFormChanged = () => {
     const formValues = {
-      ...user,
-      ...values,
+      name: values.name,
+      nickname: values.nickname,
+      phone: values.phone,
     };
-    return JSON.stringify(formValues) !== JSON.stringify(user);
+
+    const originalValues = {
+      name: user?.name || '',
+      nickname: user?.nickname || '',
+      phone: user?.phone || '',
+    };
+
+    return JSON.stringify(formValues) !== JSON.stringify(originalValues) || !!avatarFile;
   };
 
   const isChanged = isFormChanged();
@@ -179,6 +197,31 @@ const User: React.FC = () => {
   const handleLogout = async () => {
     await dispatch(signOutUser());
     localStorage.removeItem('reduxState');
+  };
+
+  const handleDeleteAccount = async () => {
+    const firstConfirm = window.confirm('Видалити акаунт назавжди? Цю дію неможливо скасувати.');
+    if (!firstConfirm) {
+      return;
+    }
+
+    const secondConfirm = window.confirm('Підтвердіть ще раз: буде видалено профіль, прогнози та участь у кімнатах.');
+    if (!secondConfirm) {
+      return;
+    }
+
+    try {
+      await dispatch(deleteUserAccount()).unwrap();
+      localStorage.removeItem('reduxState');
+      notify.success('Акаунт видалено');
+      try {
+        await dispatch(signOutUser()).unwrap();
+      } catch {
+        // Session can become invalid right after deletion.
+      }
+    } catch (err: any) {
+      notify.error(err.message);
+    }
   };
 
   useEffect(() => {
@@ -195,6 +238,7 @@ const User: React.FC = () => {
   const displayName = getUserDisplayName(user.name, user.nickname);
   const initials = getUserInitials(user.name, user.nickname);
   const avatarUrl = resolveAssetUrl(user.avatar);
+  const isGoogleAuth = user.authProvider === 'google';
 
   return (
     <div className={styles.page}>
@@ -218,6 +262,12 @@ const User: React.FC = () => {
                   <span className={styles.heroChip}>
                     <TagIcon className={styles.heroChipIcon} />
                     {user.nickname}
+                  </span>
+                )}
+                {isGoogleAuth && (
+                  <span className={cn(styles.heroChip, styles.googleChip)}>
+                    <GoogleIcon className={styles.heroChipIcon} />
+                    Вхід через Google
                   </span>
                 )}
               </div>
@@ -247,8 +297,8 @@ const User: React.FC = () => {
               <LockIcon />
             </span>
             <span className={styles.navText}>
-              <span className={styles.navTitle}>Зміна паролю</span>
-              <span className={styles.navMeta}>Безпека акаунта</span>
+              <span className={styles.navTitle}>{isGoogleAuth ? 'Спосіб входу' : 'Зміна паролю'}</span>
+              <span className={styles.navMeta}>{isGoogleAuth ? 'Підключено Google' : 'Безпека акаунта'}</span>
             </span>
           </Tab>
           <Tab className={styles.navItem}>
@@ -306,6 +356,26 @@ const User: React.FC = () => {
                     value={values.phone}
                   />
                 </div>
+                <div className={styles.field}>
+                  <label className={styles.fileLabel} htmlFor="avatarFile">
+                    Аватар
+                  </label>
+                  <input
+                    id="avatarFile"
+                    name="avatarFile"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className={styles.fileInput}
+                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                  />
+                  <span className={styles.fieldHint}>
+                    {avatarFile
+                      ? `Обрано файл: ${avatarFile.name}`
+                      : isGoogleAuth
+                        ? 'Можна завантажити власний аватар, навіть якщо вхід через Google'
+                        : 'Підтримуються PNG, JPG, WEBP, SVG'}
+                  </span>
+                </div>
               </div>
 
               <div className={styles.panelFooter}>
@@ -330,50 +400,69 @@ const User: React.FC = () => {
                   <LockIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Зміна паролю</h2>
-                  <p className={styles.panelMeta}>Мінімум 8 символів, бажано з цифрами та літерами різного регістру</p>
+                  <h2 className={styles.panelTitle}>{isGoogleAuth ? 'Вхід через Google' : 'Зміна паролю'}</h2>
+                  <p className={styles.panelMeta}>
+                    {isGoogleAuth
+                      ? 'Цей акаунт авторизується через Google, тому локальний пароль Footbet не використовується.'
+                      : 'Мінімум 8 символів, бажано з цифрами та літерами різного регістру'}
+                  </p>
                 </div>
               </header>
 
-              <div className={cn(styles.form, styles.formNarrow)}>
-                <div className={styles.field}>
-                  <TextInput
-                    name="oldPassword"
-                    label="Поточний пароль"
-                    type="password"
-                    onChange={(e) => handlePassChange('oldPassword', e.target.value)}
-                    value={passValues.oldPassword}
-                    error={passErrors.oldPassword}
-                  />
+              {isGoogleAuth ? (
+                <div className={styles.providerNotice}>
+                  <span className={styles.providerBadge}>
+                    <GoogleIcon className={styles.providerBadgeIcon} />
+                    Google OAuth
+                  </span>
+                  <p>
+                    Для зміни пароля використовуйте налаштування безпеки Google. Після зміни в Google новий пароль автоматично діятиме і для входу у Footbet через Google.
+                  </p>
+                  <p className={styles.providerHint}>Email акаунту: {user.email}</p>
                 </div>
-                <div className={styles.field}>
-                  <TextInput
-                    name="password"
-                    label="Новий пароль"
-                    type="password"
-                    onChange={(e) => handlePassChange('password', e.target.value)}
-                    value={passValues.password}
-                    error={passErrors.password}
-                  />
-                </div>
-                <div className={styles.field}>
-                  <TextInput
-                    name="confirmPassword"
-                    label="Підтвердження нового паролю"
-                    type="password"
-                    onChange={(e) => handlePassChange('confirmPassword', e.target.value)}
-                    value={passValues.confirmPassword}
-                    error={passErrors.confirmPassword}
-                  />
-                </div>
-              </div>
+              ) : (
+                <>
+                  <div className={cn(styles.form, styles.formNarrow)}>
+                    <div className={styles.field}>
+                      <TextInput
+                        name="oldPassword"
+                        label="Поточний пароль"
+                        type="password"
+                        onChange={(e) => handlePassChange('oldPassword', e.target.value)}
+                        value={passValues.oldPassword}
+                        error={passErrors.oldPassword}
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <TextInput
+                        name="password"
+                        label="Новий пароль"
+                        type="password"
+                        onChange={(e) => handlePassChange('password', e.target.value)}
+                        value={passValues.password}
+                        error={passErrors.password}
+                      />
+                    </div>
+                    <div className={styles.field}>
+                      <TextInput
+                        name="confirmPassword"
+                        label="Підтвердження нового паролю"
+                        type="password"
+                        onChange={(e) => handlePassChange('confirmPassword', e.target.value)}
+                        value={passValues.confirmPassword}
+                        error={passErrors.confirmPassword}
+                      />
+                    </div>
+                  </div>
 
-              <div className={styles.panelFooter}>
-                <span className={styles.footerHint}>Після зміни паролю сесія залишиться активною</span>
-                <button type="button" className={styles.submit} onClick={handlePassSubmit} disabled={isPasswordLoading}>
-                  {isPasswordLoading ? 'Змінюємо...' : 'Змінити пароль'}
-                </button>
-              </div>
+                  <div className={styles.panelFooter}>
+                    <span className={styles.footerHint}>Після зміни паролю сесія залишиться активною</span>
+                    <button type="button" className={styles.submit} onClick={handlePassSubmit} disabled={isPasswordLoading}>
+                      {isPasswordLoading ? 'Змінюємо...' : 'Змінити пароль'}
+                    </button>
+                  </div>
+                </>
+              )}
             </section>
           </TabPanel>
 
@@ -476,6 +565,21 @@ const User: React.FC = () => {
                   Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка, зв'яжіться
                   з нами за електронною адресою: <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
                 </p>
+
+                <div className={styles.dangerZone}>
+                  <h3>Видалення акаунта</h3>
+                  <p>
+                    Після видалення акаунта всі ваші персональні дані, прогнози та членство в кімнатах будуть безповоротно
+                    видалені.
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.deleteButton}
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleteLoading}>
+                    {isDeleteLoading ? 'Видаляємо акаунт...' : 'Видалити акаунт'}
+                  </button>
+                </div>
               </div>
             </section>
           </TabPanel>

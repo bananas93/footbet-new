@@ -33,11 +33,13 @@ const normalizeRoom = (item: any): IRoom => ({
     .map((member: any) => ({
       id: member.user_id,
       name: getUserDisplayName(member.profiles?.name, member.profiles?.nickname),
+      avatar: member.profiles?.avatar || '',
     }))
     .sort((a: any, b: any) => a.name.localeCompare(b.name)),
   creator: {
     id: item.creator?.id || item.creator_id,
     name: getUserDisplayName(item.creator?.name, item.creator?.nickname),
+    avatar: item.creator?.avatar || '',
   },
   createdAt: item.created_at,
   updatedAt: item.updated_at,
@@ -55,10 +57,10 @@ export const getRooms = createAsyncThunk('room/getRooms', async () => {
       creator_id,
       created_at,
       updated_at,
-      creator:profiles!rooms_creator_id_fkey(id, name, nickname),
+      creator:profiles!rooms_creator_id_fkey(id, name, nickname, avatar),
       room_members(
         user_id,
-        profiles(id, name, nickname)
+        profiles(id, name, nickname, avatar)
       )
     `,
     )
@@ -83,10 +85,10 @@ export const getOneRoom = createAsyncThunk('room/getOneRoom', async (id: number)
       creator_id,
       created_at,
       updated_at,
-      creator:profiles!rooms_creator_id_fkey(id, name, nickname),
+      creator:profiles!rooms_creator_id_fkey(id, name, nickname, avatar),
       room_members(
         user_id,
-        profiles(id, name, nickname)
+        profiles(id, name, nickname, avatar)
       )
     `,
     )
@@ -190,12 +192,35 @@ export const getRoomLeaderboard = createAsyncThunk(
       throw new Error(error.message);
     }
 
+    const userIds = Array.from(
+      new Set(
+        (data || [])
+          .map((item: any) => item.id)
+          .filter((value: string | null | undefined): value is string => !!value),
+      ),
+    );
+
+    let avatarsByUserId = new Map<string, string>();
+    if (userIds.length) {
+      const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, avatar').in('id', userIds);
+      if (profilesError) {
+        throw new Error(profilesError.message);
+      }
+
+      avatarsByUserId = new Map(
+        (profiles || [])
+          .filter((profile: any) => !!profile.id)
+          .map((profile: any) => [profile.id, profile.avatar || '']),
+      );
+    }
+
     return {
       roomId,
       tournamentId,
       rows: (data || []).map((item: any) => ({
         id: item.id,
         name: item.name,
+        avatar: avatarsByUserId.get(item.id) || '',
         totalMatches: item.total_matches,
         points: item.points,
         correctScore: item.correct_score,

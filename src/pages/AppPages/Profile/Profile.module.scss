@@ -153,6 +153,49 @@ $radius: 1.25rem;
   max-width: 30rem;
 }
 
+.filterRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.filterLabel {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  padding-left: 0.35rem;
+}
+
+.filterSelect {
+  min-width: 13.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background-color: rgba(20, 21, 58, 0.35);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.34rem 0.8rem;
+  cursor: pointer;
+
+  &:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.45);
+    outline-offset: 2px;
+  }
+
+  option {
+    color: #11152f;
+    background-color: #fff;
+  }
+}
+
 .heroMetrics {
   display: grid;
   grid-auto-flow: column;
@@ -905,6 +948,22 @@ $radius: 1.25rem;
 
   .heroSubtitle {
     font-size: 0.8125rem;
+  }
+
+  .filterRow {
+    width: 100%;
+    border-radius: 0.85rem;
+    padding: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filterLabel {
+    padding-left: 0;
+  }
+
+  .filterSelect {
+    min-width: 0;
+    width: 100%;
   }
 
   .heroMetrics {

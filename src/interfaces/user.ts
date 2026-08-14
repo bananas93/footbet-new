@@ -6,6 +6,7 @@ export interface IUser {
   nickname?: string;
   avatar?: string;
   role: string;
+  authProvider?: string;
 }
 
 export interface IStatistics {

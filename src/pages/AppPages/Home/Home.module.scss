@@ -240,22 +240,25 @@ $radius: 1.25rem;
 }
 
 .cardLogo {
-  display: grid;
-  place-items: center;
+  display: flex;
   flex: 0 0 auto;
   width: 5.5rem;
   height: 5.5rem;
-  padding: 0.65rem;
+  padding: 0.35rem;
   border-radius: 1.1rem;
   background: linear-gradient(150deg, #ffffff 0%, var(--tone-soft) 100%);
   border: 1px solid var(--tone-border);
+  align-items: center;
+  justify-content: center;
 
   img {
+    display: block;
     max-width: 100%;
     max-height: 100%;
     width: auto;
     height: auto;
     object-fit: contain;
+    object-position: center;
   }
 }
 

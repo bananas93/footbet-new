@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import cn from 'classnames';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
+import { getTournaments } from 'store/slices/tournament';
 import { getProfile } from 'store/slices/profile';
 import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import styles from './Profile.module.scss';
@@ -80,6 +81,26 @@ const PREDICTION_LABELS: Record<string, string> = {
   draw: 'Нічия',
 };
 
+const EMPTY_STATISTICS = {
+  total: 0,
+  totalPoints: 0,
+  correctScore: 0,
+  correctDifference: 0,
+  fivePlusGoals: 0,
+  correctResult: 0,
+  correctScorePercentage: 0,
+  correctResultPercentage: 0,
+  correctScorePerRow: 0,
+  correctResultPerRow: 0,
+  longestLosingStreak: 0,
+  mostCommonCorrectScore: '',
+  correctHomePredictions: 0,
+  correctAwayPredictions: 0,
+  mostCommonPrediction: 'draw' as const,
+  topFiveFavoriteTeams: [] as Array<{ team: string; points: number }>,
+  mostPopularPredictedScore: '',
+};
+
 const toPercent = (value: number, total: number) => (total > 0 ? Math.round((value / total) * 100) : 0);
 
 const isScore = (value?: string | null) => !!value && /^\d+\s*-\s*\d+$/.test(value.trim());
@@ -111,20 +132,51 @@ const ProfileMessage = ({ title, text }: { title: string; text: string }) => (
 const Profile = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading } = useAppSelector((state) => state.profile.getProfileRequest);
+  const tournaments = useAppSelector((state) => state.tournament.tournaments);
   const { userId, tournamentId } = useParams<{ userId: string; tournamentId: string }>();
+  const queryTournamentId = searchParams.get('tournamentId');
+
+  const parsedRouteTournamentId = tournamentId ? Number(tournamentId) : NaN;
+  const selectedTournamentId = queryTournamentId || (Number.isFinite(parsedRouteTournamentId) ? String(parsedRouteTournamentId) : 'all');
+  const selectedTournamentNumeric = selectedTournamentId === 'all' ? null : Number(selectedTournamentId);
+
+  const selectedTournamentName = useMemo(() => {
+    if (selectedTournamentId === 'all') {
+      return 'Всі турніри';
+    }
+
+    return tournaments.find((item) => String(item.id) === selectedTournamentId)?.name || 'Обраний турнір';
+  }, [selectedTournamentId, tournaments]);
+
+  useEffect(() => {
+    if (!tournaments.length) {
+      dispatch(getTournaments());
+    }
+  }, [dispatch, tournaments.length]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        await dispatch(getProfile({ userId: Number(userId), tournamentId: Number(tournamentId) })).unwrap();
+        await dispatch(getProfile({ userId: userId || '', tournamentId: selectedTournamentNumeric })).unwrap();
       } catch (err: any) {
         console.error(err.message);
       }
     };
 
     fetchUser();
-  }, [dispatch, tournamentId, userId]);
+  }, [dispatch, selectedTournamentNumeric, userId]);
+
+  const handleTournamentFilterChange = (value: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (value === 'all') {
+      next.delete('tournamentId');
+    } else {
+      next.set('tournamentId', value);
+    }
+    setSearchParams(next, { replace: true });
+  };
 
   const profileDisplayName = getUserDisplayName(data?.user?.name, data?.user?.nickname);
 
@@ -138,13 +190,9 @@ const Profile = () => {
     };
   }, [data?.user, profileDisplayName]);
 
-  const statistics = data?.statistics;
+  const statistics = data?.statistics || EMPTY_STATISTICS;
 
   const accuracyCards = useMemo(() => {
-    if (!statistics) {
-      return [];
-    }
-
     const total = statistics.total || 0;
 
     return [
@@ -184,10 +232,6 @@ const Profile = () => {
   }, [statistics]);
 
   const streaks = useMemo(() => {
-    if (!statistics) {
-      return [];
-    }
-
     return [
       {
         key: 'scoreRow',
@@ -221,12 +265,13 @@ const Profile = () => {
     return <ProfileMessage title="Некоректне посилання" text="Не вдалося визначити гравця. Спробуйте ще раз." />;
   }
 
-  if (!data || !statistics) {
-    return <ProfileMessage title="Дані не знайдено" text="Профіль цього гравця недоступний у поточному турнірі." />;
+  if (!data) {
+    return <ProfileMessage title="Профіль недоступний" text="Не вдалося завантажити профіль гравця. Спробуйте пізніше." />;
   }
 
   const total = statistics.total || 0;
   const hasPredictions = total > 0;
+  const isAllTournaments = selectedTournamentId === 'all';
 
   const avatarUrl = resolveAssetUrl(data.user?.avatar);
   const initials = getUserInitials(data.user?.name, data.user?.nickname);
@@ -271,9 +316,27 @@ const Profile = () => {
                 <h1 className={styles.heroTitle}>{profileDisplayName}</h1>
                 <p className={styles.heroSubtitle}>
                   {hasPredictions
-                    ? 'Статистика прогнозів гравця в цьому турнірі'
-                    : 'Гравець ще не зробив жодного прогнозу в цьому турнірі'}
+                    ? isAllTournaments
+                      ? 'Статистика прогнозів гравця в усіх турнірах'
+                      : 'Статистика прогнозів гравця в обраному турнірі'
+                    : isAllTournaments
+                      ? 'Гравець ще не зробив жодного прогнозу'
+                      : 'Гравець ще не зробив жодного прогнозу в обраному турнірі'}
                 </p>
+                <div className={styles.filterRow}>
+                  <span className={styles.filterLabel}>Оберіть турнір</span>
+                  <select
+                    className={styles.filterSelect}
+                    value={selectedTournamentId}
+                    onChange={(e) => handleTournamentFilterChange(e.target.value)}>
+                    <option value="all">Всі турніри</option>
+                    {tournaments.map((item) => (
+                      <option key={item.id} value={String(item.id)}>
+                        {item.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -295,7 +358,11 @@ const Profile = () => {
             <EmptyIcon />
           </span>
           <h2 className={styles.emptyTitle}>Ще немає прогнозів</h2>
-          <p className={styles.emptyText}>Статистика зʼявиться після першого зіграного матчу з прогнозом.</p>
+          <p className={styles.emptyText}>
+            {isAllTournaments
+              ? 'Статистика зʼявиться після першого зіграного матчу з прогнозом.'
+              : `Для турніру "${selectedTournamentName}" поки немає прогнозів.`}
+          </p>
         </div>
       ) : (
         <>

@@ -6,5 +6,6 @@ export interface IPredict {
   user?: {
     id: string;
     name: string;
+    avatar?: string;
   };
 }

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import cn from 'classnames';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAppSelector } from 'store';
-import { getUserDisplayName, getUserInitials } from 'helpers';
+import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import { useTournament } from '../../Tournament';
 import styles from './Achievements.module.scss';
 
@@ -13,6 +13,7 @@ type IconName = 'trophy' | 'target' | 'shield' | 'scales' | 'flame' | 'calendar'
 type Winner = {
   id: string;
   name: string;
+  avatar?: string;
 };
 
 type Achievement = {
@@ -149,7 +150,7 @@ const getRankBadge = (rank: number) => {
 };
 
 const getRankedWinners = (
-  entries: Array<{ id: string; name: string; value: number }>,
+  entries: Array<{ id: string; name: string; avatar?: string; value: number }>,
   minValue: number = Number.NEGATIVE_INFINITY,
 ) => {
   const eligible = entries.filter((item) => item.value > minValue);
@@ -162,7 +163,7 @@ const getRankedWinners = (
     value: maxValue,
     winners: eligible
       .filter((item) => item.value === maxValue)
-      .map((item) => ({ id: item.id, name: item.name }) as Winner),
+      .map((item) => ({ id: item.id, name: item.name, avatar: item.avatar }) as Winner),
   };
 };
 
@@ -193,10 +194,12 @@ const WinnersRow: React.FC<{ winners: Winner[]; tournamentId: number; limit?: nu
       {visible.map((winner) => (
         <Link
           key={winner.id}
-          to={`/tournament/${tournamentId}/achievements?userId=${winner.id}`}
+          to={`/profile/${winner.id}?tournamentId=${tournamentId}`}
           className={styles.winner}
           title={winner.name}>
-          <span className={styles.winnerAvatar}>{getUserInitials(winner.name)}</span>
+          <span className={styles.winnerAvatar}>
+            {winner.avatar ? <img src={resolveAssetUrl(winner.avatar)} alt={winner.name} /> : getUserInitials(winner.name)}
+          </span>
           <span className={styles.winnerName}>{winner.name}</span>
         </Link>
       ))}
@@ -219,7 +222,7 @@ const Achievements = () => {
     }
 
     const entries = (getter: (row: (typeof table)[number]) => number) =>
-      table.map((item) => ({ id: item.id, name: item.name, value: getter(item) }));
+      table.map((item) => ({ id: item.id, name: item.name, avatar: item.avatar, value: getter(item) }));
 
     const points = getRankedWinners(entries((item) => item.points));
     const exact = getRankedWinners(entries((item) => item.correctScore));
@@ -231,7 +234,7 @@ const Achievements = () => {
     const efficiency = getRankedWinners(
       table
         .filter((item) => item.totalMatches > 0)
-        .map((item) => ({ id: item.id, name: item.name, value: item.points / item.totalMatches })),
+        .map((item) => ({ id: item.id, name: item.name, avatar: item.avatar, value: item.points / item.totalMatches })),
       0,
     );
 
@@ -361,6 +364,7 @@ const Achievements = () => {
       found: true,
       isMissingUser: false,
       userName: myRow.name,
+      userAvatar: myRow.avatar,
       place: myIndex + 1,
       total: table.length,
       points: myRow.points,
@@ -394,6 +398,7 @@ const Achievements = () => {
       : 0;
 
   const panelName = mySummary && mySummary.found ? mySummary.userName : currentUserName;
+  const panelAvatar = mySummary && mySummary.found ? mySummary.userAvatar : user?.avatar;
 
   return (
     <div className={styles.container}>
@@ -508,7 +513,9 @@ const Achievements = () => {
 
             <div className={styles.myTitleRow}>
               <div className={styles.myIdentity}>
-                <span className={styles.myAvatar}>{getUserInitials(panelName)}</span>
+                <span className={styles.myAvatar}>
+                  {panelAvatar ? <img src={resolveAssetUrl(panelAvatar)} alt={panelName} /> : getUserInitials(panelName)}
+                </span>
                 <div>
                   <span className={styles.myEyebrow}>
                     {isViewingAnotherUser ? 'Досягнення гравця' : 'Мої досягнення'}

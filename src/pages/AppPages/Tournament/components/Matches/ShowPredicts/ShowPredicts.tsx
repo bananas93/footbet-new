@@ -140,10 +140,16 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
             return (
               <div className={cn(styles.row, { [styles.rowMe]: isMe })} key={item.id}>
                 <div className={cn(styles.col, styles.colName)}>
-                  <span className={styles.avatar}>{getUserInitials(item.user?.name)}</span>
+                  <span className={styles.avatar}>
+                    {item.user?.avatar ? (
+                      <img src={resolveAssetUrl(item.user.avatar)} alt={item.user?.name || 'User avatar'} />
+                    ) : (
+                      getUserInitials(item.user?.name)
+                    )}
+                  </span>
                   {item.user?.id ? (
                     <Link
-                      to={`/tournament/${match.tournamentId}/achievements?userId=${item.user.id}`}
+                      to={`/profile/${item.user.id}?tournamentId=${match.tournamentId}`}
                       className={styles.userLink}
                       title={item.user.name}>
                       {item.user.name || 'Unknown user'}

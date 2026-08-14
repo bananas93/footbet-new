@@ -13,7 +13,7 @@ export enum RoutesEnum {
   Tournament = '/tournament/:tournamentId',
   User = '/user',
   Rules = '/rules',
-  Profile = '/profile/:userId/:tournamentId',
+  Profile = '/profile/:userId',
 }
 
 export const AppRoutes = () => {
@@ -32,6 +32,7 @@ export const AppRoutes = () => {
     },
     { path: RoutesEnum.User, element: <User /> },
     { path: RoutesEnum.Profile, element: <Profile /> },
+    { path: '/profile/:userId/:tournamentId', element: <Profile /> },
     { path: RoutesEnum.Rules, element: <Rules /> },
     { path: '*', element: <Navigate to={RoutesEnum.Home} /> },
   ]);

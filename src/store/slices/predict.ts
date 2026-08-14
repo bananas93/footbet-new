@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
+import { createExtraReducersForResponses, createHttpRequestInitResult, getUserDisplayName, supabase } from 'helpers';
 import { IHttpRequestResult } from 'interfaces/api';
 import { IPredict } from 'interfaces';
 import { getMatches } from './match';
@@ -19,6 +19,7 @@ interface ISetPredictResponse {
 export interface IPredictTableResponse {
   id: string;
   name: string;
+  avatar?: string;
   totalMatches: number;
   points: number;
   correctScore: number;
@@ -89,9 +90,32 @@ export const getPredictsTable = createAsyncThunk('predict/getPredictsTable', asy
     throw new Error(error.message);
   }
 
+  const userIds = Array.from(
+    new Set(
+      (data || [])
+        .map((item: any) => item.user_id)
+        .filter((value: string | null | undefined): value is string => !!value),
+    ),
+  );
+
+  let avatarsByUserId = new Map<string, string>();
+  if (userIds.length) {
+    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, avatar').in('id', userIds);
+    if (profilesError) {
+      throw new Error(profilesError.message);
+    }
+
+    avatarsByUserId = new Map(
+      (profiles || [])
+        .filter((profile: any) => !!profile.id)
+        .map((profile: any) => [profile.id, profile.avatar || '']),
+    );
+  }
+
   return (data || []).map((item: any) => ({
     id: item.user_id,
     name: item.name,
+    avatar: avatarsByUserId.get(item.user_id) || '',
     totalMatches: item.total_matches,
     points: item.points,
     correctScore: item.correct_score,
@@ -104,7 +128,7 @@ export const getPredictsTable = createAsyncThunk('predict/getPredictsTable', asy
 export const getMatchPredicts = createAsyncThunk('predict/getMatchPredicts', async (matchId: number) => {
   const { data, error } = await supabase
     .from('predictions')
-    .select('id, home_score, away_score, points, user:profiles!predictions_user_id_fkey(id, name)')
+    .select('id, home_score, away_score, points, user:profiles!predictions_user_id_fkey(id, name, nickname, avatar)')
     .eq('match_id', matchId)
     .order('points', { ascending: false });
 
@@ -119,7 +143,8 @@ export const getMatchPredicts = createAsyncThunk('predict/getMatchPredicts', asy
     points: item.points,
     user: {
       id: item.user?.id,
-      name: item.user?.name || 'Unknown user',
+      name: getUserDisplayName(item.user?.name, item.user?.nickname),
+      avatar: item.user?.avatar || '',
     },
   })) as IPredict[];
 });

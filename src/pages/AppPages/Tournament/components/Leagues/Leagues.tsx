@@ -3,7 +3,7 @@ import cn from 'classnames';
 import { Link } from 'react-router-dom';
 import { useAppSelector } from 'store';
 import { useMobile } from 'hooks';
-import { getUserInitials } from 'helpers';
+import { getUserInitials, resolveAssetUrl } from 'helpers';
 import { useTournament } from '../../Tournament';
 import styles from './Leagues.module.scss';
 
@@ -159,9 +159,15 @@ const Leagues: React.FC = () => {
                 </div>
 
                 <div className={styles.podiumUser}>
-                  <span className={styles.podiumAvatar}>{getUserInitials(item.name)}</span>
+                  <span className={styles.podiumAvatar}>
+                    {item.avatar ? (
+                      <img src={resolveAssetUrl(item.avatar)} alt={item.name} />
+                    ) : (
+                      getUserInitials(item.name)
+                    )}
+                  </span>
                   <Link
-                    to={`/tournament/${tournament.id}/achievements?userId=${item.id}`}
+                    to={`/profile/${item.id}?tournamentId=${tournament.id}`}
                     className={styles.podiumName}
                     title={item.name}>
                     {item.name}
@@ -261,9 +267,11 @@ const Leagues: React.FC = () => {
                   <span className={cn(styles.rank, { [styles.rankMedal]: !!tone })}>{rank}</span>
                 </div>
                 <div className={cn(styles.col, styles.colName)}>
-                  <span className={styles.rowAvatar}>{getUserInitials(item.name)}</span>
+                  <span className={styles.rowAvatar}>
+                    {item.avatar ? <img src={resolveAssetUrl(item.avatar)} alt={item.name} /> : getUserInitials(item.name)}
+                  </span>
                   <Link
-                    to={`/tournament/${tournament.id}/achievements?userId=${item.id}`}
+                    to={`/profile/${item.id}?tournamentId=${tournament.id}`}
                     className={styles.userLink}
                     title={item.name}>
                     {item.name}

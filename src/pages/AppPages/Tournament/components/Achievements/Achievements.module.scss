@@ -466,6 +466,13 @@ $radius: 1.25rem;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(140deg, var(--tone-bright, #8494bb) 0%, var(--tone, #4a5675) 100%);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
 }
 
 .winnerName {
@@ -591,6 +598,13 @@ $radius: 1.25rem;
   color: #1a1b40;
   background: linear-gradient(140deg, #ffe9a8 0%, #f4c752 100%);
   box-shadow: 0 10px 20px -12px rgba(244, 199, 82, 0.8);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+  }
 }
 
 .myEyebrow {

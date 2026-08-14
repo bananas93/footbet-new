@@ -21,6 +21,11 @@ export const getUserProfile = createAsyncThunk('user/getUserProfile', async (_ba
     throw new Error('Користувач не авторизований');
   }
 
+  const authProvider =
+    (user.app_metadata?.provider as string | undefined) ||
+    (Array.isArray(user.identities) && user.identities[0]?.provider) ||
+    'email';
+
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('id, email, phone, name, nickname, avatar, role')
@@ -66,6 +71,7 @@ export const getUserProfile = createAsyncThunk('user/getUserProfile', async (_ba
       nickname: createdProfile.nickname || '',
       avatar: createdProfile.avatar || '',
       role: createdProfile.role,
+      authProvider,
     } as IUser;
   }
 
@@ -77,10 +83,13 @@ export const getUserProfile = createAsyncThunk('user/getUserProfile', async (_ba
     nickname: profile.nickname || '',
     avatar: profile.avatar || '',
     role: profile.role,
+    authProvider,
   } as IUser;
 });
 
-export const editUserProfile = createAsyncThunk('user/editUserProfile', async (data: Partial<IUser>, thunkAPI) => {
+export const editUserProfile = createAsyncThunk(
+  'user/editUserProfile',
+  async (data: Partial<IUser> & { avatarFile?: File | null }, thunkAPI) => {
   const {
     data: { user },
     error: authError,
@@ -94,13 +103,31 @@ export const editUserProfile = createAsyncThunk('user/editUserProfile', async (d
     throw new Error('Користувач не авторизований');
   }
 
+  let avatar = data.avatar;
+  if (data.avatarFile instanceof File && data.avatarFile.size > 0) {
+    const ext = data.avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'jpg';
+    const filePath = `avatars/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('logos')
+      .upload(filePath, data.avatarFile, { upsert: true, contentType: data.avatarFile.type || 'image/jpeg' });
+
+    if (uploadError) {
+      throw new Error(uploadError.message);
+    }
+
+    const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filePath);
+    avatar = publicUrlData.publicUrl;
+  }
+
   const { data: updatedProfile, error } = await supabase
     .from('profiles')
     .update({
       name: data.name,
       phone: data.phone,
       nickname: data.nickname,
-      avatar: data.avatar,
+      avatar,
     })
     .eq('id', user.id)
     .select('id, email, phone, name, nickname, avatar, role')
@@ -120,10 +147,40 @@ export const editUserProfile = createAsyncThunk('user/editUserProfile', async (d
     avatar: updatedProfile.avatar || '',
     role: updatedProfile.role,
   } as IUser;
-});
+},
+);
 
 export const changeUserPassword = createAsyncThunk('user/changeUserPassword', async (data: IChangeUserPasswordData) => {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError) {
+    throw new Error(authError.message);
+  }
+
+  if (!user) {
+    throw new Error('Користувач не авторизований');
+  }
+
+  const authProvider =
+    (user.app_metadata?.provider as string | undefined) ||
+    (Array.isArray(user.identities) && user.identities[0]?.provider) ||
+    'email';
+
+  if (authProvider === 'google') {
+    throw new Error('Для акаунту Google зміна пароля недоступна. Використовуйте налаштування безпеки Google.');
+  }
+
   const { error } = await supabase.auth.updateUser({ password: data.password });
+  if (error) {
+    throw new Error(error.message);
+  }
+});
+
+export const deleteUserAccount = createAsyncThunk('user/deleteUserAccount', async () => {
+  const { error } = await supabase.rpc('delete_my_account');
   if (error) {
     throw new Error(error.message);
   }
@@ -135,6 +192,7 @@ interface IUserState {
   getUserProfileRequest: IHttpRequestResult<IUser>;
   editUserProfileRequest: IHttpRequestResult<IUser>;
   changeUserPasswordRequest: IHttpRequestResult<void>;
+  deleteUserAccountRequest: IHttpRequestResult<void>;
 }
 
 const initialState: IUserState = {
@@ -143,6 +201,7 @@ const initialState: IUserState = {
   getUserProfileRequest: createHttpRequestInitResult(),
   editUserProfileRequest: createHttpRequestInitResult(),
   changeUserPasswordRequest: createHttpRequestInitResult(),
+  deleteUserAccountRequest: createHttpRequestInitResult(),
 };
 
 export const UserSlice = createSlice({
@@ -163,6 +222,7 @@ export const UserSlice = createSlice({
     });
     createExtraReducersForResponses(builder, editUserProfile, 'editUserProfileRequest');
     createExtraReducersForResponses(builder, changeUserPassword, 'changeUserPasswordRequest');
+    createExtraReducersForResponses(builder, deleteUserAccount, 'deleteUserAccountRequest');
   },
 });
 

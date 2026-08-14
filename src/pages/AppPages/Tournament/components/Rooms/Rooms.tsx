@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
 import { Button, Modal, TextInput } from 'components';
-import { getUserInitials, notify } from 'helpers';
+import { getUserInitials, notify, resolveAssetUrl } from 'helpers';
 import useModal from 'hooks/useModal';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
@@ -283,7 +283,13 @@ const Rooms: React.FC = () => {
           {selectedRoom && (
             <div className={styles.panel}>
               <div className={styles.panelHead}>
-                <span className={styles.roomAvatar}>{getUserInitials(selectedRoom.name)}</span>
+                <span className={styles.roomAvatar}>
+                  {selectedRoom.creator.avatar ? (
+                    <img src={resolveAssetUrl(selectedRoom.creator.avatar)} alt={selectedRoom.creator.name} />
+                  ) : (
+                    getUserInitials(selectedRoom.creator.name)
+                  )}
+                </span>
                 <div className={styles.panelHeadText}>
                   <h3 className={styles.panelTitle}>{selectedRoom.name}</h3>
                   <p className={styles.panelMeta}>
@@ -365,9 +371,11 @@ const Rooms: React.FC = () => {
                           <span className={cn(styles.rank, { [styles.rankMedal]: !!tone })}>{rank}</span>
                         </div>
                         <div className={cn(styles.col, styles.colName)}>
-                          <span className={styles.rowAvatar}>{getUserInitials(item.name)}</span>
+                          <span className={styles.rowAvatar}>
+                            {item.avatar ? <img src={resolveAssetUrl(item.avatar)} alt={item.name} /> : getUserInitials(item.name)}
+                          </span>
                           <Link
-                            to={`/tournament/${tournament.id}/achievements?userId=${item.id}`}
+                            to={`/profile/${item.id}?tournamentId=${tournament.id}`}
                             className={styles.userLink}
                             title={item.name}>
                             {item.name}
