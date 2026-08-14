@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import cn from 'classnames';
 import { IMatch, ITournament, MatchStatus } from 'interfaces';
-import { normalizeMatchDate, normalizeMatchTime, notify, resolveAssetUrl } from 'helpers';
+import { getLeagueLabel, normalizeMatchDate, normalizeMatchTime, notify, resolveAssetUrl } from 'helpers';
 import { useAppDispatch } from 'store';
 import { setPredict } from 'store/slices/predict';
 import useModal from 'hooks/useModal';
@@ -153,7 +153,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
 
         <header className={styles.head}>
           <div className={styles.headChips}>
-            {match.groupName && <span className={styles.chip}>Група {match.groupName}</span>}
+            {match.groupName && (
+              <span className={styles.chip}>
+                {tournament.leagues > 1
+                  ? `Ліга ${getLeagueLabel(match.tournamentLeague)} · Група ${match.groupName}`
+                  : `Група ${match.groupName}`}
+              </span>
+            )}
             {!!stageLabel && <span className={cn(styles.chip, styles.chipStage)}>{stageLabel}</span>}
           </div>
 

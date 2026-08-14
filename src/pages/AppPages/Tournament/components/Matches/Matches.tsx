@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useAppDispatch, useAppSelector } from 'store';
-import { normalizeKnockoutRoundName, normalizeMatchDate, sliceMatches } from 'helpers';
+import { getLeagueLabel, normalizeKnockoutRoundName, normalizeMatchDate, sliceMatches } from 'helpers';
 import { IGames, IMatch, MatchStatus } from 'interfaces';
 import { toggleOnlyLiveMatches } from 'store/slices/user';
 import { useTournament } from '../../Tournament';
@@ -16,6 +16,10 @@ type RoundTab = {
   isKnockout: boolean;
   games?: IGames;
 };
+
+const LEAGUE_TONES = ['toneA', 'toneB', 'toneC', 'toneD'];
+
+const getMatchLeague = (match: IMatch) => Number(match.tournamentLeague) || 1;
 
 const BallIcon = () => (
   <svg
@@ -56,6 +60,7 @@ const Matches: React.FC = () => {
   const { tournament } = useTournament();
 
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [activeLeague, setActiveLeague] = useState<number | null>(null);
 
   const handleTabChange = (index: number) => {
     setActiveTab(index);
@@ -95,15 +100,35 @@ const Matches: React.FC = () => {
     ];
   }, [matches, groupMatchNumber, knockoutRound, thirdPlaceMatch]);
 
+  // Кількість ліг приходить з бекенду, список будується з ліг, які реально є в матчах
+  const leagues = useMemo(() => {
+    if (tournament.leagues <= 1) {
+      return [];
+    }
+
+    const found = new Set<number>();
+    matches.forEach((games) => (games.data || []).forEach((match) => found.add(getMatchLeague(match))));
+
+    return Array.from(found).sort((a, b) => a - b);
+  }, [matches, tournament.leagues]);
+
+  const isMultiLeague = leagues.length > 1;
+  const filterByLeague = (items: IMatch[]) =>
+    isMultiLeague && activeLeague ? items.filter((match) => getMatchLeague(match) === activeLeague) : items;
+
   const overview = useMemo(() => {
     const allMatches = matches.flatMap((games) => games.data || []);
+    const leagueMatches =
+      isMultiLeague && activeLeague ? allMatches.filter((match) => getMatchLeague(match) === activeLeague) : allMatches;
+
     return {
       rounds: rounds.length,
-      total: allMatches.length,
-      live: countByStatus(allMatches, MatchStatus.IN_PROGRESS),
-      finished: countByStatus(allMatches, MatchStatus.FINISHED),
+      leagues: leagues.length,
+      total: leagueMatches.length,
+      live: countByStatus(leagueMatches, MatchStatus.IN_PROGRESS),
+      finished: countByStatus(leagueMatches, MatchStatus.FINISHED),
     };
-  }, [matches, rounds.length]);
+  }, [matches, rounds.length, leagues.length, isMultiLeague, activeLeague]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -134,11 +159,21 @@ const Matches: React.FC = () => {
             Матчі турніру
           </span>
           <h2 className={styles.heroTitle}>{tournament.name}</h2>
-          <p className={styles.heroSubtitle}>Календар турів, результати матчів та ваші прогнози</p>
+          <p className={styles.heroSubtitle}>
+            {isMultiLeague
+              ? 'Ліги, календар турів, результати матчів та ваші прогнози'
+              : 'Календар турів, результати матчів та ваші прогнози'}
+          </p>
         </div>
 
         {!!overview.total && (
-          <div className={styles.heroMetrics}>
+          <div className={cn(styles.heroMetrics, { [styles.heroMetricsWide]: isMultiLeague })}>
+            {isMultiLeague && (
+              <div className={styles.heroMetric}>
+                <span className={styles.heroMetricValue}>{overview.leagues}</span>
+                <span className={styles.heroMetricLabel}>Ліг</span>
+              </div>
+            )}
             <div className={styles.heroMetric}>
               <span className={styles.heroMetricValue}>{overview.rounds}</span>
               <span className={styles.heroMetricLabel}>Турів</span>
@@ -176,8 +211,49 @@ const Matches: React.FC = () => {
     );
   }
 
+  const renderMatchesGrid = (items: IMatch[]) => (
+    <div className={styles.matches}>
+      {items.map((match) => (
+        <MatchCard key={match.id} match={match} tournament={tournament} />
+      ))}
+    </div>
+  );
+
+  const renderLeagueBlocks = (items: IMatch[]) => (
+    <div className={styles.leagueBlocks}>
+      {leagues.map((league, index) => {
+        const leagueMatches = items.filter((match) => getMatchLeague(match) === league);
+        if (!leagueMatches.length) {
+          return null;
+        }
+
+        const leagueLive = countByStatus(leagueMatches, MatchStatus.IN_PROGRESS);
+
+        return (
+          <section className={cn(styles.leagueBlock, styles[LEAGUE_TONES[index % LEAGUE_TONES.length]])} key={league}>
+            <header className={styles.leagueBlockHead}>
+              <span className={styles.leagueBadge}>{getLeagueLabel(league)}</span>
+              <div className={styles.leagueBlockText}>
+                <h4 className={styles.leagueBlockTitle}>Ліга {getLeagueLabel(league)}</h4>
+                <p className={styles.leagueBlockMeta}>{leagueMatches.length} матчів</p>
+              </div>
+              {leagueLive > 0 && (
+                <span className={cn(styles.chip, styles.chipLive)}>
+                  <span className={styles.liveDot} />
+                  Live {leagueLive}
+                </span>
+              )}
+            </header>
+
+            {renderMatchesGrid(leagueMatches)}
+          </section>
+        );
+      })}
+    </div>
+  );
+
   const renderPanel = (round: RoundTab) => {
-    const roundMatches = round.games?.data || [];
+    const roundMatches = filterByLeague(round.games?.data || []);
     const liveCount = countByStatus(roundMatches, MatchStatus.IN_PROGRESS);
     const finishedCount = countByStatus(roundMatches, MatchStatus.FINISHED);
     const scheduledCount = countByStatus(roundMatches, MatchStatus.SCHEDULED);
@@ -201,6 +277,9 @@ const Matches: React.FC = () => {
             <div className={styles.panelTitleRow}>
               <h3 className={styles.panelTitle}>{round.label}</h3>
               {round.isKnockout && <span className={styles.stageChip}>Плей-оф</span>}
+              {isMultiLeague && !!activeLeague && (
+                <span className={styles.leagueChip}>Ліга {getLeagueLabel(activeLeague)}</span>
+              )}
             </div>
             {!!dateRange && (
               <p className={styles.panelMeta}>
@@ -233,13 +312,8 @@ const Matches: React.FC = () => {
           </div>
         </div>
 
-        {!!visibleMatches.length && (
-          <div className={styles.matches}>
-            {visibleMatches.map((match) => (
-              <MatchCard key={match.id} match={match} tournament={tournament} />
-            ))}
-          </div>
-        )}
+        {!!visibleMatches.length &&
+          (isMultiLeague && !activeLeague ? renderLeagueBlocks(visibleMatches) : renderMatchesGrid(visibleMatches))}
 
         {!visibleMatches.length && (
           <div className={styles.emptyRound}>
@@ -247,12 +321,18 @@ const Matches: React.FC = () => {
               <CalendarIcon />
             </span>
             <p className={styles.emptyTitle}>
-              {onlyLiveMatches ? 'Немає матчів у прямому ефірі' : 'У цьому турі ще немає матчів'}
+              {onlyLiveMatches
+                ? 'Немає матчів у прямому ефірі'
+                : isMultiLeague && !!activeLeague
+                  ? `У Лізі ${getLeagueLabel(activeLeague)} немає матчів у цьому турі`
+                  : 'У цьому турі ще немає матчів'}
             </p>
             <p className={styles.empty}>
               {onlyLiveMatches
                 ? 'Вимкніть фільтр Live, щоб побачити всі матчі туру.'
-                : 'Розклад з’явиться найближчим часом.'}
+                : isMultiLeague && !!activeLeague
+                  ? 'Оберіть іншу лігу або тур.'
+                  : 'Розклад з’явиться найближчим часом.'}
             </p>
           </div>
         )}
@@ -264,10 +344,33 @@ const Matches: React.FC = () => {
     <div className={styles.page}>
       {renderHero()}
 
+      {isMultiLeague && (
+        <div className={styles.leagueFilter}>
+          <button
+            type="button"
+            className={cn(styles.leagueTab, { [styles.leagueTabActive]: !activeLeague })}
+            onClick={() => setActiveLeague(null)}>
+            Всі ліги
+          </button>
+          {leagues.map((league, index) => (
+            <button
+              type="button"
+              key={league}
+              className={cn(styles.leagueTab, styles[LEAGUE_TONES[index % LEAGUE_TONES.length]], {
+                [styles.leagueTabActive]: activeLeague === league,
+              })}
+              onClick={() => setActiveLeague(league)}>
+              <span className={styles.leagueTabDot} />
+              Ліга {getLeagueLabel(league)}
+            </button>
+          ))}
+        </div>
+      )}
+
       <Tabs className={styles.tabs} selectedIndex={activeTab} onSelect={handleTabChange}>
         <TabList className={styles.tabList}>
           {rounds.map((round) => {
-            const roundMatches = round.games?.data || [];
+            const roundMatches = filterByLeague(round.games?.data || []);
             const liveCount = countByStatus(roundMatches, MatchStatus.IN_PROGRESS);
 
             return (

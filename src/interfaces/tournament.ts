@@ -23,6 +23,8 @@ export interface ITournament {
 export interface IStandingsItem {
   id: string;
   team: string;
+  league?: string;
+  group?: string;
   logo: string;
   played: number;
   won: number;

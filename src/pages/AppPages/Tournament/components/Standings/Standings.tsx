@@ -1,12 +1,26 @@
+import { useMemo, useState } from 'react';
 import cn from 'classnames';
 import { useAppSelector } from 'store';
 import { useTournament } from '../../Tournament';
 import { IStandingsItem } from 'interfaces';
 import { useMobile } from 'hooks';
-import { resolveAssetUrl } from 'helpers';
+import { getLeagueLabel, resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
 
 type Zone = 'playoff' | 'knockout' | null;
+
+type GroupEntry = {
+  key: string;
+  group: string;
+  items: IStandingsItem[];
+};
+
+type LeagueSection = {
+  key: string;
+  label: string;
+  groups: GroupEntry[];
+  teams: number;
+};
 
 type StandingsTableProps = {
   title: string;
@@ -16,6 +30,35 @@ type StandingsTableProps = {
   isMobile: boolean;
   getZone: (index: number) => Zone;
   formLimit?: number;
+};
+
+const LEAGUE_TONES = ['toneA', 'toneB', 'toneC', 'toneD'];
+
+const GROUP_KEY_PATTERN = /^(?:L(?:eague)?\s*)?([A-Za-z]|\d{1,2})\s*[:|\-–_/]\s*(?:G(?:roup)?\s*)?(.+)$/i;
+
+const toLeagueLabel = (value?: string | number | null) => {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const numeric = Number(value);
+  if (Number.isFinite(numeric)) {
+    return getLeagueLabel(numeric);
+  }
+
+  return String(value).trim().toUpperCase();
+};
+
+const normalizeGroupName = (value: string) => value.replace(/^(group|група|гр\.?)\s*/i, '').trim() || value.trim();
+
+const parseGroupKey = (key: string, items: IStandingsItem[]) => {
+  const [first] = items;
+  const matched = key.match(GROUP_KEY_PATTERN);
+
+  return {
+    league: toLeagueLabel(first?.league || matched?.[1]),
+    group: normalizeGroupName(first?.group || matched?.[2] || key),
+  };
 };
 
 const TableIcon = () => (
@@ -33,15 +76,7 @@ const TableIcon = () => (
   </svg>
 );
 
-const StandingsTable: React.FC<StandingsTableProps> = ({
-  title,
-  meta,
-  badge,
-  items,
-  isMobile,
-  getZone,
-  formLimit,
-}) => (
+const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, items, isMobile, getZone, formLimit }) => (
   <section className={styles.tableCard}>
     <header className={styles.tableHead}>
       {badge && <span className={styles.groupBadge}>{badge}</span>}
@@ -119,13 +154,42 @@ const StandingsTable: React.FC<StandingsTableProps> = ({
 const Standings: React.FC = () => {
   const { tournament } = useTournament();
   const isMobile = useMobile();
+  const [activeLeague, setActiveLeague] = useState<string | null>(null);
 
-  const standings = useAppSelector((state) => state.tournament.standings)[tournament.id] || [];
-  const groups = Object.entries(standings.standings || {});
-  const thirdPlace = standings.thirdPlacesStandings || [];
+  const standings = useAppSelector((state) => state.tournament.standings)[tournament.id];
+  const groups = useMemo(() => Object.entries(standings?.standings || {}), [standings]);
+  const thirdPlace = useMemo(() => standings?.thirdPlacesStandings || [], [standings]);
+
+  const leagues = useMemo<LeagueSection[]>(() => {
+    const sections = new Map<string, LeagueSection>();
+
+    groups.forEach(([key, groupItems]) => {
+      const items = groupItems as unknown as IStandingsItem[];
+      const parsed = parseGroupKey(key, items);
+      const leagueKey = parsed.league || '';
+      const section = sections.get(leagueKey) || { key: leagueKey, label: parsed.league || '', groups: [], teams: 0 };
+
+      section.groups.push({ key, group: parsed.group, items });
+      section.teams += items.length;
+      sections.set(leagueKey, section);
+    });
+
+    return Array.from(sections.values())
+      .map((section) => ({
+        ...section,
+        groups: [...section.groups].sort((a, b) => a.group.localeCompare(b.group, 'uk', { numeric: true })),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label, 'uk', { numeric: true }));
+  }, [groups]);
+
+  // Кількість ліг приходить з бекенду, розмітка будується з даних турнірної таблиці
+  const isMultiLeague = tournament.leagues > 1 && leagues.length > 1 && leagues.every((section) => !!section.label);
+  const topLeagueKey = isMultiLeague ? leagues[0].key : null;
+  const visibleLeagues = activeLeague ? leagues.filter((section) => section.key === activeLeague) : leagues;
 
   const allTeams = groups.flatMap(([, items]) => items as unknown as IStandingsItem[]);
   const overview = {
+    leagues: leagues.length,
     groups: groups.length,
     teams: allTeams.length,
     matches: Math.floor(allTeams.reduce((acc, item) => acc + item.played, 0) / 2),
@@ -134,6 +198,72 @@ const Standings: React.FC = () => {
 
   const hasDirectZone = tournament.directNextRound > 0;
   const hasPlayoffZone = tournament.playoffRound > 0;
+
+  const thirdPlaceSections = useMemo<LeagueSection[]>(() => {
+    if (!thirdPlace.length) {
+      return [];
+    }
+
+    const single = [
+      { key: '', label: '', teams: thirdPlace.length, groups: [{ key: '3', group: '3', items: thirdPlace }] },
+    ];
+    if (!isMultiLeague || thirdPlace.some((item) => !toLeagueLabel(item.league))) {
+      return single;
+    }
+
+    const sections = new Map<string, LeagueSection>();
+    thirdPlace.forEach((item) => {
+      const label = toLeagueLabel(item.league) as string;
+      const section = sections.get(label) || {
+        key: label,
+        label,
+        groups: [{ key: label, group: '3', items: [] }],
+        teams: 0,
+      };
+
+      section.groups[0].items.push(item);
+      section.teams += 1;
+      sections.set(label, section);
+    });
+
+    return Array.from(sections.values()).sort((a, b) => a.label.localeCompare(b.label, 'uk', { numeric: true }));
+  }, [isMultiLeague, thirdPlace]);
+
+  const getGroupZone = (leagueKey: string | null, index: number): Zone => {
+    if (isMultiLeague && leagueKey !== topLeagueKey) {
+      return null;
+    }
+
+    if (tournament.directNextRound > index) {
+      return 'playoff';
+    }
+
+    if (tournament.playoffRound + tournament.directNextRound > index) {
+      return 'knockout';
+    }
+
+    return null;
+  };
+
+  const renderGroupTable = (entry: GroupEntry, section?: LeagueSection) => {
+    const isSingleTable = tournament.groupNumber === 1;
+    const inLeague = !!section?.label;
+    const title = isSingleTable ? 'Турнірна таблиця' : `Група ${entry.group}`;
+    const meta = inLeague ? `${tournament.name} • Ліга ${section?.label}` : tournament.name;
+
+    return (
+      <StandingsTable
+        key={entry.key}
+        title={title}
+        meta={meta}
+        badge={isSingleTable ? undefined : entry.group}
+        items={entry.items}
+        isMobile={isMobile}
+        formLimit={isMobile ? -3 : undefined}
+        getZone={(index) => getGroupZone(section?.key ?? null, index)}
+      />
+    );
+  };
 
   return (
     <div className={styles.container}>
@@ -146,11 +276,21 @@ const Standings: React.FC = () => {
               Турнірна таблиця
             </span>
             <h2 className={styles.heroTitle}>{tournament.name}</h2>
-            <p className={styles.heroSubtitle}>Позиції команд, форма останніх матчів та зони виходу далі</p>
+            <p className={styles.heroSubtitle}>
+              {isMultiLeague
+                ? 'Ліги, позиції команд, форма останніх матчів та зони виходу далі'
+                : 'Позиції команд, форма останніх матчів та зони виходу далі'}
+            </p>
           </div>
 
           {!!allTeams.length && (
             <div className={styles.heroMetrics}>
+              {isMultiLeague && (
+                <div className={styles.heroMetric}>
+                  <span className={styles.heroMetricValue}>{overview.leagues}</span>
+                  <span className={styles.heroMetricLabel}>Ліг</span>
+                </div>
+              )}
               {tournament.groupNumber > 1 && (
                 <div className={styles.heroMetric}>
                   <span className={styles.heroMetricValue}>{overview.groups}</span>
@@ -165,14 +305,39 @@ const Standings: React.FC = () => {
                 <span className={styles.heroMetricValue}>{overview.matches}</span>
                 <span className={styles.heroMetricLabel}>Матчів</span>
               </div>
-              <div className={styles.heroMetric}>
-                <span className={styles.heroMetricValue}>{overview.goals}</span>
-                <span className={styles.heroMetricLabel}>Голів</span>
-              </div>
+              {!isMultiLeague && (
+                <div className={styles.heroMetric}>
+                  <span className={styles.heroMetricValue}>{overview.goals}</span>
+                  <span className={styles.heroMetricLabel}>Голів</span>
+                </div>
+              )}
             </div>
           )}
         </div>
       </section>
+
+      {isMultiLeague && (
+        <div className={styles.leagueFilter}>
+          <button
+            type="button"
+            className={cn(styles.leagueTab, { [styles.leagueTabActive]: !activeLeague })}
+            onClick={() => setActiveLeague(null)}>
+            Всі ліги
+          </button>
+          {leagues.map((section, index) => (
+            <button
+              type="button"
+              key={section.key}
+              className={cn(styles.leagueTab, styles[LEAGUE_TONES[index % LEAGUE_TONES.length]], {
+                [styles.leagueTabActive]: activeLeague === section.key,
+              })}
+              onClick={() => setActiveLeague(section.key)}>
+              <span className={styles.leagueTabDot} />
+              Ліга {section.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {!!allTeams.length && (hasDirectZone || hasPlayoffZone) && (
         <div className={styles.legend}>
@@ -188,7 +353,9 @@ const Standings: React.FC = () => {
               Раунд плей-оф
             </span>
           )}
-          <span className={styles.legendHint}>Форма: останні матчі, зліва найдавніший</span>
+          <span className={styles.legendHint}>
+            {isMultiLeague ? `Зони виходу — лише Ліга ${leagues[0].label}` : 'Форма: останні матчі, зліва найдавніший'}
+          </span>
         </div>
       )}
 
@@ -202,47 +369,57 @@ const Standings: React.FC = () => {
         </section>
       )}
 
-      {!!groups.length && (
-        <div className={cn(styles.groups, { [styles.one]: tournament.groupNumber === 1 })}>
-          {groups.map(([group, groupItems]) => {
-            const items = groupItems as unknown as IStandingsItem[];
-            const isSingleTable = tournament.groupNumber === 1;
+      {!!groups.length && isMultiLeague && (
+        <div className={styles.leagues}>
+          {visibleLeagues.map((section) => {
+            const index = leagues.findIndex((item) => item.key === section.key);
 
             return (
-              <StandingsTable
-                key={group}
-                title={isSingleTable ? 'Турнірна таблиця' : `Група ${group}`}
-                meta={tournament.name}
-                badge={isSingleTable ? undefined : group}
-                items={items}
-                isMobile={isMobile}
-                formLimit={isMobile ? -3 : undefined}
-                getZone={(index) => {
-                  if (tournament.directNextRound > index) {
-                    return 'playoff';
-                  }
+              <section
+                className={cn(styles.leagueSection, styles[LEAGUE_TONES[index % LEAGUE_TONES.length]])}
+                key={section.key}>
+                <header className={styles.leagueHead}>
+                  <span className={styles.leagueBadge}>{section.label}</span>
+                  <div className={styles.leagueHeadText}>
+                    <h3 className={styles.leagueTitle}>Ліга {section.label}</h3>
+                    <p className={styles.leagueMeta}>
+                      {section.groups.length > 1 ? `${section.groups.length} груп • ` : ''}
+                      {section.teams} команд
+                    </p>
+                  </div>
+                  {section.key === topLeagueKey && (hasDirectZone || hasPlayoffZone) && (
+                    <span className={styles.leagueTag}>Вихід у плей-оф</span>
+                  )}
+                </header>
 
-                  if (tournament.playoffRound + tournament.directNextRound > index) {
-                    return 'knockout';
-                  }
-
-                  return null;
-                }}
-              />
+                <div className={cn(styles.groups, { [styles.one]: section.groups.length === 1 })}>
+                  {section.groups.map((entry) => renderGroupTable(entry, section))}
+                </div>
+              </section>
             );
           })}
         </div>
       )}
 
-      {tournament.type === 'national' && !!thirdPlace.length && (
-        <div className={cn(styles.groups, styles.one)}>
-          <StandingsTable
-            title="Команди які зайняли 3-тє місце"
-            meta={tournament.name}
-            items={thirdPlace}
-            isMobile={isMobile}
-            getZone={(index) => (index <= 3 ? 'knockout' : null)}
-          />
+      {!!groups.length && !isMultiLeague && (
+        <div className={cn(styles.groups, { [styles.one]: tournament.groupNumber === 1 })}>
+          {leagues.flatMap((section) => section.groups).map((entry) => renderGroupTable(entry))}
+        </div>
+      )}
+
+      {tournament.type === 'national' && !!thirdPlaceSections.length && (
+        <div className={cn(styles.groups, { [styles.one]: thirdPlaceSections.length === 1 })}>
+          {thirdPlaceSections.map((section) => (
+            <StandingsTable
+              key={section.key || 'third'}
+              title={section.label ? `3-тє місце · Ліга ${section.label}` : 'Команди які зайняли 3-тє місце'}
+              meta={tournament.name}
+              badge={section.label || undefined}
+              items={section.groups[0].items}
+              isMobile={isMobile}
+              getZone={(index) => (index <= 3 ? 'knockout' : null)}
+            />
+          ))}
         </div>
       )}
     </div>

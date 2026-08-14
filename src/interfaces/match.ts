@@ -39,17 +39,6 @@ export enum MatchStatus {
   POSTPONED = 'Postponed',
 }
 
-export enum MatchGroupName {
-  A = 'A',
-  B = 'B',
-  C = 'C',
-  D = 'D',
-  E = 'E',
-  F = 'F',
-  G = 'G',
-  H = 'H',
-}
-
 export interface IGames {
   id: number;
   data: IMatch[];
@@ -62,9 +51,10 @@ export interface IMatch {
   id: number;
   stage: MatchStage;
   groupTour: MatchGroupTour;
+  tournamentLeague: number;
   status: MatchStatus;
   result: MatchResult;
-  groupName: MatchGroupName;
+  groupName: string;
   homeScore: number;
   awayScore: number;
   matchDate: string;

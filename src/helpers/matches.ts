@@ -14,6 +14,15 @@ export const sliceMatches = (matches: IGames[], groupMatchNumber: number) => {
   return { groupMatches, knockoutMatches };
 };
 
+export const getLeagueLabel = (leagueIndex?: number) => {
+  const labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+  if (!leagueIndex || leagueIndex < 1) {
+    return 'A';
+  }
+
+  return labels[leagueIndex - 1] || String(leagueIndex);
+};
+
 export const playNotification = () => {
   const audio = new Audio('/notification.mp3');
   audio.play();
