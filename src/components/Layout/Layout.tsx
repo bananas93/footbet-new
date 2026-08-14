@@ -29,32 +29,6 @@ const BallIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const TrophyIcon = ({ className }: { className?: string }) => (
-  <svg {...iconProps} className={className}>
-    <path d="M8 4h8v5.2a4 4 0 0 1-8 0V4Z" />
-    <path d="M8 5.5H5.6A1.6 1.6 0 0 0 4 7.1v.6a3.8 3.8 0 0 0 3.8 3.8H8" />
-    <path d="M16 5.5h2.4A1.6 1.6 0 0 1 20 7.1v.6a3.8 3.8 0 0 1-3.8 3.8H16" />
-    <path d="M12 13.2V16" />
-    <path d="M9.6 20h4.8l-.6-3h-3.6L9.6 20Z" />
-    <path d="M8.4 20h7.2" />
-  </svg>
-);
-
-const ChartIcon = ({ className }: { className?: string }) => (
-  <svg {...iconProps} className={className}>
-    <path d="M4 19.5h16" />
-    <path d="M7 19.5v-6M12 19.5V7M17 19.5v-9" />
-  </svg>
-);
-
-const TargetIcon = ({ className }: { className?: string }) => (
-  <svg {...iconProps} className={className}>
-    <circle cx="12" cy="12" r="8" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="12" cy="12" r="0.6" />
-  </svg>
-);
-
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const dispatch = useAppDispatch();
 
@@ -84,21 +58,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <p className={styles.footerTitle}>Footbet</p>
                 <p className={styles.footerSubtitle}>Твій простір для прогнозів та турнірної аналітики</p>
               </div>
-            </div>
-
-            <div className={styles.footerChips}>
-              <span className={styles.footerChip}>
-                <TargetIcon className={styles.footerChipIcon} />
-                Прогнози
-              </span>
-              <span className={styles.footerChip}>
-                <TrophyIcon className={styles.footerChipIcon} />
-                Турніри
-              </span>
-              <span className={styles.footerChip}>
-                <ChartIcon className={styles.footerChipIcon} />
-                Аналітика
-              </span>
             </div>
 
             <nav className={styles.footerNav} aria-label="Футер">

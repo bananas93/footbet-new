@@ -1,12 +1,13 @@
-import { useAppDispatch, useAppSelector } from 'store';
-import styles from './User.module.scss';
-import { Button, Card, TextInput } from 'components';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import { useForm, useMobile } from 'hooks';
-import { changeUserPassword, editUserProfile } from 'store/slices/user';
-import { notify } from 'helpers';
-import { signOutUser } from 'store/slices/auth';
 import { useEffect } from 'react';
+import cn from 'classnames';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import { TextInput } from 'components';
+import { useForm } from 'hooks';
+import { getUserDisplayName, getUserInitials, notify, resolveAssetUrl } from 'helpers';
+import { useAppDispatch, useAppSelector } from 'store';
+import { changeUserPassword, editUserProfile } from 'store/slices/user';
+import { signOutUser } from 'store/slices/auth';
+import styles from './User.module.scss';
 
 const validationRules = {
   name: (value: string) => {
@@ -45,12 +46,73 @@ interface ChangePasswordFormValues {
   confirmPassword: string;
 }
 
+const iconProps = {
+  viewBox: '0 0 24 24',
+  'aria-hidden': true,
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.7,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+const UserIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <circle cx="12" cy="8" r="3.6" />
+    <path d="M4.8 19.5c.9-3.4 3.7-5.2 7.2-5.2s6.3 1.8 7.2 5.2" />
+  </svg>
+);
+
+const LockIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <rect x="4.5" y="10" width="15" height="9.5" rx="2.5" />
+    <path d="M8.2 10V7.8a3.8 3.8 0 0 1 7.6 0V10" />
+  </svg>
+);
+
+const ShieldIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <path d="M12 3.5 19 6v5.4c0 4.1-2.8 7.5-7 9.1-4.2-1.6-7-5-7-9.1V6l7-2.5Z" />
+    <path d="m9 12 2.2 2.2L15.2 10" />
+  </svg>
+);
+
+const LogoutIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <path d="M14.5 8.2V6.5A2 2 0 0 0 12.5 4.5h-5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h5a2 2 0 0 0 2-2v-1.7" />
+    <path d="M10.5 12h9M16.8 8.8 20 12l-3.2 3.2" />
+  </svg>
+);
+
+const MailIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
+    <path d="m4.5 7.5 7.5 5.5 7.5-5.5" />
+  </svg>
+);
+
+const TagIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <path d="M4.5 11.4V5.5a1 1 0 0 1 1-1h5.9a1 1 0 0 1 .7.3l7 7a1 1 0 0 1 0 1.4l-5.9 5.9a1 1 0 0 1-1.4 0l-7-7a1 1 0 0 1-.3-.7Z" />
+    <circle cx="8.6" cy="8.6" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+);
+
+const UserSkeleton = () => (
+  <div className={styles.page}>
+    <span className={cn(styles.skeletonBlock, styles.skeletonHero)} />
+    <div className={styles.skeletonLayout}>
+      <span className={cn(styles.skeletonBlock, styles.skeletonNav)} />
+      <span className={cn(styles.skeletonBlock, styles.skeletonPanel)} />
+    </div>
+  </div>
+);
+
 const User: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
   const { isLoading } = useAppSelector((state) => state.user.editUserProfileRequest);
-
-  const isMobile = useMobile();
+  const { isLoading: isPasswordLoading } = useAppSelector((state) => state.user.changeUserPasswordRequest);
 
   const handleSaveProfile = async (formValues: FormValues) => {
     try {
@@ -127,47 +189,116 @@ const User: React.FC = () => {
   }, []);
 
   if (!user) {
-    return <div>Loading...</div>;
+    return <UserSkeleton />;
   }
 
+  const displayName = getUserDisplayName(user.name, user.nickname);
+  const initials = getUserInitials(user.name, user.nickname);
+  const avatarUrl = resolveAssetUrl(user.avatar);
+
   return (
-    <div className={styles.user}>
-      <Card title="Деталі профілю">
-        <Tabs className={styles.tabs}>
-          <TabList className={styles.tabsList}>
-            <Tab className={styles.tabsItem}>Деталі профілю</Tab>
-            <Tab className={styles.tabsItem}>Зміна паролю</Tab>
-            <Tab className={styles.tabsItem}>Політика конфіденційності</Tab>
-            {!isMobile && (
-              <Button className={styles.tabsLogout} variant="link" onClick={handleLogout}>
-                Вийти
-              </Button>
-            )}
-          </TabList>
-          <div className={styles.tabsItems}>
-            <TabPanel className={styles.tabsPanel}>
-              <div className={styles.userForm}>
-                <div className={styles.userFormControl}>
-                  <TextInput name="email" label="Email" value={user.email} error={errors.email} disabled />
+    <div className={styles.page}>
+      <section className={styles.hero}>
+        <div className={styles.heroGlow} aria-hidden />
+        <div className={styles.heroContent}>
+          <div className={styles.heroIdentity}>
+            <span className={styles.avatar}>{avatarUrl ? <img src={avatarUrl} alt={displayName} /> : initials}</span>
+            <div className={styles.heroText}>
+              <span className={styles.heroEyebrow}>
+                <UserIcon className={styles.heroEyebrowIcon} />
+                Мій акаунт
+              </span>
+              <h1 className={styles.heroTitle}>{displayName}</h1>
+              <div className={styles.heroChips}>
+                <span className={styles.heroChip}>
+                  <MailIcon className={styles.heroChipIcon} />
+                  {user.email}
+                </span>
+                {user.nickname && (
+                  <span className={styles.heroChip}>
+                    <TagIcon className={styles.heroChipIcon} />
+                    {user.nickname}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button type="button" className={styles.logoutButton} onClick={handleLogout}>
+            <LogoutIcon className={styles.buttonIcon} />
+            Вийти
+          </button>
+        </div>
+      </section>
+
+      <Tabs className={styles.layout}>
+        <TabList className={styles.nav}>
+          <Tab className={styles.navItem}>
+            <span className={styles.navIcon}>
+              <UserIcon />
+            </span>
+            <span className={styles.navText}>
+              <span className={styles.navTitle}>Деталі профілю</span>
+              <span className={styles.navMeta}>Імʼя, нікнейм, контакти</span>
+            </span>
+          </Tab>
+          <Tab className={styles.navItem}>
+            <span className={styles.navIcon}>
+              <LockIcon />
+            </span>
+            <span className={styles.navText}>
+              <span className={styles.navTitle}>Зміна паролю</span>
+              <span className={styles.navMeta}>Безпека акаунта</span>
+            </span>
+          </Tab>
+          <Tab className={styles.navItem}>
+            <span className={styles.navIcon}>
+              <ShieldIcon />
+            </span>
+            <span className={styles.navText}>
+              <span className={styles.navTitle}>Конфіденційність</span>
+              <span className={styles.navMeta}>Як ми працюємо з даними</span>
+            </span>
+          </Tab>
+        </TabList>
+
+        <div className={styles.content}>
+          <TabPanel className={styles.tabPanel} selectedClassName={styles.tabPanelSelected}>
+            <section className={styles.panel}>
+              <header className={styles.panelHead}>
+                <span className={styles.panelIcon}>
+                  <UserIcon />
+                </span>
+                <div className={styles.panelHeadText}>
+                  <h2 className={styles.panelTitle}>Деталі профілю</h2>
+                  <p className={styles.panelMeta}>Нікнейм видно іншим гравцям у таблицях та кімнатах</p>
                 </div>
-                <div className={styles.userFormControl}>
+              </header>
+
+              <div className={styles.form}>
+                <div className={styles.field}>
+                  <TextInput name="email" label="Email" value={user.email} disabled />
+                  <span className={styles.fieldHint}>Email використовується для входу і не змінюється</span>
+                </div>
+                <div className={styles.field}>
                   <TextInput
                     name="name"
-                    label="Ім’я"
+                    label="Імʼя"
                     onChange={(e) => handleChange('name', e.target.value)}
                     value={values.name}
                     error={errors.name}
                   />
                 </div>
-                <div className={styles.userFormControl}>
+                <div className={styles.field}>
                   <TextInput
                     name="nickname"
                     label="Нікнейм"
                     onChange={(e) => handleChange('nickname', e.target.value)}
                     value={values.nickname}
                   />
+                  <span className={styles.fieldHint}>Якщо порожній, у таблицях показуємо імʼя</span>
                 </div>
-                <div className={styles.userFormControl}>
+                <div className={styles.field}>
                   <TextInput
                     name="phone"
                     label="Телефон"
@@ -175,24 +306,37 @@ const User: React.FC = () => {
                     value={values.phone}
                   />
                 </div>
-                {/* <div className={styles.userFormControl}>
-                  <input type="file" name="avatar" accept="image/*" />
-                </div> */}
-                <div className={styles.userFormControl}>
-                  <Button
-                    className={styles.userFormButton}
-                    variant="primary"
-                    onClick={handleSubmit}
-                    disabled={!isChanged}
-                    loading={isLoading}>
-                    {isLoading ? 'Збереження...' : 'Зберегти'}
-                  </Button>
-                </div>
               </div>
-            </TabPanel>
-            <TabPanel className={styles.tabsPanel}>
-              <div className={styles.userForm}>
-                <div className={styles.passwordFormControl}>
+
+              <div className={styles.panelFooter}>
+                <span className={styles.footerHint}>
+                  {isChanged ? 'Є незбережені зміни' : 'Усі зміни збережено'}
+                </span>
+                <button
+                  type="button"
+                  className={styles.submit}
+                  onClick={handleSubmit}
+                  disabled={!isChanged || isLoading}>
+                  {isLoading ? 'Збереження...' : 'Зберегти зміни'}
+                </button>
+              </div>
+            </section>
+          </TabPanel>
+
+          <TabPanel className={styles.tabPanel} selectedClassName={styles.tabPanelSelected}>
+            <section className={styles.panel}>
+              <header className={styles.panelHead}>
+                <span className={styles.panelIcon}>
+                  <LockIcon />
+                </span>
+                <div className={styles.panelHeadText}>
+                  <h2 className={styles.panelTitle}>Зміна паролю</h2>
+                  <p className={styles.panelMeta}>Мінімум 8 символів, бажано з цифрами та літерами різного регістру</p>
+                </div>
+              </header>
+
+              <div className={cn(styles.form, styles.formNarrow)}>
+                <div className={styles.field}>
                   <TextInput
                     name="oldPassword"
                     label="Поточний пароль"
@@ -202,7 +346,7 @@ const User: React.FC = () => {
                     error={passErrors.oldPassword}
                   />
                 </div>
-                <div className={styles.passwordFormControl}>
+                <div className={styles.field}>
                   <TextInput
                     name="password"
                     label="Новий пароль"
@@ -212,7 +356,7 @@ const User: React.FC = () => {
                     error={passErrors.password}
                   />
                 </div>
-                <div className={styles.passwordFormControl}>
+                <div className={styles.field}>
                   <TextInput
                     name="confirmPassword"
                     label="Підтвердження нового паролю"
@@ -222,24 +366,37 @@ const User: React.FC = () => {
                     error={passErrors.confirmPassword}
                   />
                 </div>
-                <div className={styles.passwordFormControl}>
-                  <Button variant="primary" onClick={handlePassSubmit}>
-                    Змінити пароль
-                  </Button>
-                </div>
               </div>
-            </TabPanel>
-            <TabPanel className={styles.tabsPanel}>
+
+              <div className={styles.panelFooter}>
+                <span className={styles.footerHint}>Після зміни паролю сесія залишиться активною</span>
+                <button type="button" className={styles.submit} onClick={handlePassSubmit} disabled={isPasswordLoading}>
+                  {isPasswordLoading ? 'Змінюємо...' : 'Змінити пароль'}
+                </button>
+              </div>
+            </section>
+          </TabPanel>
+
+          <TabPanel className={styles.tabPanel} selectedClassName={styles.tabPanelSelected}>
+            <section className={styles.panel}>
+              <header className={styles.panelHead}>
+                <span className={styles.panelIcon}>
+                  <ShieldIcon />
+                </span>
+                <div className={styles.panelHeadText}>
+                  <h2 className={styles.panelTitle}>Політика конфіденційності</h2>
+                  <p className={styles.panelMeta}>Оновлено 07.06.2024</p>
+                </div>
+              </header>
+
               <div className={styles.privacy}>
-                <h1>Політика конфіденційності</h1>
-                <h2>Вступ</h2>
-                <p>
-                  Ця Політика конфіденційності визначає, як наш вебсайт (footbet.pp.ua) збирає, використовує, зберігає
-                  та захищає персональні дані користувачів. Сайт призначений для користувачів, які реєструються та
-                  ставлять прогнози на футбольні матчі в рамках некомерційних змагань з іншими гравцями.
+                <p className={styles.privacyLead}>
+                  Ця Політика конфіденційності визначає, як наш вебсайт (footbet.pp.ua) збирає, використовує, зберігає та
+                  захищає персональні дані користувачів. Сайт призначений для користувачів, які реєструються та ставлять
+                  прогнози на футбольні матчі в рамках некомерційних змагань з іншими гравцями.
                 </p>
-                <h2>1. Збір інформації</h2>
-                <h3>1.1. Персональні дані</h3>
+                <h3>1. Збір інформації</h3>
+                <h4>1.1. Персональні дані</h4>
                 <p>Ми можемо збирати такі персональні дані:</p>
                 <ul>
                   <li>Ім'я</li>
@@ -247,93 +404,83 @@ const User: React.FC = () => {
                   <li>Логін та пароль</li>
                   <li>Інформація про активність на Сайті</li>
                 </ul>
-                <h3>1.2. Автоматично зібрані дані</h3>
+                <h4>1.2. Автоматично зібрані дані</h4>
                 <p>Ми також можемо автоматично збирати такі дані:</p>
                 <ul>
                   <li>IP-адреса</li>
                   <li>Тип браузера</li>
                   <li>Час доступу та сторінки, які ви переглядаєте</li>
                 </ul>
-                <h2>2. Використання зібраної інформації</h2>
-                <h3>2.1. Забезпечення роботи Сайту</h3>
+                <h3>2. Використання зібраної інформації</h3>
+                <h4>2.1. Забезпечення роботи Сайту</h4>
                 <p>Ваші дані використовуються для:</p>
                 <ul>
                   <li>Реєстрації та управління вашим акаунтом</li>
                   <li>Надання доступу до функцій Сайту</li>
                   <li>Обробки ваших прогнозів</li>
                 </ul>
-                <h3>2.2. Покращення Сайту</h3>
+                <h4>2.2. Покращення Сайту</h4>
                 <p>Ми можемо використовувати зібрані дані для аналізу та покращення функціонування Сайту.</p>
-                <h3>2.3. Комунікація з користувачами</h3>
+                <h4>2.3. Комунікація з користувачами</h4>
                 <p>
                   Ми можемо використовувати вашу електронну адресу для надсилання важливої інформації про ваш акаунт,
                   оновлення та новини Сайту.
                 </p>
-                <h2>3. Зберігання та захист даних</h2>
-                <h3>3.1. Зберігання даних</h3>
+                <h3>3. Зберігання та захист даних</h3>
+                <h4>3.1. Зберігання даних</h4>
                 <p>Ваші дані зберігаються на наших серверах та захищені відповідно до стандартних заходів безпеки.</p>
-                <h3>3.2. Захист даних</h3>
+                <h4>3.2. Захист даних</h4>
                 <p>
                   Ми вживаємо технічних та організаційних заходів для захисту ваших персональних даних від
                   несанкціонованого доступу, втрати або розкриття.
                 </p>
-                <h2>4. Права користувачів</h2>
-                <h3>4.1. Доступ до даних</h3>
+                <h3>4. Права користувачів</h3>
+                <h4>4.1. Доступ до даних</h4>
                 <p>Ви маєте право на доступ до своїх персональних даних, які ми зберігаємо.</p>
-                <h3>4.2. Виправлення даних</h3>
+                <h4>4.2. Виправлення даних</h4>
                 <p>Ви маєте право на виправлення ваших персональних даних, якщо вони є неточними або неповними.</p>
-                <h3>4.3. Видалення даних</h3>
+                <h4>4.3. Видалення даних</h4>
                 <p>
                   Ви маєте право вимагати видалення ваших персональних даних, за винятком випадків, коли їх збереження є
                   необхідним для виконання законодавчих вимог.
                 </p>
-                <h2>5. Передача даних третім сторонам</h2>
-                <h3>5.1. Відсутність комерційної передачі</h3>
+                <h3>5. Передача даних третім сторонам</h3>
+                <h4>5.1. Відсутність комерційної передачі</h4>
                 <p>
-                  Ми не продаємо, не передаємо та не обмінюємо ваші персональні дані третім сторонам з комерційною
-                  метою.
+                  Ми не продаємо, не передаємо та не обмінюємо ваші персональні дані третім сторонам з комерційною метою.
                 </p>
-                <h3>5.2. Випадки передачі даних</h3>
+                <h4>5.2. Випадки передачі даних</h4>
                 <p>
                   Ми можемо передавати ваші дані тільки у випадках, коли це необхідно для надання наших послуг або коли
                   це вимагається законом.
                 </p>
-                <h2>6. Файли cookie</h2>
-                <h3>6.1. Використання файлів cookie</h3>
+                <h3>6. Файли cookie</h3>
+                <h4>6.1. Використання файлів cookie</h4>
                 <p>
                   Ми використовуємо файли cookie для покращення вашого досвіду на Сайті, зберігання налаштувань та
                   аналізу трафіку.
                 </p>
-                <h3>6.2. Управління файлами cookie</h3>
+                <h4>6.2. Управління файлами cookie</h4>
                 <p>
                   Ви можете налаштувати свій браузер для відмови від прийому файлів cookie або повідомлення вас про їх
                   надходження.
                 </p>
-                <h2>7. Зміни до Політики конфіденційності</h2>
+                <h3>7. Зміни до Політики конфіденційності</h3>
                 <p>
                   Ми залишаємо за собою право змінювати цю Політику конфіденційності в будь-який час. Усі зміни будуть
                   опубліковані на цій сторінці. Ми рекомендуємо регулярно переглядати цю сторінку для ознайомлення з
                   актуальною версією Політики конфіденційності.
                 </p>
-                <h2>8. Контактна інформація</h2>
+                <h3>8. Контактна інформація</h3>
                 <p>
-                  Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка,
-                  зв'яжіться з нами за електронною адресою:{' '}
-                  <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
+                  Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка, зв'яжіться
+                  з нами за електронною адресою: <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
                 </p>
-                <p>Дата останнього оновлення: [07.06.2024]</p>
               </div>
-            </TabPanel>
-          </div>
-        </Tabs>
-      </Card>
-      {isMobile && (
-        <div className={styles.logout}>
-          <Button variant="link" onClick={handleLogout}>
-            Вийти
-          </Button>
+            </section>
+          </TabPanel>
         </div>
-      )}
+      </Tabs>
     </div>
   );
 };
