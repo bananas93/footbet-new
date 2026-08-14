@@ -1,4 +1,5 @@
 @import "./_reset.scss";
+@import "./_toast.scss";
 
 body {
   height: 100%;
@@ -46,8 +47,6 @@ body {
     &:hover {
       color: #ffffffe6;
     }
-  }
-  &__panel {
   }
 }
 

@@ -1,7 +1,6 @@
-import { CookieConsent, Layout, LoginLayout } from 'components';
+import { CookieConsent, Layout, LoginLayout, Toast } from 'components';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
 import { AppRoutes } from 'routes/AppRoutes';
 import { AuthRoutes } from 'routes/AuthRoutes';
 import { useAppDispatch, useAppSelector } from 'store';
@@ -72,7 +71,7 @@ const App: React.FC = () => {
       <>
         <Layout>
           <AppRoutes />
-          <ToastContainer hideProgressBar />
+          <Toast position="top-center" />
         </Layout>
         <CookieConsent />
       </>
@@ -82,7 +81,7 @@ const App: React.FC = () => {
     <>
       <LoginLayout>
         <AuthRoutes />
-        <ToastContainer hideProgressBar />
+        <Toast />
       </LoginLayout>
       <CookieConsent />
     </>

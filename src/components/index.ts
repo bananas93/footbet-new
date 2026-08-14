@@ -7,5 +7,6 @@ import Modal from './Modal/Modal';
 import Checkbox from './Checkbox/Checkbox';
 import Switcher from './Switcher/Switcher';
 import CookieConsent from './CookieConsent/CookieConsent';
+import Toast from './Toast/Toast';
 
-export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox, Switcher, CookieConsent };
+export { Layout, LoginLayout, TextInput, Button, Card, Modal, Checkbox, Switcher, CookieConsent, Toast };
