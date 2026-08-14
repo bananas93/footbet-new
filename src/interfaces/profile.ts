@@ -2,6 +2,7 @@ export interface IProfile {
   user: {
     id: number;
     name: string;
+    nickname?: string;
     email: string;
     phone: string;
     avatar: string;

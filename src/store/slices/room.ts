@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
+import { createExtraReducersForResponses, createHttpRequestInitResult, getUserDisplayName, supabase } from 'helpers';
 import { IRoom, IHttpRequestResult } from 'interfaces';
 import { IPredictTableResponse } from './predict';
 
@@ -32,12 +32,12 @@ const normalizeRoom = (item: any): IRoom => ({
   participants: (item.room_members || [])
     .map((member: any) => ({
       id: member.user_id,
-      name: member.profiles?.name || 'Unknown user',
+      name: getUserDisplayName(member.profiles?.name, member.profiles?.nickname),
     }))
     .sort((a: any, b: any) => a.name.localeCompare(b.name)),
   creator: {
     id: item.creator?.id || item.creator_id,
-    name: item.creator?.name || 'Unknown user',
+    name: getUserDisplayName(item.creator?.name, item.creator?.nickname),
   },
   createdAt: item.created_at,
   updatedAt: item.updated_at,
@@ -55,10 +55,10 @@ export const getRooms = createAsyncThunk('room/getRooms', async () => {
       creator_id,
       created_at,
       updated_at,
-      creator:profiles!rooms_creator_id_fkey(id, name),
+      creator:profiles!rooms_creator_id_fkey(id, name, nickname),
       room_members(
         user_id,
-        profiles(id, name)
+        profiles(id, name, nickname)
       )
     `,
     )
@@ -83,10 +83,10 @@ export const getOneRoom = createAsyncThunk('room/getOneRoom', async (id: number)
       creator_id,
       created_at,
       updated_at,
-      creator:profiles!rooms_creator_id_fkey(id, name),
+      creator:profiles!rooms_creator_id_fkey(id, name, nickname),
       room_members(
         user_id,
-        profiles(id, name)
+        profiles(id, name, nickname)
       )
     `,
     )

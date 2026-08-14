@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getProfile } from 'store/slices/profile';
 import { useEffect } from 'react';
+import { getUserDisplayName } from 'helpers';
 
 const Profile = () => {
   const dispatch = useAppDispatch();
@@ -34,9 +35,11 @@ const Profile = () => {
     return <div>Дані не знайдено</div>;
   }
 
+  const profileDisplayName = getUserDisplayName(data.user?.name, data.user?.nickname);
+
   return (
     <div className={styles.container}>
-      <Card title={`Деталі профілю ${data?.user?.name}`}>
+      <Card title={`Деталі профілю ${profileDisplayName}`}>
         <div>
           <div>
             <div>Матчів</div>

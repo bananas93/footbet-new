@@ -3,10 +3,12 @@ import styles from './Header.module.scss';
 import { useAppSelector } from 'store';
 import { RoutesEnum } from 'routes/AppRoutes';
 import { NavLink } from 'react-router-dom';
-import { resolveAssetUrl } from 'helpers';
+import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
+  const displayName = user ? getUserDisplayName(user.name, user.nickname) : '';
+  const initials = user ? getUserInitials(user.name, user.nickname) : '';
 
   return (
     <header className={styles.header}>
@@ -29,15 +31,12 @@ const Header: React.FC = () => {
       </nav>
       {user && (
         <Link to={RoutesEnum.User} className={styles.headerUser}>
-          <span className={styles.headerUserName}>{user.nickname || user.name}</span>
+          <span className={styles.headerUserName}>{displayName}</span>
           <div className={styles.headerUserAvatar}>
             {user.avatar ? (
-              <img src={resolveAssetUrl(user.avatar)} alt={user.name} />
+              <img src={resolveAssetUrl(user.avatar)} alt={displayName} />
             ) : (
-              <span className={styles.headerUserAvatarName}>
-                {user?.name[0]}
-                {user?.name[1]}
-              </span>
+              <span className={styles.headerUserAvatarName}>{initials}</span>
             )}
           </div>
         </Link>
