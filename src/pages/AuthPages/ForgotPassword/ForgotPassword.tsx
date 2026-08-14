@@ -1,11 +1,32 @@
 import { Button, TextInput } from 'components';
-import { notify } from 'helpers';
+import {
+  AUTH_EMAIL_LIMIT_PER_HOUR,
+  formatRemainingTime,
+  getAuthEmailAttemptsLeft,
+  getAuthEmailRemainingMs,
+  notify,
+  registerAuthEmailAttempt,
+} from 'helpers';
 import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { resetPassword } from 'store/slices/auth';
 import styles from './ForgotPassword.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
+import { useEffect, useState } from 'react';
+
+const isRateLimitError = (message?: string) => {
+  const text = (message || '').toLowerCase();
+  return text.includes('email rate limit exceeded') || text.includes('rate limit');
+};
+
+const buildForgotPasswordErrorMessage = (message?: string, remainingMs: number = 0) => {
+  if (isRateLimitError(message)) {
+    return `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Спробуйте ще раз через ${formatRemainingTime(remainingMs)}.`;
+  }
+
+  return message || 'Помилка відправлення посилання для відновлення паролю';
+};
 
 interface FormValues {
   email: string;
@@ -23,6 +44,19 @@ const ForgotPassword: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.resetPasswordRequest);
+  const [remainingMs, setRemainingMs] = useState<number>(getAuthEmailRemainingMs());
+
+  useEffect(() => {
+    if (!remainingMs) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setRemainingMs(getAuthEmailRemainingMs());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [remainingMs]);
 
   const { values, errors, handleChange, handleSubmit } = useForm<FormValues>(
     { email: '' },
@@ -33,18 +67,40 @@ const ForgotPassword: React.FC = () => {
   );
 
   const handleResetPassword = async (formValues: FormValues) => {
+    const currentRemainingMs = getAuthEmailRemainingMs();
+    if (currentRemainingMs > 0) {
+      setRemainingMs(currentRemainingMs);
+      notify.error(
+        `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Зачекайте ${formatRemainingTime(currentRemainingMs)}.`,
+      );
+      return;
+    }
+
     try {
       await dispatch(resetPassword(formValues)).unwrap();
+      registerAuthEmailAttempt();
+      setRemainingMs(getAuthEmailRemainingMs());
       navigate(AuthRoutesEnum.SignIn);
       notify.success('Лист для відновлення паролю відправлено на ваш email');
     } catch (err: any) {
-      notify.error(err.message || 'Помилка відправлення посилання для відновлення паролю');
+      if (isRateLimitError(err.message)) {
+        registerAuthEmailAttempt();
+      }
+
+      const nextRemainingMs = getAuthEmailRemainingMs();
+      setRemainingMs(nextRemainingMs);
+      notify.error(buildForgotPasswordErrorMessage(err.message, nextRemainingMs));
     }
   };
+
+  const attemptsLeft = getAuthEmailAttemptsLeft();
 
   return (
     <div className={styles.login}>
       <h1 className={styles.loginTitle}>Забули пароль?</h1>
+      <p className={styles.loginDescription}>
+        Вкажіть email, який використовували при реєстрації. Ми надішлемо посилання для встановлення нового пароля.
+      </p>
       <div className={styles.loginForm}>
         <TextInput
           name="email"
@@ -55,11 +111,20 @@ const ForgotPassword: React.FC = () => {
           onChange={(e) => handleChange('email', e.target.value)}
           placeholder="Ваш email"
         />
-        <Button loading={isLoading} onClick={handleSubmit}>
-          {isLoading ? 'Надсилання...' : 'Надіслати'}
+        <p className={styles.loginLimitInfo}>
+          Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
+        </p>
+        <Button loading={isLoading} onClick={handleSubmit} disabled={remainingMs > 0}>
+          {isLoading
+            ? 'Надсилання...'
+            : remainingMs > 0
+              ? `Повторно через ${formatRemainingTime(remainingMs)}`
+              : 'Надіслати'}
         </Button>
-        <div className={styles.loginForgotPassword}>
-          <Link to={AuthRoutesEnum.SignIn}>Назад</Link>
+        <div className={styles.loginActions}>
+          <Link to={AuthRoutesEnum.SignIn} className={styles.loginForgotPassword}>
+            Назад до входу
+          </Link>
         </div>
       </div>
     </div>

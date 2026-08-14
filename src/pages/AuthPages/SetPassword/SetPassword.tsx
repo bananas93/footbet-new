@@ -1,7 +1,7 @@
 import { Button, TextInput } from 'components';
 import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import styles from './SetPassword.module.scss';
 import { changePassword } from 'store/slices/auth';
@@ -51,6 +51,7 @@ const SetPassword: React.FC = () => {
   return (
     <div className={styles.login}>
       <h1 className={styles.loginTitle}>Встановити новий пароль</h1>
+      <p className={styles.loginDescription}>Введіть новий пароль двічі, щоб підтвердити зміну.</p>
       <div className={styles.loginForm}>
         <TextInput
           name="password"
@@ -73,6 +74,11 @@ const SetPassword: React.FC = () => {
         <Button loading={isLoading} onClick={handleSubmit}>
           {isLoading ? 'Завантаження...' : 'Змінити пароль'}
         </Button>
+        <div className={styles.loginActions}>
+          <Link to={AuthRoutesEnum.SignIn} className={styles.loginBackLink}>
+            Повернутися до входу
+          </Link>
+        </div>
       </div>
     </div>
   );

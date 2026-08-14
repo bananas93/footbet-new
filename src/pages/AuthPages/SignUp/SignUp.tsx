@@ -3,7 +3,20 @@ import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { signUpUser } from 'store/slices/auth';
 import styles from './SignUp.module.scss';
-import { notify } from 'helpers';
+import {
+  AUTH_EMAIL_LIMIT_PER_HOUR,
+  formatRemainingTime,
+  getAuthEmailAttemptsLeft,
+  getAuthEmailRemainingMs,
+  notify,
+  registerAuthEmailAttempt,
+} from 'helpers';
+import { useEffect, useState } from 'react';
+
+const isRateLimitError = (message?: string) => {
+  const normalizedMessage = (message || '').toLowerCase();
+  return normalizedMessage.includes('email rate limit exceeded') || normalizedMessage.includes('rate limit');
+};
 
 const validationRules = {
   name: (value: string) => {
@@ -38,6 +51,19 @@ interface FormValues {
 const SignUp: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.signUpUserRequest);
+  const [remainingMs, setRemainingMs] = useState<number>(getAuthEmailRemainingMs());
+
+  useEffect(() => {
+    if (!remainingMs) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setRemainingMs(getAuthEmailRemainingMs());
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [remainingMs]);
 
   const { values, errors, handleChange, handleSubmit } = useForm<FormValues>(
     { name: '', email: '', phone: '', password: '', confirmPassword: '' },
@@ -48,17 +74,40 @@ const SignUp: React.FC = () => {
   );
 
   const handleSignUp = async (formValues: FormValues) => {
+    const currentRemainingMs = getAuthEmailRemainingMs();
+    if (currentRemainingMs > 0) {
+      setRemainingMs(currentRemainingMs);
+      notify.error(
+        `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Зачекайте ${formatRemainingTime(currentRemainingMs)}.`,
+      );
+      return;
+    }
+
     try {
       await dispatch(signUpUser(formValues)).unwrap();
+      registerAuthEmailAttempt();
+      setRemainingMs(getAuthEmailRemainingMs());
       notify.success('Ви успішно зареєструвались');
     } catch (err: any) {
-      notify.error(err.message);
+      if (isRateLimitError(err.message)) {
+        registerAuthEmailAttempt();
+        const nextRemainingMs = getAuthEmailRemainingMs();
+        setRemainingMs(nextRemainingMs);
+        notify.error(
+          `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Спробуйте ще раз через ${formatRemainingTime(nextRemainingMs)}.`,
+        );
+        return;
+      }
+
+      notify.error(err.message || 'Помилка реєстрації');
     }
   };
 
+  const attemptsLeft = getAuthEmailAttemptsLeft();
+
   return (
     <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Вхід</h1>
+      <h1 className={styles.loginTitle}>Реєстрація</h1>
       <div className={styles.loginForm}>
         <TextInput
           name="name"
@@ -105,8 +154,15 @@ const SignUp: React.FC = () => {
           onChange={(e) => handleChange('confirmPassword', e.target.value)}
           placeholder="Підтвердіть пароль"
         />
-        <Button loading={isLoading} onClick={handleSubmit}>
-          {isLoading ? 'Реєстрація...' : 'Зареєструватися'}
+        <p className={styles.loginLimitInfo}>
+          Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
+        </p>
+        <Button loading={isLoading} onClick={handleSubmit} disabled={remainingMs > 0}>
+          {isLoading
+            ? 'Реєстрація...'
+            : remainingMs > 0
+              ? `Повторно через ${formatRemainingTime(remainingMs)}`
+              : 'Зареєструватися'}
         </Button>
         <div>
           Вже зареєстровані?{' '}

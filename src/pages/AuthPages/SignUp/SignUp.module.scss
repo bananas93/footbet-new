@@ -17,6 +17,15 @@
     width: 30rem;
     padding: 1rem;
   }
+
+  &LimitInfo {
+    margin-top: -0.5rem;
+    margin-bottom: -0.25rem;
+    font-size: 0.875rem;
+    color: #5a6278;
+    line-height: 1.4;
+  }
+
   &ForgotPassword {
     text-align: right;
     margin-left: auto;
