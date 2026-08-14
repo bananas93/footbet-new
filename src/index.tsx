@@ -6,6 +6,7 @@ import 'styles/main.scss';
 import 'react-loading-skeleton/dist/skeleton.css';
 import App from 'App';
 import { BrowserRouter } from 'react-router-dom';
+import { registerServiceWorker } from './serviceWorkerRegistration';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 const Wrapper = process.env.NODE_ENV === 'production' ? Fragment : StrictMode;
@@ -19,3 +20,5 @@ root.render(
     </BrowserRouter>
   </Wrapper>,
 );
+
+registerServiceWorker();

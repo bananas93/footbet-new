@@ -6,7 +6,7 @@ import { AuthRoutes } from 'routes/AuthRoutes';
 import { useAppDispatch, useAppSelector } from 'store';
 import { handleOAuthCallback, hydrateAuth, setIsAuthenticated } from 'store/slices/auth';
 import { clearUser, getUserProfile } from 'store/slices/user';
-import { supabase } from 'helpers';
+import { clearPushSubscription, supabase } from 'helpers';
 import 'react-toastify/dist/ReactToastify.css';
 
 const DEFAULT_TITLE = 'Турнір прогнозистів | Footbet';
@@ -54,6 +54,7 @@ const App: React.FC = () => {
         if (result.isAuthenticated) {
           await dispatch(getUserProfile(true));
         } else {
+          void clearPushSubscription();
           dispatch(clearUser());
         }
       } finally {
@@ -72,6 +73,7 @@ const App: React.FC = () => {
       if (isAuthenticatedNow) {
         dispatch(getUserProfile(true));
       } else {
+        void clearPushSubscription();
         dispatch(clearUser());
       }
     });

@@ -3,7 +3,17 @@ import cn from 'classnames';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import { TextInput } from 'components';
 import { useForm } from 'hooks';
-import { getUserDisplayName, getUserInitials, notify, resolveAssetUrl } from 'helpers';
+import {
+  clearPushSubscription,
+  enablePushSubscription,
+  getPushPermissionState,
+  getPushSupportState,
+  getUserDisplayName,
+  getUserInitials,
+  hasActivePushSubscription,
+  notify,
+  resolveAssetUrl,
+} from 'helpers';
 import { useAppDispatch, useAppSelector } from 'store';
 import { changeUserPassword, deleteUserAccount, editUserProfile } from 'store/slices/user';
 import { signOutUser } from 'store/slices/auth';
@@ -106,6 +116,13 @@ const GoogleIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const BellIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <path d="M12 4.5a4.2 4.2 0 0 0-4.2 4.2v1.8c0 1.8-.7 3.5-1.9 4.9l-.4.4h12.9l-.4-.4a7.4 7.4 0 0 1-1.9-4.9V8.7A4.2 4.2 0 0 0 12 4.5Z" />
+    <path d="M10.2 18a2 2 0 0 0 3.6 0" />
+  </svg>
+);
+
 const UserSkeleton = () => (
   <div className={styles.page}>
     <span className={cn(styles.skeletonBlock, styles.skeletonHero)} />
@@ -123,6 +140,10 @@ const User: React.FC = () => {
   const { isLoading: isPasswordLoading } = useAppSelector((state) => state.user.changeUserPasswordRequest);
   const isDeleteLoading = useAppSelector((state) => state.user.deleteUserAccountRequest?.isLoading || false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [isPushLoading, setIsPushLoading] = useState(false);
+  const [isPushEnabled, setIsPushEnabled] = useState(false);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [pushSupport, setPushSupport] = useState<'supported' | 'unsupported' | 'insecure'>('unsupported');
 
   const handleSaveProfile = async (formValues: FormValues) => {
     try {
@@ -230,6 +251,79 @@ const User: React.FC = () => {
       document.title = 'Турнір прогнозистів | Footbet';
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncPushState = async () => {
+      const supportState = getPushSupportState();
+      if (!isMounted) {
+        return;
+      }
+
+      setPushSupport(supportState);
+      setPushPermission(getPushPermissionState());
+
+      if (supportState !== 'supported') {
+        setIsPushEnabled(false);
+        return;
+      }
+
+      try {
+        const hasSubscription = await hasActivePushSubscription();
+        if (isMounted) {
+          setIsPushEnabled(hasSubscription);
+        }
+      } catch {
+        if (isMounted) {
+          setIsPushEnabled(false);
+        }
+      }
+    };
+
+    void syncPushState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  const handleEnablePush = async () => {
+    if (!user?.id) {
+      notify.error('Користувач не авторизований');
+      return;
+    }
+
+    setIsPushLoading(true);
+    try {
+      await enablePushSubscription(user.id);
+      const hasSubscription = await hasActivePushSubscription();
+      setPushPermission(getPushPermissionState());
+      setIsPushEnabled(hasSubscription);
+      if (hasSubscription) {
+        notify.success('Push-сповіщення увімкнено');
+      } else {
+        notify.info('Дозвіл на сповіщення не надано');
+      }
+    } catch (err: any) {
+      notify.error(err.message || 'Не вдалося увімкнути push-сповіщення');
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
+
+  const handleDisablePush = async () => {
+    setIsPushLoading(true);
+    try {
+      await clearPushSubscription();
+      setIsPushEnabled(false);
+      notify.success('Push-сповіщення вимкнено');
+    } catch (err: any) {
+      notify.error(err.message || 'Не вдалося вимкнути push-сповіщення');
+    } finally {
+      setIsPushLoading(false);
+    }
+  };
 
   if (!user) {
     return <UserSkeleton />;
@@ -560,6 +654,45 @@ const User: React.FC = () => {
                   опубліковані на цій сторінці. Ми рекомендуємо регулярно переглядати цю сторінку для ознайомлення з
                   актуальною версією Політики конфіденційності.
                 </p>
+
+                <div className={styles.pushZone}>
+                  <h3>
+                    <BellIcon className={styles.pushIcon} />
+                    Push-сповіщення
+                  </h3>
+                  <p>
+                    Отримуйте миттєві повідомлення про важливі оновлення матчів і турнірів у браузері.
+                  </p>
+                  <p className={styles.pushStatus}>
+                    Статус:{' '}
+                    {pushSupport === 'insecure'
+                      ? 'Недоступно (потрібен HTTPS)'
+                      : pushSupport === 'unsupported'
+                        ? 'Не підтримується цим браузером'
+                        : isPushEnabled
+                          ? 'Увімкнено'
+                          : pushPermission === 'denied'
+                            ? 'Вимкнено в налаштуваннях браузера'
+                            : 'Вимкнено'}
+                  </p>
+                  <div className={styles.pushActions}>
+                    <button
+                      type="button"
+                      className={styles.pushButton}
+                      onClick={handleEnablePush}
+                      disabled={isPushLoading || pushSupport !== 'supported'}>
+                      {isPushLoading ? 'Застосовуємо...' : 'Увімкнути push'}
+                    </button>
+                    <button
+                      type="button"
+                      className={cn(styles.pushButton, styles.pushButtonSecondary)}
+                      onClick={handleDisablePush}
+                      disabled={isPushLoading || !isPushEnabled}>
+                      Вимкнути push
+                    </button>
+                  </div>
+                </div>
+
                 <h3>8. Контактна інформація</h3>
                 <p>
                   Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка, зв'яжіться

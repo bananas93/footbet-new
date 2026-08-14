@@ -619,6 +619,89 @@ $radius: 1.25rem;
   color: #3a4462;
 }
 
+.pushZone {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid #cfe1fb;
+  background: linear-gradient(135deg, #f8fbff 0%, #eef5ff 100%);
+
+  h3 {
+    margin-top: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #1a4ca8;
+  }
+
+  p {
+    color: #38527f;
+  }
+}
+
+.pushIcon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.pushStatus {
+  margin-bottom: 0.7rem !important;
+  font-size: 0.8125rem;
+  color: #5d6f92 !important;
+}
+
+.pushActions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.pushButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #175fc4 0%, #2f6cff 100%);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px -14px rgba(23, 95, 196, 0.9);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(23, 95, 196, 0.35);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+.pushButtonSecondary {
+  color: #2b3350;
+  border-color: #ccd9ee;
+  background: #fff;
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 12px 20px -16px rgba(43, 51, 80, 0.6);
+  }
+}
+
 .dangerZone {
   margin-top: 1.5rem;
   padding: 1rem 1.1rem;
@@ -832,6 +915,15 @@ $radius: 1.25rem;
   }
 
   .deleteButton {
+    width: 100%;
+  }
+
+  .pushActions {
+    width: 100%;
+  }
+
+  .pushButton,
+  .pushButtonSecondary {
     width: 100%;
   }
 
