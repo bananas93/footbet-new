@@ -1,36 +1,288 @@
-.row {
+$ink: #0f1230;
+$muted: #6b7590;
+$line: #e9edf6;
+$radius: 1.25rem;
+
+.page {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgba(120, 92, 255, 0.1) 0%, rgba(120, 92, 255, 0) 55%),
+    radial-gradient(80% 100% at 0% 100%, rgba(0, 168, 255, 0.1) 0%, rgba(0, 168, 255, 0) 55%);
 }
 
-.imgCol {
-  flex: 0 0 50%;
-  max-width: 50%;
-  font-size: 0;
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 1rem;
+  width: min(70rem, 100%);
 }
 
-.contentCol {
-  flex: 0 0 50%;
-  max-width: 50%;
+/* ---------- promo panel ---------- */
+
+.aside {
+  position: relative;
+  overflow: hidden;
+  border-radius: $radius;
+  color: #fff;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(120, 92, 255, 0.5) 0%, rgba(120, 92, 255, 0) 55%),
+    radial-gradient(90% 120% at 0% 100%, rgba(0, 168, 255, 0.35) 0%, rgba(0, 168, 255, 0) 60%),
+    linear-gradient(135deg, #14153a 0%, #1b1b4a 45%, #0f1030 100%);
+  box-shadow: 0 18px 40px -18px rgba(20, 21, 58, 0.55);
 }
 
-.img {
-  object-fit: cover;
-  object-position: top;
+.asideGlow {
+  position: absolute;
+  right: -8%;
+  bottom: -45%;
+  width: 22rem;
+  height: 22rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 199, 82, 0.28) 0%, rgba(244, 199, 82, 0) 65%);
+  pointer-events: none;
+}
+
+.asideInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
   height: 100%;
+  padding: 1.75rem;
+}
+
+/* ---------- brand ---------- */
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.brandMark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+  color: #1a1b40;
+  background: linear-gradient(140deg, #ffe9a8 0%, #f4c752 100%);
+  box-shadow: 0 12px 24px -14px rgba(244, 199, 82, 0.9);
+}
+
+.brandIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.brandTagline {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---------- intro ---------- */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background-color: rgba(255, 255, 255, 0.1);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffe6ad;
+}
+
+.introTitle {
+  margin: 0.85rem 0 0;
+  font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.introSubtitle {
+  margin: 0.45rem 0 0;
+  max-width: 28rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- media ---------- */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  flex: 1 1 auto;
+  min-height: 11rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.mediaImg {
+  display: block;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.mediaFade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 16, 48, 0) 40%, rgba(15, 16, 48, 0.6) 100%);
+  pointer-events: none;
+}
+
+/* ---------- features ---------- */
+
+.features {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background-color: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(6px);
+}
+
+.featureBadge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 230, 173, 0.24);
+  background-color: rgba(255, 230, 173, 0.12);
+  color: #ffe6ad;
+}
+
+.featureIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.featureBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.featureTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.featureText {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+/* ---------- form side ---------- */
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.card {
+  width: 100%;
+  max-width: 30rem;
+  padding: 1.75rem;
+  border-radius: $radius;
+  border: 1px solid $line;
+  background-color: #fff;
+  box-shadow: 0 18px 40px -24px rgba(20, 21, 58, 0.45);
+}
+
+/* ---------- responsive ---------- */
+
+@media screen and (max-width: 64em) {
+  .page {
+    padding: 1.5rem;
+  }
+
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    width: min(34rem, 100%);
+  }
+
+  .asideInner {
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .media,
+  .features {
+    display: none;
+  }
 }
 
 @media screen and (max-width: 48em) {
-  .row {
-    flex-direction: column;
+  .page {
+    align-items: flex-start;
+    padding: 1rem;
   }
-  .imgCol,
-  .contentCol {
-    flex: 0 0 100%;
+
+  .asideInner {
+    padding: 1.25rem;
+  }
+
+  .brandMark {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .introSubtitle {
+    font-size: 0.8125rem;
+  }
+
+  .card {
     max-width: 100%;
+    padding: 1.25rem;
   }
-  .img {
+}
+
+@media screen and (max-width: 30em) {
+  .eyebrow,
+  .introSubtitle {
     display: none;
+  }
+
+  .introTitle {
+    margin: 0;
+    font-size: 1.25rem;
   }
 }

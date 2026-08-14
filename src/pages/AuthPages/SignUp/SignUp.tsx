@@ -1,4 +1,4 @@
-import { Button, TextInput } from 'components';
+import { TextInput } from 'components';
 import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { signUpUser } from 'store/slices/auth';
@@ -12,6 +12,8 @@ import {
   registerAuthEmailAttempt,
 } from 'helpers';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { AuthRoutesEnum } from 'routes/AuthRoutes';
 
 const isRateLimitError = (message?: string) => {
   const normalizedMessage = (message || '').toLowerCase();
@@ -106,9 +108,14 @@ const SignUp: React.FC = () => {
   const attemptsLeft = getAuthEmailAttemptsLeft();
 
   return (
-    <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Реєстрація</h1>
-      <div className={styles.loginForm}>
+    <div className={styles.auth}>
+      <header className={styles.head}>
+        <span className={styles.eyebrow}>Реєстрація</span>
+        <h1 className={styles.title}>Створіть акаунт</h1>
+        <p className={styles.subtitle}>Кілька полів — і ви вже у турнірі прогнозів разом з друзями.</p>
+      </header>
+
+      <div className={styles.form}>
         <TextInput
           name="name"
           type="text"
@@ -136,41 +143,46 @@ const SignUp: React.FC = () => {
           onChange={(e) => handleChange('phone', e.target.value)}
           placeholder="Ваш номер телефону"
         />
-        <TextInput
-          name="password"
-          type="password"
-          label="Пароль"
-          value={values.password}
-          error={errors.password}
-          onChange={(e) => handleChange('password', e.target.value)}
-          placeholder="Ваш пароль"
-        />
-        <TextInput
-          name="confirmPassword"
-          type="password"
-          label="Підтвердіть пароль"
-          value={values.confirmPassword}
-          error={errors.confirmPassword}
-          onChange={(e) => handleChange('confirmPassword', e.target.value)}
-          placeholder="Підтвердіть пароль"
-        />
-        <p className={styles.loginLimitInfo}>
-          Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
-        </p>
-        <Button loading={isLoading} onClick={handleSubmit} disabled={remainingMs > 0}>
-          {isLoading
-            ? 'Реєстрація...'
-            : remainingMs > 0
-              ? `Повторно через ${formatRemainingTime(remainingMs)}`
-              : 'Зареєструватися'}
-        </Button>
-        <div>
-          Вже зареєстровані?{' '}
-          <Button variant="link" href="/signin">
-            Увійти
-          </Button>
+        <div className={styles.formRow}>
+          <TextInput
+            name="password"
+            type="password"
+            label="Пароль"
+            value={values.password}
+            error={errors.password}
+            onChange={(e) => handleChange('password', e.target.value)}
+            placeholder="Ваш пароль"
+          />
+          <TextInput
+            name="confirmPassword"
+            type="password"
+            label="Підтвердіть пароль"
+            value={values.confirmPassword}
+            error={errors.confirmPassword}
+            onChange={(e) => handleChange('confirmPassword', e.target.value)}
+            placeholder="Підтвердіть пароль"
+          />
         </div>
       </div>
+
+      <p className={styles.note}>
+        Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
+      </p>
+
+      <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading || remainingMs > 0}>
+        {isLoading
+          ? 'Реєстрація...'
+          : remainingMs > 0
+            ? `Повторно через ${formatRemainingTime(remainingMs)}`
+            : 'Зареєструватися'}
+      </button>
+
+      <p className={styles.footer}>
+        Вже зареєстровані?{' '}
+        <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
+          Увійти
+        </Link>
+      </p>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { Button, TextInput } from 'components';
+import { TextInput } from 'components';
 import { useForm } from 'hooks';
 import { useAppDispatch, useAppSelector } from 'store';
 import { Link, useNavigate } from 'react-router-dom';
@@ -49,10 +49,14 @@ const SetPassword: React.FC = () => {
   };
 
   return (
-    <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Встановити новий пароль</h1>
-      <p className={styles.loginDescription}>Введіть новий пароль двічі, щоб підтвердити зміну.</p>
-      <div className={styles.loginForm}>
+    <div className={styles.auth}>
+      <header className={styles.head}>
+        <span className={styles.eyebrow}>Новий пароль</span>
+        <h1 className={styles.title}>Встановіть новий пароль</h1>
+        <p className={styles.subtitle}>Введіть новий пароль двічі, щоб підтвердити зміну.</p>
+      </header>
+
+      <div className={styles.form}>
         <TextInput
           name="password"
           type="password"
@@ -71,15 +75,19 @@ const SetPassword: React.FC = () => {
           onChange={(e) => handleChange('confirmPassword', e.target.value)}
           placeholder="Підтвердіть пароль"
         />
-        <Button loading={isLoading} onClick={handleSubmit}>
-          {isLoading ? 'Завантаження...' : 'Змінити пароль'}
-        </Button>
-        <div className={styles.loginActions}>
-          <Link to={AuthRoutesEnum.SignIn} className={styles.loginBackLink}>
-            Повернутися до входу
-          </Link>
-        </div>
       </div>
+
+      <p className={styles.note}>Пароль має містити принаймні 8 символів.</p>
+
+      <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading}>
+        {isLoading ? 'Завантаження...' : 'Змінити пароль'}
+      </button>
+
+      <p className={styles.footer}>
+        <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
+          Повернутися до входу
+        </Link>
+      </p>
     </div>
   );
 };

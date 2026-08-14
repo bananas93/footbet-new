@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import cn from 'classnames';
-import Button from 'components/Button/Button';
 import styles from './OTPInput.module.scss';
 
 interface Props {
@@ -73,16 +72,16 @@ const OTPInput = ({ otp, setOtp, codeLength, timerDuration, resendCode, isError,
             onChange={(e) => handleInputChange(e.target.value, index)}
             onKeyDown={(e) => handleKeyPress(e, index)}
             ref={(el) => (inputRefs.current[index] = el!)}
-            className={cn(styles.input, { [styles.error]: isError })}
+            className={cn(styles.input, { [styles.inputError]: isError })}
           />
         ))}
       </div>
-      {isError && <p className={styles.error}>{error}</p>}
+      {isError && <p className={styles.errorText}>{error}</p>}
       <div className={styles.timerContainer}>
         <p className={styles.timerText}>{`0:${timer < 10 ? `0${timer}` : timer}`}</p>
-        <Button variant="link" onClick={handleResendCode} disabled={timer > 0}>
+        <button type="button" className={styles.resend} onClick={handleResendCode} disabled={timer > 0}>
           Надіслати ще раз
-        </Button>
+        </button>
       </div>
     </>
   );

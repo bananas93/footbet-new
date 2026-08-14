@@ -1,4 +1,4 @@
-import { Button, TextInput } from 'components';
+import { TextInput } from 'components';
 import { useForm } from 'hooks';
 import styles from './SignIn.module.scss';
 import { useAppDispatch, useAppSelector } from 'store';
@@ -62,14 +62,21 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Вхід</h1>
-      <div className={styles.loginForm}>
-        <div>
-          <button type="button" onClick={handleGoogleLogin} className={styles.loginGoogle} disabled={isGoogleLoading}>
-            {isGoogleLoading ? 'Переходимо до Google...' : 'Увійти за допомогою'} <GoogleIcon />
-          </button>
-        </div>
+    <div className={styles.auth}>
+      <header className={styles.head}>
+        <span className={styles.eyebrow}>Вхід</span>
+        <h1 className={styles.title}>Вітаємо у Footbet</h1>
+        <p className={styles.subtitle}>Увійдіть, щоб робити прогнози та стежити за таблицею турніру.</p>
+      </header>
+
+      <button type="button" onClick={handleGoogleLogin} className={styles.google} disabled={isGoogleLoading}>
+        <GoogleIcon />
+        {isGoogleLoading ? 'Переходимо до Google...' : 'Увійти через Google'}
+      </button>
+
+      <div className={styles.divider}>або</div>
+
+      <div className={styles.form}>
         <TextInput
           name="email"
           type="email"
@@ -88,19 +95,21 @@ const SignIn: React.FC = () => {
           onChange={(e) => handleChange('password', e.target.value)}
           placeholder="Ваш пароль"
         />
-        <div className={styles.loginForgotPassword}>
-          <Link to={AuthRoutesEnum.ForgotPassword}>Забули пароль?</Link>
-        </div>
-        <Button loading={isLoading} onClick={handleSubmit}>
-          {isLoading ? 'Входимо...' : 'Вхід'}
-        </Button>
-        <div>
-          Не маєте акаунту?{' '}
-          <Button variant="link" href="/signup">
-            Зареєструватись
-          </Button>
-        </div>
+        <Link to={AuthRoutesEnum.ForgotPassword} className={styles.forgot}>
+          Забули пароль?
+        </Link>
       </div>
+
+      <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading}>
+        {isLoading ? 'Входимо...' : 'Увійти'}
+      </button>
+
+      <p className={styles.footer}>
+        Не маєте акаунту?{' '}
+        <Link to={AuthRoutesEnum.SignUp} className={styles.footerLink}>
+          Зареєструватись
+        </Link>
+      </p>
     </div>
   );
 };

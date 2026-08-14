@@ -1,7 +1,6 @@
-import { Button } from 'components';
 import OTPInput from 'components/OTPInput/OTPInput';
 import { useState } from 'react';
-import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from 'store';
 import { checkVerificationCode, resetPassword } from 'store/slices/auth';
 import styles from './CheckValidationCode.module.scss';
@@ -43,12 +42,16 @@ const CheckValidationCode = () => {
   const buttonDisabled = otp.some((code) => code === '');
 
   return (
-    <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Введіть код підтвердження</h1>
-      <p className={styles.loginSubtitle}>
-        Посилання для відновлення паролю відправлено на <b>{email}</b>
-      </p>
-      <div className={styles.loginForm}>
+    <div className={styles.auth}>
+      <header className={styles.head}>
+        <span className={styles.eyebrow}>Підтвердження</span>
+        <h1 className={styles.title}>Введіть код з листа</h1>
+        <p className={styles.subtitle}>
+          Ми надіслали код підтвердження на <span className={styles.email}>{email}</span>
+        </p>
+      </header>
+
+      <div className={styles.otp}>
         <OTPInput
           otp={otp}
           setOtp={setOtp}
@@ -57,10 +60,21 @@ const CheckValidationCode = () => {
           isError={isError}
           error={error as string}
         />
-        <Button variant="primary" onClick={handleVerification} loading={isLoading} disabled={buttonDisabled}>
-          Продовжити
-        </Button>
       </div>
+
+      <button
+        type="button"
+        className={styles.submit}
+        onClick={handleVerification}
+        disabled={buttonDisabled || isLoading}>
+        {isLoading ? 'Перевіряємо...' : 'Продовжити'}
+      </button>
+
+      <p className={styles.footer}>
+        <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
+          Назад до входу
+        </Link>
+      </p>
     </div>
   );
 };

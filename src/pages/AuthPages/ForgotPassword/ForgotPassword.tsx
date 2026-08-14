@@ -1,4 +1,4 @@
-import { Button, TextInput } from 'components';
+import { TextInput } from 'components';
 import {
   AUTH_EMAIL_LIMIT_PER_HOUR,
   formatRemainingTime,
@@ -96,12 +96,16 @@ const ForgotPassword: React.FC = () => {
   const attemptsLeft = getAuthEmailAttemptsLeft();
 
   return (
-    <div className={styles.login}>
-      <h1 className={styles.loginTitle}>Забули пароль?</h1>
-      <p className={styles.loginDescription}>
-        Вкажіть email, який використовували при реєстрації. Ми надішлемо посилання для встановлення нового пароля.
-      </p>
-      <div className={styles.loginForm}>
+    <div className={styles.auth}>
+      <header className={styles.head}>
+        <span className={styles.eyebrow}>Відновлення</span>
+        <h1 className={styles.title}>Забули пароль?</h1>
+        <p className={styles.subtitle}>
+          Вкажіть email, який використовували при реєстрації. Ми надішлемо посилання для встановлення нового пароля.
+        </p>
+      </header>
+
+      <div className={styles.form}>
         <TextInput
           name="email"
           type="email"
@@ -111,22 +115,25 @@ const ForgotPassword: React.FC = () => {
           onChange={(e) => handleChange('email', e.target.value)}
           placeholder="Ваш email"
         />
-        <p className={styles.loginLimitInfo}>
-          Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
-        </p>
-        <Button loading={isLoading} onClick={handleSubmit} disabled={remainingMs > 0}>
-          {isLoading
-            ? 'Надсилання...'
-            : remainingMs > 0
-              ? `Повторно через ${formatRemainingTime(remainingMs)}`
-              : 'Надіслати'}
-        </Button>
-        <div className={styles.loginActions}>
-          <Link to={AuthRoutesEnum.SignIn} className={styles.loginForgotPassword}>
-            Назад до входу
-          </Link>
-        </div>
       </div>
+
+      <p className={styles.note}>
+        Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
+      </p>
+
+      <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading || remainingMs > 0}>
+        {isLoading
+          ? 'Надсилання...'
+          : remainingMs > 0
+            ? `Повторно через ${formatRemainingTime(remainingMs)}`
+            : 'Надіслати посилання'}
+      </button>
+
+      <p className={styles.footer}>
+        <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
+          Назад до входу
+        </Link>
+      </p>
     </div>
   );
 };

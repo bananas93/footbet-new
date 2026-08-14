@@ -1,28 +1,133 @@
-.login {
+$ink: #0f1230;
+$muted: #6b7590;
+$line: #e9edf6;
+$accent: #4b3aa8;
+
+.auth {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
+}
+
+/* ---------- head ---------- */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #e6e2ff;
+  background-color: #f2efff;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $accent;
+}
+
+.title {
+  margin: 0.6rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: $ink;
+}
+
+.subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: $muted;
+}
+
+.email {
+  font-weight: 700;
+  color: $ink;
+  word-break: break-all;
+}
+
+/* ---------- otp ---------- */
+
+.otp {
+  padding: 1rem 0.9rem 0.4rem;
+  border-radius: 0.9rem;
+  border: 1px solid $line;
+  background-color: #f9fbff;
+}
+
+/* ---------- submit ---------- */
+
+.submit {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  &Title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  border-radius: 0.85rem;
+  border: 1px solid transparent;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #1b1b4a 0%, #33338a 100%);
+  box-shadow: 0 14px 28px -16px rgba(27, 27, 74, 0.9);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px -16px rgba(27, 27, 74, 1);
   }
-  &Subtitle {
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+
+  &:focus-visible {
+    outline: 2px solid rgba(143, 107, 255, 0.6);
+    outline-offset: 2px;
   }
-  &Form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    max-width: 100%;
-    width: 30rem;
-    padding: 1rem;
+
+  &:disabled {
+    opacity: 0.55;
+    box-shadow: none;
+    cursor: not-allowed;
   }
-  &ForgotPassword {
-    text-align: right;
-    margin-left: auto;
+}
+
+/* ---------- footer ---------- */
+
+.footer {
+  text-align: center;
+  font-size: 0.8125rem;
+  color: $muted;
+}
+
+.footerLink {
+  font-weight: 700;
+  color: $accent;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #33338a;
+    text-decoration: underline;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+@media screen and (max-width: 48em) {
+  .title {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .otp {
+    padding: 0.85rem 0.6rem 0.35rem;
   }
 }
