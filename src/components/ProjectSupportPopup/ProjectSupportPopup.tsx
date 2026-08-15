@@ -10,6 +10,19 @@ const ONE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 const ProjectSupportPopup: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const markAsSeen = () => {
+    writeLocalCache<boolean>(POPUP_CACHE_KEY, true, ONE_WEEK_SECONDS);
+  };
+
+  const handleClose = () => {
+    markAsSeen();
+    setIsOpen(false);
+  };
+
+  const handleDonateClick = () => {
+    markAsSeen();
+  };
+
   useEffect(() => {
     const alreadySeen = readLocalCache<boolean>(POPUP_CACHE_KEY);
     if (alreadySeen) {
@@ -17,11 +30,10 @@ const ProjectSupportPopup: React.FC = () => {
     }
 
     setIsOpen(true);
-    writeLocalCache<boolean>(POPUP_CACHE_KEY, true, ONE_WEEK_SECONDS);
   }, []);
 
   return (
-    <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Підтримка Footbet">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Підтримка Footbet">
       <div className={styles.content}>
         <p className={styles.text}>
           Для стабільної роботи та розвитку Footbet проєкту потрібно приблизно <strong>10 000 грн на рік</strong>.
@@ -30,7 +42,12 @@ const ProjectSupportPopup: React.FC = () => {
           Якщо маєте можливість, будь ласка, підтримайте проєкт. Дякуємо за вашу довіру і допомогу.
         </p>
 
-        <a className={styles.cta} href={MONOBANK_JAR_URL} target="_blank" rel="noreferrer noopener">
+        <a
+          className={styles.cta}
+          href={MONOBANK_JAR_URL}
+          target="_blank"
+          rel="noreferrer noopener"
+          onClick={handleDonateClick}>
           Підтримати через Monobank
         </a>
 
