@@ -49,6 +49,7 @@ export interface IGames {
 
 export interface IMatch {
   id: number;
+  apiFixtureId?: number;
   stage: MatchStage;
   groupTour: MatchGroupTour;
   tournamentLeague: number;

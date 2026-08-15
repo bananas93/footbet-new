@@ -4,8 +4,10 @@ import Rules from 'pages/AppPages/Rules/Rules';
 import Achievements from 'pages/AppPages/Tournament/components/Achievements/Achievements';
 import Leagues from 'pages/AppPages/Tournament/components/Leagues/Leagues';
 import Matches from 'pages/AppPages/Tournament/components/Matches/Matches';
+import MatchDetails from 'pages/AppPages/Tournament/components/MatchDetails/MatchDetails';
 import Rooms from 'pages/AppPages/Tournament/components/Rooms/Rooms';
 import Standings from 'pages/AppPages/Tournament/components/Standings/Standings';
+import TeamDetails from 'pages/AppPages/Tournament/components/TeamDetails/TeamDetails';
 import { Navigate, useRoutes } from 'react-router-dom';
 import RequireAuthRoute from './RequireAuthRoute';
 
@@ -25,6 +27,8 @@ export const AppRoutes = () => {
       element: <Tournament />,
       children: [
         { path: '', element: <Matches /> },
+        { path: 'match/:matchId', element: <MatchDetails /> },
+        { path: 'team/:teamId', element: <TeamDetails /> },
         { path: 'standings', element: <Standings /> },
         {
           path: 'leagues',

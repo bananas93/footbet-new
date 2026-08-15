@@ -27,6 +27,7 @@ export const getMatches = createAsyncThunk(
         result,
         group_name,
         tournament_league,
+        api_fixture_id,
         home_score,
         away_score,
         match_date,
@@ -35,8 +36,8 @@ export const getMatches = createAsyncThunk(
         away_team_id,
         created_at,
         updated_at,
-        homeTeam:teams!matches_home_team_id_fkey(id, name, logo),
-        awayTeam:teams!matches_away_team_id_fkey(id, name, logo)
+        homeTeam:teams!matches_home_team_id_fkey(id, api_team_id, name, logo),
+        awayTeam:teams!matches_away_team_id_fkey(id, api_team_id, name, logo)
       `,
       )
       .eq('tournament_id', tournamentId)
@@ -75,6 +76,7 @@ export const getMatches = createAsyncThunk(
         result: match.result,
         groupName: match.group_name,
         tournamentLeague: Number(match.tournament_league || 1),
+        apiFixtureId: match.api_fixture_id || undefined,
         homeScore: match.home_score,
         awayScore: match.away_score,
         matchDate: match.match_date,
@@ -83,8 +85,18 @@ export const getMatches = createAsyncThunk(
         awayTeamId: match.away_team_id,
         createdAt: match.created_at,
         updatedAt: match.updated_at,
-        homeTeam: match.homeTeam,
-        awayTeam: match.awayTeam,
+        homeTeam: match.homeTeam
+          ? {
+              ...match.homeTeam,
+              apiTeamId: match.homeTeam.api_team_id || undefined,
+            }
+          : match.homeTeam,
+        awayTeam: match.awayTeam
+          ? {
+              ...match.awayTeam,
+              apiTeamId: match.awayTeam.api_team_id || undefined,
+            }
+          : match.awayTeam,
         predict: ownPredict
           ? {
               id: ownPredict.id,

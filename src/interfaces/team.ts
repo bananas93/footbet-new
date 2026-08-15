@@ -5,6 +5,7 @@ export enum TeamType {
 
 export interface ITeam {
   id: number;
+  apiTeamId?: number;
   name: string;
   type: TeamType;
   logo?: string;

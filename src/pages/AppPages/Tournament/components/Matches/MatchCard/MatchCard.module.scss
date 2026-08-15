@@ -208,6 +208,26 @@ $live: #e0342b;
   text-overflow: ellipsis;
 }
 
+.teamNameLink {
+  @extend .teamName;
+  text-decoration: none;
+
+  &:hover {
+    color: #2a4bb8;
+    text-decoration: underline;
+  }
+}
+
+.detailsChip {
+  text-decoration: none;
+
+  &:hover {
+    background-color: #e9eefb;
+    border-color: #c8d5f7;
+    color: #2748b8;
+  }
+}
+
 .center {
   display: flex;
   flex-direction: column;

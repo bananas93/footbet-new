@@ -92,6 +92,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const points = match?.predict?.points || 0;
   const hasPredict = homeScore !== '' && awayScore !== '';
   const stageLabel = match.stage !== 'Group Stage' ? stageLabels[match.stage] || match.stage : '';
+  const matchDetailsHref = `/tournament/${tournament.id}/match/${match.id}`;
 
   const savePredict = async (home: string, away: string) => {
     if (!isAuthenticated) {
@@ -146,9 +147,15 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
       <span className={styles.teamLogo}>
         <img src={resolveAssetUrl(team.logo)} alt={`${side} team logo`} />
       </span>
-      <span className={styles.teamName} title={team.name}>
-        {team.name}
-      </span>
+      {team?.id ? (
+        <Link to={`/tournament/${tournament.id}/team/${team.id}`} className={styles.teamNameLink} title={team.name}>
+          {team.name}
+        </Link>
+      ) : (
+        <span className={styles.teamName} title={team.name}>
+          {team.name}
+        </span>
+      )}
     </div>
   );
 
@@ -170,6 +177,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
               </span>
             )}
             {!!stageLabel && <span className={cn(styles.chip, styles.chipStage)}>{stageLabel}</span>}
+            <Link to={matchDetailsHref} className={cn(styles.chip, styles.detailsChip)}>
+              Деталі
+            </Link>
           </div>
 
           {isLive ? (
