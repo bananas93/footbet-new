@@ -145,7 +145,9 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const renderTeam = (team: IMatch['homeTeam'], side: 'home' | 'away') => (
     <div className={styles.team}>
       <span className={styles.teamLogo}>
-        <img src={resolveAssetUrl(team.logo)} alt={`${side} team logo`} />
+        <Link to={`/tournament/${tournament.id}/team/${team.id}`} className={styles.teamNameLink} title={team.name}>
+          <img src={resolveAssetUrl(team.logo)} alt={`${side} team logo`} />
+        </Link>
       </span>
       {team?.id ? (
         <Link to={`/tournament/${tournament.id}/team/${team.id}`} className={styles.teamNameLink} title={team.name}>
@@ -162,6 +164,12 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   return (
     <>
       <article className={cn(styles.card, { [styles.live]: isLive, [styles.finished]: !isScheduled && !isLive })}>
+        <Link
+          to={matchDetailsHref}
+          className={styles.cardLink}
+          aria-label={`Відкрити деталі матчу ${match.homeTeam.name} - ${match.awayTeam.name}`}
+        />
+
         <div className={cn(styles.toast, { [styles.toastShown]: toastShown })}>
           <CheckIcon />
           Прогноз збережено
@@ -177,9 +185,6 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
               </span>
             )}
             {!!stageLabel && <span className={cn(styles.chip, styles.chipStage)}>{stageLabel}</span>}
-            <Link to={matchDetailsHref} className={cn(styles.chip, styles.detailsChip)}>
-              Деталі
-            </Link>
           </div>
 
           {isLive ? (
