@@ -208,25 +208,85 @@ const ImportMatchesModal: FC<Props> = ({ isOpen, onClose, tournaments }) => {
 
   const { validRows, invalidRows } = validation;
 
+  const findExistingMatchId = async (payload: Record<string, any>): Promise<number | null> => {
+    if (payload.api_fixture_id) {
+      const { data } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('tournament_id', payload.tournament_id)
+        .eq('api_fixture_id', payload.api_fixture_id)
+        .maybeSingle();
+
+      if (data?.id) {
+        return data.id;
+      }
+    }
+
+    let query = supabase
+      .from('matches')
+      .select('id')
+      .eq('tournament_id', payload.tournament_id)
+      .eq('stage', payload.stage)
+      .eq('tournament_league', payload.tournament_league)
+      .eq('home_team_id', payload.home_team_id)
+      .eq('away_team_id', payload.away_team_id)
+      .limit(1);
+
+    if (payload.group_tour) {
+      query = query.eq('group_tour', payload.group_tour);
+    } else {
+      query = query.is('group_tour', null);
+    }
+
+    const { data } = await query.maybeSingle();
+    return data?.id || null;
+  };
+
   const mutation = useMutation({
     mutationFn: async () => {
-      let successCount = 0;
+      let insertedCount = 0;
+      let updatedCount = 0;
       let failCount = 0;
 
       for (const row of validRows) {
-        const { error } = await supabase.from('matches').insert(row.payload);
-        if (error) {
+        try {
+          const existingId = await findExistingMatchId(row.payload);
+
+          if (existingId) {
+            const updatePayload = {
+              stage: row.payload.stage,
+              group_tour: row.payload.group_tour,
+              group_name: row.payload.group_name,
+              match_date: row.payload.match_date,
+              tournament_league: row.payload.tournament_league,
+              api_fixture_id: row.payload.api_fixture_id,
+            };
+
+            const { error } = await supabase.from('matches').update(updatePayload).eq('id', existingId);
+            if (error) {
+              failCount += 1;
+            } else {
+              updatedCount += 1;
+            }
+            continue;
+          }
+
+          const { error } = await supabase.from('matches').insert(row.payload);
+          if (error) {
+            failCount += 1;
+          } else {
+            insertedCount += 1;
+          }
+        } catch {
           failCount += 1;
-        } else {
-          successCount += 1;
         }
       }
 
-      return { successCount, failCount };
+      return { insertedCount, updatedCount, failCount };
     },
-    onSuccess: ({ successCount, failCount }) => {
+    onSuccess: ({ insertedCount, updatedCount, failCount }) => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
-      notify.success(`Імпорт завершено. Успішно: ${successCount}, з помилкою: ${failCount}`);
+      notify.success(`Імпорт завершено. Додано: ${insertedCount}, оновлено: ${updatedCount}, з помилкою: ${failCount}`);
       onClose();
       setRows([]);
       setFileName('');
@@ -267,6 +327,10 @@ const ImportMatchesModal: FC<Props> = ({ isOpen, onClose, tournaments }) => {
           Колонки (ID не обовʼязкові): tournament або tournament_id, home_team або away_team (або *_id), match_date,
           stage, group_tour (опц.), group_name (опц.), tournament_league (опц., число або літера A/B/C/D),
           api_fixture_id (опц.)
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Якщо матч уже існує, імпорт оновить його дату/час (і службові поля). Пошук дубля: спочатку по tournament_id +
+          api_fixture_id, інакше по tournament_id + stage + group_tour + tournament_league + home/away.
         </Typography>
         <FormControl fullWidth margin="dense">
           <TextField
