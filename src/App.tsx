@@ -1,4 +1,4 @@
-import { CookieConsent, InstallBanner, Layout, LoginLayout, Toast } from 'components';
+import { CookieConsent, InstallBanner, Layout, LoginLayout, ProjectSupportPopup, Toast } from 'components';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from 'routes/AppRoutes';
@@ -40,6 +40,7 @@ const BallIcon = ({ className }: { className?: string }) => (
 const getRouteTitle = (pathname: string): string => {
   if (pathname === '/') return 'Головна | Footbet';
   if (pathname === '/rules') return 'Правила | Footbet';
+  if (pathname === '/project-support') return 'Допомога проєкту | Footbet';
   if (pathname === '/user') return 'Профіль | Footbet';
   if (pathname === '/signin') return 'Вхід | Footbet';
   if (pathname === '/signup') return 'Реєстрація | Footbet';
@@ -166,6 +167,7 @@ const App: React.FC = () => {
         </LoginLayout>
         <InstallBanner />
         <CookieConsent />
+        <ProjectSupportPopup />
       </>
     );
   }
@@ -178,6 +180,7 @@ const App: React.FC = () => {
       </Layout>
       <InstallBanner />
       <CookieConsent />
+      <ProjectSupportPopup />
     </>
   );
 };

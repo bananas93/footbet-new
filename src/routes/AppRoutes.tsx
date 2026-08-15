@@ -1,4 +1,5 @@
 import { Home, Tournament, User } from 'pages';
+import ProjectSupport from 'pages/AppPages/ProjectSupport/ProjectSupport';
 import Profile from 'pages/AppPages/Profile/Profile';
 import Rules from 'pages/AppPages/Rules/Rules';
 import Achievements from 'pages/AppPages/Tournament/components/Achievements/Achievements';
@@ -16,6 +17,7 @@ export enum RoutesEnum {
   Tournament = '/tournament/:tournamentId',
   User = '/user',
   Rules = '/rules',
+  ProjectSupport = '/project-support',
   Profile = '/profile/:userId',
 }
 
@@ -67,6 +69,7 @@ export const AppRoutes = () => {
     { path: RoutesEnum.Profile, element: <Profile /> },
     { path: '/profile/:userId/:tournamentId', element: <Profile /> },
     { path: RoutesEnum.Rules, element: <Rules /> },
+    { path: RoutesEnum.ProjectSupport, element: <ProjectSupport /> },
     { path: '*', element: <Navigate to={RoutesEnum.Home} /> },
   ]);
   return routes;

@@ -74,6 +74,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <Link to={RoutesEnum.Rules} className={styles.footerLink}>
                 Правила
               </Link>
+              <Link to={RoutesEnum.ProjectSupport} className={styles.footerLink}>
+                Допомога проєкту
+              </Link>
             </nav>
           </div>
 
