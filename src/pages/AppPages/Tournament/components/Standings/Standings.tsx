@@ -79,6 +79,11 @@ const getLeagueSortOrder = (label: string): number => {
   return Number.MAX_SAFE_INTEGER;
 };
 
+const isEnglishPremierLeague = (name: string): boolean => {
+  const normalized = (name || '').trim().toLowerCase();
+  return normalized.includes('english premier league') || normalized === 'premier league' || normalized.includes('epl');
+};
+
 const TableIcon = () => (
   <svg
     viewBox="0 0 24 24"
@@ -258,6 +263,7 @@ const Standings: React.FC = () => {
   const groups = useMemo(() => Object.entries(effectiveStandings), [effectiveStandings]);
   const thirdPlace = useMemo(() => standings?.thirdPlacesStandings || [], [standings]);
   const isNationsLeague = !!tournament.isNationsLeague;
+  const isPremierLeague = isEnglishPremierLeague(tournament.name);
 
   const leagues = useMemo<LeagueSection[]>(() => {
     const sections = new Map<string, LeagueSection>();
@@ -302,8 +308,12 @@ const Standings: React.FC = () => {
     goals: allTeams.reduce((acc, item) => acc + item.goalsScored, 0),
   };
 
-  const hasDirectZone = tournament.directNextRound > 0;
-  const hasPlayoffZone = tournament.playoffRound > 0;
+  const directSlots = isPremierLeague ? 4 : tournament.directNextRound;
+  const playoffSlots = isPremierLeague ? 1 : tournament.playoffRound;
+  const relegationSlots = isPremierLeague ? 3 : 0;
+  const hasDirectZone = directSlots > 0;
+  const hasPlayoffZone = playoffSlots > 0;
+  const hasRelegationZone = relegationSlots > 0;
 
   const thirdPlaceSections = useMemo<LeagueSection[]>(() => {
     if (!thirdPlace.length) {
@@ -335,7 +345,7 @@ const Standings: React.FC = () => {
     return Array.from(sections.values()).sort((a, b) => a.label.localeCompare(b.label, 'uk', { numeric: true }));
   }, [isMultiLeague, thirdPlace]);
 
-  const getGroupZone = (leagueKey: string | null, index: number): Zone => {
+  const getGroupZone = (leagueKey: string | null, index: number, tableSize?: number): Zone => {
     if (isNationsLeague && isMultiLeague) {
       const leagueSection = leagues.find((section) => section.key === (leagueKey || ''));
       const leagueOrder = getLeagueSortOrder(leagueSection?.label || leagueKey || '');
@@ -377,12 +387,18 @@ const Standings: React.FC = () => {
       return null;
     }
 
-    if (tournament.directNextRound > index) {
+    const position = index + 1;
+
+    if (position <= directSlots) {
       return 'playoff';
     }
 
-    if (tournament.playoffRound + tournament.directNextRound > index) {
+    if (position <= directSlots + playoffSlots) {
       return 'knockout';
+    }
+
+    if (isPremierLeague && typeof tableSize === 'number' && tableSize > 0 && position > tableSize - relegationSlots) {
+      return 'relegation';
     }
 
     return null;
@@ -472,7 +488,7 @@ const Standings: React.FC = () => {
         items={entry.items}
         isMobile={isMobile}
         formLimit={isMobile ? -3 : undefined}
-        getZone={(index) => getGroupZone(section?.key ?? null, index)}
+        getZone={(index) => getGroupZone(section?.key ?? null, index, entry.items.length)}
       />
     );
   };
@@ -551,50 +567,68 @@ const Standings: React.FC = () => {
         </div>
       )}
 
-      {!!allTeams.length && !isMultiLeague && (isNationsLeague || hasDirectZone || hasPlayoffZone) && (
-        <div className={styles.legend}>
-          {isNationsLeague ? (
-            <>
-              <span className={cn(styles.legendItem, styles.playoff)}>
-                <span className={styles.legendDot} />
-                Ліга A: 1-2 місце вихід у плей-оф
-              </span>
-              <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-                <span className={styles.legendDot} />3 місце: стикові матчі
-              </span>
-              <span className={cn(styles.legendItem, styles.relegation)}>
-                <span className={styles.legendDot} />4 місце: пониження в лігу нижче
-              </span>
-              <span className={cn(styles.legendItem, styles.promotion)}>
-                <span className={styles.legendDot} />
-                Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення
-              </span>
-            </>
-          ) : (
-            <>
-              {hasDirectZone && (
+      {!!allTeams.length &&
+        !isMultiLeague &&
+        (isNationsLeague || hasDirectZone || hasPlayoffZone || hasRelegationZone) && (
+          <div className={styles.legend}>
+            {isNationsLeague ? (
+              <>
                 <span className={cn(styles.legendItem, styles.playoff)}>
                   <span className={styles.legendDot} />
-                  Прямий вихід у наступний раунд
+                  Ліга A: 1-2 місце вихід у плей-оф
                 </span>
-              )}
-              {hasPlayoffZone && (
-                <span className={cn(styles.legendItem, styles.knockout)}>
+                <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
+                  <span className={styles.legendDot} />3 місце: стикові матчі
+                </span>
+                <span className={cn(styles.legendItem, styles.relegation)}>
+                  <span className={styles.legendDot} />4 місце: пониження в лігу нижче
+                </span>
+                <span className={cn(styles.legendItem, styles.promotion)}>
                   <span className={styles.legendDot} />
-                  Раунд плей-оф
+                  Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення
                 </span>
-              )}
-            </>
-          )}
-          <span className={styles.legendHint}>
-            {isNationsLeague
-              ? 'Формат Nations League: підвищення/пониження між лігами A/B/C/D'
-              : isMultiLeague
-                ? `Зони виходу — лише Ліга ${leagues[0].label}`
-                : 'Форма: останні матчі, зліва найдавніший'}
-          </span>
-        </div>
-      )}
+              </>
+            ) : isPremierLeague ? (
+              <>
+                <span className={cn(styles.legendItem, styles.playoff)}>
+                  <span className={styles.legendDot} />
+                  1-4 місце: Champions League
+                </span>
+                <span className={cn(styles.legendItem, styles.knockout)}>
+                  <span className={styles.legendDot} />5 місце: Europe League
+                </span>
+                <span className={cn(styles.legendItem, styles.relegation)}>
+                  <span className={styles.legendDot} />
+                  Останні 3 місця: виліт
+                </span>
+              </>
+            ) : (
+              <>
+                {hasDirectZone && (
+                  <span className={cn(styles.legendItem, styles.playoff)}>
+                    <span className={styles.legendDot} />
+                    Прямий вихід у наступний раунд
+                  </span>
+                )}
+                {hasPlayoffZone && (
+                  <span className={cn(styles.legendItem, styles.knockout)}>
+                    <span className={styles.legendDot} />
+                    Раунд плей-оф
+                  </span>
+                )}
+              </>
+            )}
+            <span className={styles.legendHint}>
+              {isNationsLeague
+                ? 'Формат Nations League: підвищення/пониження між лігами A/B/C/D'
+                : isPremierLeague
+                  ? 'Регламент EPL: 1-4 ЛЧ, 5 ЛЄ, останні 3 місця виліт'
+                  : isMultiLeague
+                    ? `Зони виходу — лише Ліга ${leagues[0].label}`
+                    : 'Форма: останні матчі, зліва найдавніший'}
+            </span>
+          </div>
+        )}
 
       {!groups.length && (
         <section className={styles.emptyCard}>
