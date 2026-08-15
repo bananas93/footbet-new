@@ -158,6 +158,15 @@ const App: React.FC = () => {
     );
   }
 
+  if (pathname.startsWith('/admin')) {
+    return (
+      <>
+        <AppRoutes />
+        <Toast position="top-center" />
+      </>
+    );
+  }
+
   if (isAuthPage) {
     return (
       <>

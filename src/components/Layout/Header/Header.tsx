@@ -24,13 +24,6 @@ const BallIcon = () => (
   </svg>
 );
 
-const ExternalIcon = () => (
-  <svg {...iconProps} className={styles.navIcon}>
-    <path d="M14 5h5v5M18.5 5.5 11 13" />
-    <path d="M18 14v3.5A2.5 2.5 0 0 1 15.5 20h-9A2.5 2.5 0 0 1 4 17.5v-9A2.5 2.5 0 0 1 6.5 6H10" />
-  </svg>
-);
-
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
   const location = useLocation();
@@ -58,14 +51,9 @@ const Header: React.FC = () => {
             Правила
           </NavLink>
           {user?.role === 'admin' && (
-            <a
-              href={`${process.env.REACT_APP_API_URL}/admin/matches`}
-              target="_blank"
-              className={cn(styles.navLink, styles.navLinkExternal)}
-              rel="noreferrer">
+            <NavLink to="/admin" className={navLinkClass}>
               Адмінка
-              <ExternalIcon />
-            </a>
+            </NavLink>
           )}
         </nav>
 

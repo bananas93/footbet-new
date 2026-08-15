@@ -9,8 +9,10 @@ import MatchDetails from 'pages/AppPages/Tournament/components/MatchDetails/Matc
 import Rooms from 'pages/AppPages/Tournament/components/Rooms/Rooms';
 import Standings from 'pages/AppPages/Tournament/components/Standings/Standings';
 import TeamDetails from 'pages/AppPages/Tournament/components/TeamDetails/TeamDetails';
+import AdminApp from 'admin/AdminApp';
 import { Navigate, useRoutes } from 'react-router-dom';
 import RequireAuthRoute from './RequireAuthRoute';
+import RequireAdminRoute from './RequireAdminRoute';
 
 export enum RoutesEnum {
   Home = '/',
@@ -68,6 +70,14 @@ export const AppRoutes = () => {
     },
     { path: RoutesEnum.Profile, element: <Profile /> },
     { path: '/profile/:userId/:tournamentId', element: <Profile /> },
+    {
+      path: '/admin/*',
+      element: (
+        <RequireAdminRoute>
+          <AdminApp />
+        </RequireAdminRoute>
+      ),
+    },
     { path: RoutesEnum.Rules, element: <Rules /> },
     { path: RoutesEnum.ProjectSupport, element: <ProjectSupport /> },
     { path: '*', element: <Navigate to={RoutesEnum.Home} /> },
