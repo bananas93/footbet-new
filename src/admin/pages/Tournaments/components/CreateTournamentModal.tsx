@@ -28,6 +28,9 @@ const CreateTournamentModal: FC<Props> = ({ createModalOpen, toggleCreateModal }
         knockout_round: isNationsLeague ? 3 : Number(formData.knockoutRound || 0),
         direct_next_round: isNationsLeague ? 1 : Number(formData.directNextRound || 0),
         playoff_round: isNationsLeague ? 0 : Number(formData.playoffRound || 0),
+        champions_slots: isNationsLeague ? 0 : Number(formData.championsSlots || formData.directNextRound || 0),
+        europa_slots: isNationsLeague ? 0 : Number(formData.europaSlots || formData.playoffRound || 0),
+        relegation_slots: isNationsLeague ? 0 : Number(formData.relegationSlots || 0),
         third_place_match: isNationsLeague ? true : !!formData.thirdPlaceMatch,
         has_table: !!formData.hasTable,
         leagues: isNationsLeague ? 4 : Number(formData.leagues || 1),
@@ -162,6 +165,45 @@ const CreateTournamentModal: FC<Props> = ({ createModalOpen, toggleCreateModal }
             id="playoffRound"
             name="playoffRound"
             label="Вихід команд у стикові матчі"
+            type="number"
+            fullWidth
+            defaultValue={0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="championsSlots"
+            name="championsSlots"
+            label="Слоти Champions League"
+            type="number"
+            fullWidth
+            defaultValue={0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="europaSlots"
+            name="europaSlots"
+            label="Слоти Europe League"
+            type="number"
+            fullWidth
+            defaultValue={0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="relegationSlots"
+            name="relegationSlots"
+            label="Кількість команд на виліт"
             type="number"
             fullWidth
             defaultValue={0}

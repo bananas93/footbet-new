@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import cn from 'classnames';
 import { useAppSelector } from 'store';
 import { useTournament } from '../../Tournament';
-import { IMatch, IStandingsItem } from 'interfaces';
+import { IMatch, IStandingsItem, MatchStatus } from 'interfaces';
 import { useMobile } from 'hooks';
 import { getLeagueLabel, resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
@@ -77,11 +77,6 @@ const getLeagueSortOrder = (label: string): number => {
   }
 
   return Number.MAX_SAFE_INTEGER;
-};
-
-const isEnglishPremierLeague = (name: string): boolean => {
-  const normalized = (name || '').trim().toLowerCase();
-  return normalized.includes('english premier league') || normalized === 'premier league' || normalized.includes('epl');
 };
 
 const TableIcon = () => (
@@ -189,10 +184,17 @@ const Standings: React.FC = () => {
       return {};
     }
 
-    const sections = new Map<
-      string,
-      Map<number, { id: number; name: string; logo: string; league: string; group: string }>
-    >();
+    const getSectionMeta = (match: IMatch) => {
+      const leagueLabel = tournament.leagues > 1 ? getLeagueLabel(Number(match.tournamentLeague) || 1) : '';
+      const groupLabel = (match.groupName || '').trim() || 'Загальна';
+      return {
+        sectionKey: `${leagueLabel}::${groupLabel}`,
+        leagueLabel,
+        groupLabel,
+      };
+    };
+
+    const sections = new Map<string, Map<number, IStandingsItem>>();
 
     const addTeam = (match: IMatch, type: 'home' | 'away') => {
       const team = type === 'home' ? match.homeTeam : match.awayTeam;
@@ -202,9 +204,7 @@ const Standings: React.FC = () => {
         return;
       }
 
-      const leagueLabel = tournament.leagues > 1 ? getLeagueLabel(Number(match.tournamentLeague) || 1) : '';
-      const groupLabel = (match.groupName || '').trim() || 'Загальна';
-      const sectionKey = `${leagueLabel}::${groupLabel}`;
+      const { sectionKey, leagueLabel, groupLabel } = getSectionMeta(match);
 
       if (!sections.has(sectionKey)) {
         sections.set(sectionKey, new Map());
@@ -213,30 +213,12 @@ const Standings: React.FC = () => {
       const section = sections.get(sectionKey)!;
       if (!section.has(teamId)) {
         section.set(teamId, {
-          id: teamId,
+          id: String(teamId),
           name: team.name,
-          logo: team.logo || '',
-          league: leagueLabel,
-          group: groupLabel,
-        });
-      }
-    };
-
-    allMatches.forEach((match) => {
-      addTeam(match, 'home');
-      addTeam(match, 'away');
-    });
-
-    const result: Record<string, IStandingsItem[]> = {};
-    sections.forEach((teams, key) => {
-      const items = Array.from(teams.values())
-        .sort((a, b) => a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' }))
-        .map((team) => ({
-          id: String(team.id),
           team: team.name,
-          league: team.league || undefined,
-          group: team.group,
-          logo: team.logo,
+          logo: team.logo || '',
+          league: leagueLabel || undefined,
+          group: groupLabel,
           played: 0,
           won: 0,
           lost: 0,
@@ -245,7 +227,100 @@ const Standings: React.FC = () => {
           goalsAgainst: 0,
           points: 0,
           form: [],
-        }));
+        } as IStandingsItem);
+      }
+    };
+
+    const applyCountedMatch = (match: IMatch) => {
+      if (match.status !== MatchStatus.FINISHED && match.status !== MatchStatus.IN_PROGRESS) {
+        return;
+      }
+
+      const { sectionKey } = getSectionMeta(match);
+      const section = sections.get(sectionKey);
+      if (!section) {
+        return;
+      }
+
+      const home = section.get(match.homeTeamId);
+      const away = section.get(match.awayTeamId);
+      if (!home || !away) {
+        return;
+      }
+
+      const homeScore = Number(match.homeScore) || 0;
+      const awayScore = Number(match.awayScore) || 0;
+
+      home.played += 1;
+      away.played += 1;
+      home.goalsScored += homeScore;
+      home.goalsAgainst += awayScore;
+      away.goalsScored += awayScore;
+      away.goalsAgainst += homeScore;
+
+      if (homeScore > awayScore) {
+        home.won += 1;
+        home.points += 3;
+        home.form.push('won');
+
+        away.lost += 1;
+        away.form.push('lost');
+        return;
+      }
+
+      if (homeScore < awayScore) {
+        away.won += 1;
+        away.points += 3;
+        away.form.push('won');
+
+        home.lost += 1;
+        home.form.push('lost');
+        return;
+      }
+
+      home.drawn += 1;
+      away.drawn += 1;
+      home.points += 1;
+      away.points += 1;
+      home.form.push('drawn');
+      away.form.push('drawn');
+    };
+
+    allMatches.forEach((match) => {
+      addTeam(match, 'home');
+      addTeam(match, 'away');
+    });
+
+    const finishedMatches = [...allMatches].sort(
+      (a, b) => new Date(a.matchDate).getTime() - new Date(b.matchDate).getTime(),
+    );
+    finishedMatches.forEach(applyCountedMatch);
+
+    const result: Record<string, IStandingsItem[]> = {};
+    sections.forEach((teams, key) => {
+      const items = Array.from(teams.values())
+        .map((team) => ({
+          ...team,
+          form: team.form.slice(-5),
+        }))
+        .sort((a, b) => {
+          const byPoints = b.points - a.points;
+          if (byPoints !== 0) {
+            return byPoints;
+          }
+
+          const byGoalDiff = b.goalsScored - b.goalsAgainst - (a.goalsScored - a.goalsAgainst);
+          if (byGoalDiff !== 0) {
+            return byGoalDiff;
+          }
+
+          const byGoals = b.goalsScored - a.goalsScored;
+          if (byGoals !== 0) {
+            return byGoals;
+          }
+
+          return a.team.localeCompare(b.team, 'uk', { sensitivity: 'base' });
+        });
 
       if (items.length) {
         result[key] = items;
@@ -255,15 +330,25 @@ const Standings: React.FC = () => {
     return result;
   }, [matchesByTournament, tournament.id, tournament.leagues]);
 
-  const effectiveStandings = useMemo(
-    () => (Object.keys(standings?.standings || {}).length ? standings?.standings || {} : fallbackStandings),
-    [standings, fallbackStandings],
-  );
+  const hasLiveMatches = useMemo(() => {
+    const matches = matchesByTournament[tournament.id] || [];
+    return matches.some((stage) => (stage.data || []).some((match) => match.status === MatchStatus.IN_PROGRESS));
+  }, [matchesByTournament, tournament.id]);
+
+  const effectiveStandings = useMemo(() => {
+    const serverStandings = standings?.standings || {};
+
+    // While there are live matches, show a provisional table from current match scores.
+    if (hasLiveMatches && Object.keys(fallbackStandings).length) {
+      return fallbackStandings;
+    }
+
+    return Object.keys(serverStandings).length ? serverStandings : fallbackStandings;
+  }, [standings, fallbackStandings, hasLiveMatches]);
 
   const groups = useMemo(() => Object.entries(effectiveStandings), [effectiveStandings]);
   const thirdPlace = useMemo(() => standings?.thirdPlacesStandings || [], [standings]);
   const isNationsLeague = !!tournament.isNationsLeague;
-  const isPremierLeague = isEnglishPremierLeague(tournament.name);
 
   const leagues = useMemo<LeagueSection[]>(() => {
     const sections = new Map<string, LeagueSection>();
@@ -308,9 +393,9 @@ const Standings: React.FC = () => {
     goals: allTeams.reduce((acc, item) => acc + item.goalsScored, 0),
   };
 
-  const directSlots = isPremierLeague ? 4 : tournament.directNextRound;
-  const playoffSlots = isPremierLeague ? 1 : tournament.playoffRound;
-  const relegationSlots = isPremierLeague ? 3 : 0;
+  const directSlots = Number(tournament.championsSlots || tournament.directNextRound || 0);
+  const playoffSlots = Number(tournament.europaSlots || tournament.playoffRound || 0);
+  const relegationSlots = Number(tournament.relegationSlots || 0);
   const hasDirectZone = directSlots > 0;
   const hasPlayoffZone = playoffSlots > 0;
   const hasRelegationZone = relegationSlots > 0;
@@ -397,7 +482,12 @@ const Standings: React.FC = () => {
       return 'knockout';
     }
 
-    if (isPremierLeague && typeof tableSize === 'number' && tableSize > 0 && position > tableSize - relegationSlots) {
+    if (
+      typeof tableSize === 'number' &&
+      relegationSlots > 0 &&
+      tableSize > 0 &&
+      position > tableSize - relegationSlots
+    ) {
       return 'relegation';
     }
 
@@ -406,7 +496,7 @@ const Standings: React.FC = () => {
 
   const renderLeagueLegend = (section: LeagueSection) => {
     if (!isNationsLeague) {
-      if (section.key !== topLeagueKey || (!hasDirectZone && !hasPlayoffZone)) {
+      if (section.key !== topLeagueKey || (!hasDirectZone && !hasPlayoffZone && !hasRelegationZone)) {
         return null;
       }
 
@@ -415,13 +505,19 @@ const Standings: React.FC = () => {
           {hasDirectZone && (
             <span className={cn(styles.legendItem, styles.playoff)}>
               <span className={styles.legendDot} />
-              Прямий вихід у наступний раунд
+              Champions League
             </span>
           )}
           {hasPlayoffZone && (
             <span className={cn(styles.legendItem, styles.knockout)}>
               <span className={styles.legendDot} />
-              Раунд плей-оф
+              Europe League
+            </span>
+          )}
+          {hasRelegationZone && (
+            <span className={cn(styles.legendItem, styles.relegation)}>
+              <span className={styles.legendDot} />
+              Останні {relegationSlots}: виліт
             </span>
           )}
           <span className={styles.legendHint}>Зони виходу діють для цієї ліги</span>
@@ -588,32 +684,24 @@ const Standings: React.FC = () => {
                   Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення
                 </span>
               </>
-            ) : isPremierLeague ? (
-              <>
-                <span className={cn(styles.legendItem, styles.playoff)}>
-                  <span className={styles.legendDot} />
-                  1-4 місце: Champions League
-                </span>
-                <span className={cn(styles.legendItem, styles.knockout)}>
-                  <span className={styles.legendDot} />5 місце: Europe League
-                </span>
-                <span className={cn(styles.legendItem, styles.relegation)}>
-                  <span className={styles.legendDot} />
-                  Останні 3 місця: виліт
-                </span>
-              </>
             ) : (
               <>
                 {hasDirectZone && (
                   <span className={cn(styles.legendItem, styles.playoff)}>
                     <span className={styles.legendDot} />
-                    Прямий вихід у наступний раунд
+                    Champions League
                   </span>
                 )}
                 {hasPlayoffZone && (
                   <span className={cn(styles.legendItem, styles.knockout)}>
                     <span className={styles.legendDot} />
-                    Раунд плей-оф
+                    Europe League
+                  </span>
+                )}
+                {hasRelegationZone && (
+                  <span className={cn(styles.legendItem, styles.relegation)}>
+                    <span className={styles.legendDot} />
+                    Останні {relegationSlots}: виліт
                   </span>
                 )}
               </>
@@ -621,11 +709,9 @@ const Standings: React.FC = () => {
             <span className={styles.legendHint}>
               {isNationsLeague
                 ? 'Формат Nations League: підвищення/пониження між лігами A/B/C/D'
-                : isPremierLeague
-                  ? 'Регламент EPL: 1-4 ЛЧ, 5 ЛЄ, останні 3 місця виліт'
-                  : isMultiLeague
-                    ? `Зони виходу — лише Ліга ${leagues[0].label}`
-                    : 'Форма: останні матчі, зліва найдавніший'}
+                : isMultiLeague
+                  ? `Зони виходу — лише Ліга ${leagues[0].label}`
+                  : 'Форма: останні матчі, зліва найдавніший'}
             </span>
           </div>
         )}
@@ -658,9 +744,12 @@ const Standings: React.FC = () => {
                       {section.teams} команд
                     </p>
                   </div>
-                  {section.key === topLeagueKey && (isNationsLeague || hasDirectZone || hasPlayoffZone) && (
-                    <span className={styles.leagueTag}>{isNationsLeague ? 'Плей-оф / стики' : 'Вихід у плей-оф'}</span>
-                  )}
+                  {section.key === topLeagueKey &&
+                    (isNationsLeague || hasDirectZone || hasPlayoffZone || hasRelegationZone) && (
+                      <span className={styles.leagueTag}>
+                        {isNationsLeague ? 'Плей-оф / стики' : 'Вихід у плей-оф'}
+                      </span>
+                    )}
                 </header>
 
                 <div className={cn(styles.groups, { [styles.one]: section.groups.length === 1 })}>

@@ -1,12 +1,4 @@
-import {
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
-} from '@mui/material';
+import { FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, TextField } from '@mui/material';
 import { ITournament } from '../../../interfaces/tournament';
 import { notify } from '../../../helpers/notify';
 import Modal from '../../../components/Modal/Modal';
@@ -47,6 +39,9 @@ const EditTournamentModal: React.FC<EditTournamentModalProps> = ({ tournament, i
           knockout_round: isNationsLeague ? 3 : Number(formData.knockoutRound || 0),
           direct_next_round: isNationsLeague ? 1 : Number(formData.directNextRound || 0),
           playoff_round: isNationsLeague ? 0 : Number(formData.playoffRound || 0),
+          champions_slots: isNationsLeague ? 0 : Number(formData.championsSlots || formData.directNextRound || 0),
+          europa_slots: isNationsLeague ? 0 : Number(formData.europaSlots || formData.playoffRound || 0),
+          relegation_slots: isNationsLeague ? 0 : Number(formData.relegationSlots || 0),
           third_place_match: isNationsLeague ? true : !!formData.thirdPlaceMatch,
           has_table: !!formData.hasTable,
           leagues: isNationsLeague ? 4 : Number(formData.leagues || 1),
@@ -194,6 +189,45 @@ const EditTournamentModal: React.FC<EditTournamentModalProps> = ({ tournament, i
         </FormControl>
 
         <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="championsSlots"
+            name="championsSlots"
+            label="Слоти Champions League"
+            type="number"
+            fullWidth
+            defaultValue={tournament.championsSlots || 0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="europaSlots"
+            name="europaSlots"
+            label="Слоти Europe League"
+            type="number"
+            fullWidth
+            defaultValue={tournament.europaSlots || 0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
+          <TextField
+            margin="dense"
+            id="relegationSlots"
+            name="relegationSlots"
+            label="Кількість команд на виліт"
+            type="number"
+            fullWidth
+            defaultValue={tournament.relegationSlots || 0}
+            variant="outlined"
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="dense">
           <FormControlLabel
             control={
               <Switch
@@ -225,7 +259,12 @@ const EditTournamentModal: React.FC<EditTournamentModalProps> = ({ tournament, i
 
         <FormControl fullWidth margin="dense">
           <InputLabel id="status-label">Статус турніру</InputLabel>
-          <Select labelId="status-label" id="status" label="Статус турніру" name="status" defaultValue={tournament.status}>
+          <Select
+            labelId="status-label"
+            id="status"
+            label="Статус турніру"
+            name="status"
+            defaultValue={tournament.status}>
             <MenuItem value="scheduled">Запланований</MenuItem>
             <MenuItem value="live">В прогресі</MenuItem>
             <MenuItem value="completed">Завершений</MenuItem>

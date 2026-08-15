@@ -7,6 +7,9 @@ export interface ITournament {
   knockoutRound: number;
   directNextRound: number;
   playoffRound: number;
+  championsSlots: number;
+  europaSlots: number;
+  relegationSlots: number;
   type: TournamentType;
   status: TournamentStatus;
   thirdPlaceMatch: boolean;

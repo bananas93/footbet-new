@@ -10,6 +10,9 @@ export interface ITournament {
   knockoutRound: number;
   directNextRound: number;
   playoffRound: number;
+  championsSlots: number;
+  europaSlots: number;
+  relegationSlots: number;
   thirdPlaceMatch: boolean;
   hasTable: boolean;
   leagues: number;
