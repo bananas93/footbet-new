@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { enablePushSubscription, getPushSupportState } from 'helpers';
+import { enablePushSubscription, getPushSupportState, trackEvent } from 'helpers';
 import { useAppSelector } from 'store';
 import styles from './InstallBanner.module.scss';
 
@@ -94,6 +94,7 @@ const InstallBanner: React.FC = () => {
       localStorage.setItem(INSTALLED_KEY, '1');
       setIsVisible(false);
       setDeferredPrompt(null);
+      trackEvent('pwa_installed');
       void requestPushAfterInstall();
     };
 
@@ -110,6 +111,7 @@ const InstallBanner: React.FC = () => {
     localStorage.setItem(DISMISS_KEY, String(Date.now()));
     setIsVisible(false);
     setShowIOSGuide(false);
+    trackEvent('pwa_install_banner_dismissed');
   };
 
   const handleInstall = async () => {
@@ -117,10 +119,13 @@ const InstallBanner: React.FC = () => {
       return;
     }
 
+    trackEvent('pwa_install_clicked');
+
     setIsInstalling(true);
     try {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
+      trackEvent('pwa_install_prompt_result', { outcome: choice.outcome });
       if (choice.outcome === 'accepted') {
         localStorage.setItem(INSTALLED_KEY, '1');
         setIsVisible(false);

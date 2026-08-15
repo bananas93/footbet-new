@@ -1,5 +1,11 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, getUserDisplayName, supabase } from 'helpers';
+import {
+  createExtraReducersForResponses,
+  createHttpRequestInitResult,
+  getUserDisplayName,
+  supabase,
+  trackEvent,
+} from 'helpers';
 import { IHttpRequestResult } from 'interfaces/api';
 import { IPredict } from 'interfaces';
 import { getMatches } from './match';
@@ -29,10 +35,7 @@ export interface IPredictTableResponse {
 }
 
 export const setPredict = createAsyncThunk('predict/setPredict', async (predict: ISetPredictPayload, thunkAPI) => {
-  const {
-    data: authData,
-    error: authError,
-  } = await supabase.auth.getUser();
+  const { data: authData, error: authError } = await supabase.auth.getUser();
 
   if (authError) {
     throw new Error(authError.message);
@@ -41,6 +44,17 @@ export const setPredict = createAsyncThunk('predict/setPredict', async (predict:
   const userId = authData.user?.id;
   if (!userId) {
     throw new Error('Користувач не авторизований');
+  }
+
+  const { data: existingPrediction, error: existingPredictionError } = await supabase
+    .from('predictions')
+    .select('id')
+    .eq('match_id', predict.matchId)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existingPredictionError) {
+    throw new Error(existingPredictionError.message);
   }
 
   const { data, error } = await supabase
@@ -63,6 +77,11 @@ export const setPredict = createAsyncThunk('predict/setPredict', async (predict:
   }
 
   await thunkAPI.dispatch(getMatches({ tournamentId: predict.tournamentId, _background: true }));
+
+  trackEvent(existingPrediction?.id ? 'prediction_updated' : 'prediction_created', {
+    match_id: predict.matchId,
+    tournament_id: predict.tournamentId,
+  });
 
   return {
     predict: {
@@ -100,15 +119,16 @@ export const getPredictsTable = createAsyncThunk('predict/getPredictsTable', asy
 
   let avatarsByUserId = new Map<string, string>();
   if (userIds.length) {
-    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, avatar').in('id', userIds);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, avatar')
+      .in('id', userIds);
     if (profilesError) {
       throw new Error(profilesError.message);
     }
 
     avatarsByUserId = new Map(
-      (profiles || [])
-        .filter((profile: any) => !!profile.id)
-        .map((profile: any) => [profile.id, profile.avatar || '']),
+      (profiles || []).filter((profile: any) => !!profile.id).map((profile: any) => [profile.id, profile.avatar || '']),
     );
   }
 

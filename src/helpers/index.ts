@@ -9,3 +9,4 @@ export * from './user';
 export * from './emailRateLimit';
 export * from './push';
 export * from './localCache';
+export * from './analytics';

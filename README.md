@@ -44,3 +44,20 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Analytics (GA4)
+
+Google Analytics 4 is integrated and is enabled only after user cookie consent is accepted.
+
+Set your GA4 Measurement ID in environment files:
+
+```
+REACT_APP_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+The app tracks:
+
+- `pageview` on route changes
+- auth events (`login_success`, `signup_success`, `logout`, `login_google_started`)
+- product events (`prediction_created`, `prediction_updated`, `room_created`, `room_joined`, `room_left`)
+- engagement events (`pwa_install_clicked`, `pwa_install_prompt_result`, `pwa_installed`, `push_enabled`, `push_disabled`)

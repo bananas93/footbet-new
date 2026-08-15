@@ -6,7 +6,7 @@ import { AuthRoutes, AuthRoutesEnum } from 'routes/AuthRoutes';
 import { useAppDispatch, useAppSelector } from 'store';
 import { handleOAuthCallback, hydrateAuth, setIsAuthenticated } from 'store/slices/auth';
 import { clearUser, getUserProfile } from 'store/slices/user';
-import { clearPushSubscription, supabase } from 'helpers';
+import { ANALYTICS_CONSENT_EVENT, clearPushSubscription, initAnalytics, supabase, trackPageView } from 'helpers';
 import styles from './App.module.scss';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -68,6 +68,26 @@ const App: React.FC = () => {
   useEffect(() => {
     document.title = getRouteTitle(pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    initAnalytics();
+
+    const handleConsentChange = () => {
+      const pathWithQuery = `${window.location.pathname}${window.location.search}`;
+      initAnalytics();
+      trackPageView(pathWithQuery);
+    };
+
+    window.addEventListener(ANALYTICS_CONSENT_EVENT, handleConsentChange);
+
+    return () => {
+      window.removeEventListener(ANALYTICS_CONSENT_EVENT, handleConsentChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    trackPageView(`${pathname}${search}`);
+  }, [pathname, search]);
 
   useEffect(() => {
     if (!isAuthPage) {

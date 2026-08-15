@@ -1,5 +1,11 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { createExtraReducersForResponses, createHttpRequestInitResult, getUserDisplayName, supabase } from 'helpers';
+import {
+  createExtraReducersForResponses,
+  createHttpRequestInitResult,
+  getUserDisplayName,
+  supabase,
+  trackEvent,
+} from 'helpers';
 import { IRoom, IHttpRequestResult } from 'interfaces';
 import { IPredictTableResponse } from './predict';
 
@@ -114,6 +120,7 @@ export const createRoom = createAsyncThunk('room/createRoom', async (room: ICrea
   }
 
   await thunkAPI.dispatch(getRooms());
+  trackEvent('room_created', { room_type: room.type });
   return { roomId: data?.id as number | undefined };
 });
 
@@ -151,6 +158,7 @@ export const joinRoom = createAsyncThunk('room/joinRoom', async ({ roomId, passw
   }
 
   await thunkAPI.dispatch(getRooms());
+  trackEvent('room_joined', { method: 'room_id', room_id: roomId });
   return { roomId: (data?.id as number | undefined) || roomId };
 });
 
@@ -167,6 +175,7 @@ export const joinRoomByInviteCode = createAsyncThunk(
     }
 
     await thunkAPI.dispatch(getRooms());
+    trackEvent('room_joined', { method: 'invite_code', room_id: data?.id as number | undefined });
     return { roomId: data?.id as number | undefined };
   },
 );
@@ -178,6 +187,7 @@ export const leaveRoom = createAsyncThunk('room/leaveRoom', async (roomId: numbe
   }
 
   await thunkAPI.dispatch(getRooms());
+  trackEvent('room_left', { room_id: roomId });
 });
 
 export const getRoomLeaderboard = createAsyncThunk(
@@ -194,15 +204,16 @@ export const getRoomLeaderboard = createAsyncThunk(
 
     const userIds = Array.from(
       new Set(
-        (data || [])
-          .map((item: any) => item.id)
-          .filter((value: string | null | undefined): value is string => !!value),
+        (data || []).map((item: any) => item.id).filter((value: string | null | undefined): value is string => !!value),
       ),
     );
 
     let avatarsByUserId = new Map<string, string>();
     if (userIds.length) {
-      const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, avatar').in('id', userIds);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, avatar')
+        .in('id', userIds);
       if (profilesError) {
         throw new Error(profilesError.message);
       }

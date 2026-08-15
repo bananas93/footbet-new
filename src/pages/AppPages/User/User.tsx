@@ -13,6 +13,7 @@ import {
   hasActivePushSubscription,
   notify,
   resolveAssetUrl,
+  trackEvent,
 } from 'helpers';
 import { useAppDispatch, useAppSelector } from 'store';
 import { changeUserPassword, deleteUserAccount, editUserProfile } from 'store/slices/user';
@@ -309,6 +310,7 @@ const User: React.FC = () => {
       setPushPermission(getPushPermissionState());
       setIsPushEnabled(hasSubscription);
       if (hasSubscription) {
+        trackEvent('push_enabled', { source: 'user_settings' });
         notify.success('Push-сповіщення увімкнено');
       } else {
         notify.info('Дозвіл на сповіщення не надано');
@@ -325,6 +327,7 @@ const User: React.FC = () => {
     try {
       await clearPushSubscription();
       setIsPushEnabled(false);
+      trackEvent('push_disabled', { source: 'user_settings' });
       notify.success('Push-сповіщення вимкнено');
     } catch (err: any) {
       notify.error(err.message || 'Не вдалося вимкнути push-сповіщення');

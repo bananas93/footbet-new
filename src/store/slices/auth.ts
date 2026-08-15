@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { IHttpRequestResult } from 'interfaces';
-import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
+import { createExtraReducersForResponses, createHttpRequestInitResult, supabase, trackEvent } from 'helpers';
 
 interface IAuthResponse {
   userId: string;
@@ -35,6 +35,8 @@ export const signInUser = createAsyncThunk(
       throw new Error('Не вдалося авторизуватися');
     }
 
+    trackEvent('login_success', { method: 'password' });
+
     return {
       userId: data.user.id,
       email: data.user.email || email,
@@ -61,6 +63,8 @@ export const signUpUser = createAsyncThunk('auth/signUpUser', async (data: ISign
   if (!response.user) {
     throw new Error('Не вдалося зареєструвати користувача');
   }
+
+  trackEvent('signup_success', { method: 'password' });
 
   return {
     userId: response.user.id,
@@ -108,6 +112,8 @@ export const hydrateAuth = createAsyncThunk('auth/hydrateAuth', async () => {
 });
 
 export const signInWithGoogle = createAsyncThunk('auth/signInWithGoogle', async () => {
+  trackEvent('login_google_started');
+
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
@@ -149,6 +155,10 @@ export const handleOAuthCallback = createAsyncThunk('auth/handleOAuthCallback', 
     throw new Error(error.message);
   }
 
+  if (data.session) {
+    trackEvent('login_success', { method: 'google' });
+  }
+
   return {
     isAuthenticated: !!data.session,
   };
@@ -159,6 +169,9 @@ export const signOutUser = createAsyncThunk('auth/signOutUser', async () => {
   if (error) {
     throw new Error(error.message);
   }
+
+  trackEvent('logout');
+
   return null;
 });
 
