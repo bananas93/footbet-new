@@ -11,20 +11,14 @@ export enum MatchStage {
   THIRD_PLACE_PLAYOFF = 'Third Place Playoff',
 }
 
-export enum MatchGroupTour {
-  FIRST = '1 tour',
-  SECOND = '2 tour',
-  THIRD = '3 tour',
-  FOURTH = '4 tour',
-  FIFTH = '5 tour',
-  SIXTH = '6 tour',
-  SEVENTH = '7 tour',
-  EIGHTH = '8 tour',
-  NINTH = '9 tour',
-  TENTH = '10 tour',
-  ELEVENTH = '11 tour',
-  TWELFTH = '12 tour',
-}
+export type MatchGroupTour = `${number} tour`;
+
+export const MAX_GROUP_TOUR = 50;
+
+export const GROUP_TOUR_OPTIONS: MatchGroupTour[] = Array.from(
+  { length: MAX_GROUP_TOUR },
+  (_, index) => `${index + 1} tour` as MatchGroupTour,
+);
 
 export enum MatchResult {
   HOME_WIN = 'Home Win',

@@ -6,7 +6,7 @@ import { parseCsvText } from '../../../helpers/csv';
 import { notify } from '../../../helpers/notify';
 import { supabase } from '../../../helpers/supabase';
 import { ITournament } from '../../../interfaces/tournament';
-import { MatchGroupTour, MatchStageEnum } from '../../../interfaces/match';
+import { GROUP_TOUR_OPTIONS, MatchStageEnum } from '../../../interfaces/match';
 import { mapTeamFromDb } from '../../../helpers/mappers';
 import { ITeam } from '../../../interfaces/team';
 import { parseLeagueIndex } from '../../../helpers/league';
@@ -18,7 +18,7 @@ interface Props {
 }
 
 const STAGES = Object.values(MatchStageEnum);
-const GROUP_TOURS = Object.values(MatchGroupTour);
+const GROUP_TOURS = new Set(GROUP_TOUR_OPTIONS);
 
 const pickValue = (row: Record<string, string>, aliases: string[]): string => {
   for (const alias of aliases) {
@@ -75,15 +75,10 @@ const parseStage = (raw: string): string | null => {
 const parseGroupTour = (raw: string): string | null => {
   const value = raw.trim();
   if (!value) return null;
-  if (GROUP_TOURS.includes(value as any)) return value;
-
-  const keyCandidate = value.toUpperCase().replace(/\s+/g, '_');
-  if (MatchGroupTour[keyCandidate as keyof typeof MatchGroupTour]) {
-    return MatchGroupTour[keyCandidate as keyof typeof MatchGroupTour];
-  }
+  if (GROUP_TOURS.has(value as `${number} tour`)) return value;
 
   const numeric = Number(value);
-  if (!Number.isNaN(numeric) && numeric >= 1 && numeric <= 12) {
+  if (!Number.isNaN(numeric) && numeric >= 1 && numeric <= GROUP_TOUR_OPTIONS.length) {
     return `${numeric} tour`;
   }
 
@@ -114,7 +109,10 @@ const ImportMatchesModal: FC<Props> = ({ isOpen, onClose, tournaments }) => {
 
   const validation = useMemo(() => {
     if (!teamsQuery.data) {
-      return { validRows: [] as Array<{ sourceIndex: number; payload: any }>, invalidRows: [] as Array<{ sourceIndex: number; reason: string }> };
+      return {
+        validRows: [] as Array<{ sourceIndex: number; payload: any }>,
+        invalidRows: [] as Array<{ sourceIndex: number; reason: string }>,
+      };
     }
 
     const tournamentByName = new Map(tournaments.map((item) => [normalizeLookupKey(item.name), item.id]));
@@ -266,8 +264,9 @@ const ImportMatchesModal: FC<Props> = ({ isOpen, onClose, tournaments }) => {
       actionFunction={() => mutation.mutate()}>
       <Box display="grid" gap={1.5}>
         <Typography variant="body2">
-          Колонки (ID не обовʼязкові): tournament або tournament_id, home_team або away_team (або *_id), match_date, stage,
-          group_tour (опц.), group_name (опц.), tournament_league (опц., число або літера A/B/C/D), api_fixture_id (опц.)
+          Колонки (ID не обовʼязкові): tournament або tournament_id, home_team або away_team (або *_id), match_date,
+          stage, group_tour (опц.), group_name (опц.), tournament_league (опц., число або літера A/B/C/D),
+          api_fixture_id (опц.)
         </Typography>
         <FormControl fullWidth margin="dense">
           <TextField
@@ -295,7 +294,11 @@ const ImportMatchesModal: FC<Props> = ({ isOpen, onClose, tournaments }) => {
         </Typography>
         {!!invalidRows.length && (
           <Typography variant="body2" color="error">
-            Невалідних рядків: {invalidRows.length}. Приклади: {invalidRows.slice(0, 3).map((item) => `#${item.sourceIndex} ${item.reason}`).join('; ')}
+            Невалідних рядків: {invalidRows.length}. Приклади:{' '}
+            {invalidRows
+              .slice(0, 3)
+              .map((item) => `#${item.sourceIndex} ${item.reason}`)
+              .join('; ')}
           </Typography>
         )}
       </Box>

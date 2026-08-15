@@ -15,7 +15,7 @@ import Modal from '../../../components/Modal/Modal';
 import { supabase } from '../../../helpers/supabase';
 import { ITournament } from '../../../interfaces/tournament';
 import { ITeam } from '../../../interfaces/team';
-import { MatchStageEnum, MatchGroupTour, IMatch, MatchStatus } from '../../../interfaces/match';
+import { MatchStageEnum, GROUP_TOUR_OPTIONS, IMatch, MatchStatus } from '../../../interfaces/match';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { notify } from '../../../helpers/notify';
@@ -134,7 +134,7 @@ const EditMatchModal: FC<Props> = ({ isEditModalOpen, closeEditModal, tournament
       const selectedGroupTour = formJson.groupTour as string | undefined;
       const payload = {
         stage: formJson.stage,
-        group_tour: selectedGroupTour ? MatchGroupTour[selectedGroupTour as keyof typeof MatchGroupTour] : null,
+        group_tour: selectedGroupTour || null,
         group_name: (formJson.groupName as string) || null,
         api_fixture_id: formJson.apiFixtureId ? Number(formJson.apiFixtureId) : null,
         status: formJson.status,
@@ -150,9 +150,7 @@ const EditMatchModal: FC<Props> = ({ isEditModalOpen, closeEditModal, tournament
     },
   };
 
-  const defaultGroupTour = Object.keys(MatchGroupTour).find(
-    (key: string) => MatchGroupTour[key as keyof typeof MatchGroupTour] === match.groupTour,
-  );
+  const defaultGroupTour = GROUP_TOUR_OPTIONS.includes(match.groupTour as `${number} tour`) ? match.groupTour : '';
 
   return (
     <Modal isOpen={isEditModalOpen} handleClose={closeEditModal} title="Редагувати матч" isForm PaperProps={PaperProps}>
@@ -308,9 +306,9 @@ const EditMatchModal: FC<Props> = ({ isEditModalOpen, closeEditModal, tournament
                     defaultValue={defaultGroupTour}
                     required={stage === 'Group Stage'}
                     name="groupTour">
-                    {Object.entries(MatchGroupTour).map((stage) => (
-                      <MenuItem key={stage[0]} value={stage[0]}>
-                        {stage[1]}
+                    {GROUP_TOUR_OPTIONS.map((groupTour) => (
+                      <MenuItem key={groupTour} value={groupTour}>
+                        {groupTour}
                       </MenuItem>
                     ))}
                   </Select>

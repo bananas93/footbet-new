@@ -14,7 +14,7 @@ import Modal from '../../../components/Modal/Modal';
 import { supabase } from '../../../helpers/supabase';
 import { ITournament } from '../../../interfaces/tournament';
 import { ITeam } from '../../../interfaces/team';
-import { MatchStageEnum, MatchGroupTour } from '../../../interfaces/match';
+import { MatchStageEnum, GROUP_TOUR_OPTIONS } from '../../../interfaces/match';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { notify } from '../../../helpers/notify';
@@ -105,7 +105,7 @@ const CreateMatchModal: FC<Props> = ({ createModalOpen, toggleCreateModal, tourn
 
       const payload = {
         stage: formJson.stage,
-        group_tour: selectedGroupTour ? MatchGroupTour[selectedGroupTour as keyof typeof MatchGroupTour] : null,
+        group_tour: selectedGroupTour || null,
         group_name: (formJson.groupName as string) || null,
         api_fixture_id: formJson.apiFixtureId ? Number(formJson.apiFixtureId) : null,
         status: 'Scheduled',
@@ -274,9 +274,9 @@ const CreateMatchModal: FC<Props> = ({ createModalOpen, toggleCreateModal, tourn
                     label="Тур групи"
                     required={stage === 'Group Stage'}
                     name="groupTour">
-                    {Object.entries(MatchGroupTour).map((stage) => (
-                      <MenuItem key={stage[0]} value={stage[0]}>
-                        {stage[1]}
+                    {GROUP_TOUR_OPTIONS.map((groupTour) => (
+                      <MenuItem key={groupTour} value={groupTour}>
+                        {groupTour}
                       </MenuItem>
                     ))}
                   </Select>
@@ -297,7 +297,12 @@ const CreateMatchModal: FC<Props> = ({ createModalOpen, toggleCreateModal, tourn
               />
             </FormControl>
             <FormControl fullWidth margin="dense" required={stage === 'GROUP_STAGE'}>
-              <DateTimePicker ampm={false} value={matchDate} onChange={(v) => setMatchDate(v || dayjs(new Date()))} minDate={dayjs(new Date())} />
+              <DateTimePicker
+                ampm={false}
+                value={matchDate}
+                onChange={(v) => setMatchDate(v || dayjs(new Date()))}
+                minDate={dayjs(new Date())}
+              />
             </FormControl>
           </>
         )}
