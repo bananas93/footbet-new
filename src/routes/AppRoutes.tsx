@@ -7,6 +7,7 @@ import Matches from 'pages/AppPages/Tournament/components/Matches/Matches';
 import Rooms from 'pages/AppPages/Tournament/components/Rooms/Rooms';
 import Standings from 'pages/AppPages/Tournament/components/Standings/Standings';
 import { Navigate, useRoutes } from 'react-router-dom';
+import RequireAuthRoute from './RequireAuthRoute';
 
 export enum RoutesEnum {
   Home = '/',
@@ -25,12 +26,40 @@ export const AppRoutes = () => {
       children: [
         { path: '', element: <Matches /> },
         { path: 'standings', element: <Standings /> },
-        { path: 'leagues', element: <Leagues /> },
-        { path: 'rooms', element: <Rooms /> },
-        { path: 'achievements', element: <Achievements /> },
+        {
+          path: 'leagues',
+          element: (
+            <RequireAuthRoute>
+              <Leagues />
+            </RequireAuthRoute>
+          ),
+        },
+        {
+          path: 'rooms',
+          element: (
+            <RequireAuthRoute>
+              <Rooms />
+            </RequireAuthRoute>
+          ),
+        },
+        {
+          path: 'achievements',
+          element: (
+            <RequireAuthRoute>
+              <Achievements />
+            </RequireAuthRoute>
+          ),
+        },
       ],
     },
-    { path: RoutesEnum.User, element: <User /> },
+    {
+      path: RoutesEnum.User,
+      element: (
+        <RequireAuthRoute>
+          <User />
+        </RequireAuthRoute>
+      ),
+    },
     { path: RoutesEnum.Profile, element: <Profile /> },
     { path: '/profile/:userId/:tournamentId', element: <Profile /> },
     { path: RoutesEnum.Rules, element: <Rules /> },

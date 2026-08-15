@@ -24,15 +24,21 @@ const Tournament: React.FC = () => {
   const dispatch = useAppDispatch();
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const tournament = useAppSelector((state) => state.tournament.tournaments.find((t) => t.id === Number(tournamentId)));
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { isLoading } = useAppSelector((state) => state.match.getMatchesRequest);
 
   const getStandings = useCallback(async () => {
-    await Promise.all([
-      dispatch(getTournamentStandings(Number(tournamentId))),
-      dispatch(getMatches({ tournamentId: Number(tournamentId), _background: true })),
-      dispatch(getPredictsTable(Number(tournamentId))),
-    ]);
-  }, [dispatch, tournamentId]);
+    const requests: Promise<unknown>[] = [
+      dispatch(getTournamentStandings(Number(tournamentId))).unwrap(),
+      dispatch(getMatches({ tournamentId: Number(tournamentId), _background: true })).unwrap(),
+    ];
+
+    if (isAuthenticated) {
+      requests.push(dispatch(getPredictsTable(Number(tournamentId))).unwrap());
+    }
+
+    await Promise.all(requests);
+  }, [dispatch, isAuthenticated, tournamentId]);
 
   useEffect(() => {
     getStandings();
@@ -120,11 +126,15 @@ const Tournament: React.FC = () => {
     return [
       { to: `/tournament/${tournament.id}`, label: 'Прогнози', end: true },
       ...(tournament.hasTable ? [{ to: `/tournament/${tournament.id}/standings`, label: 'Турнірна таблиця' }] : []),
-      { to: `/tournament/${tournament.id}/leagues`, label: 'Загальна ліга' },
-      { to: `/tournament/${tournament.id}/rooms`, label: 'Кімнати' },
-      { to: `/tournament/${tournament.id}/achievements`, label: 'Досягнення' },
+      ...(isAuthenticated
+        ? [
+            { to: `/tournament/${tournament.id}/leagues`, label: 'Загальна ліга' },
+            { to: `/tournament/${tournament.id}/rooms`, label: 'Кімнати' },
+            { to: `/tournament/${tournament.id}/achievements`, label: 'Досягнення' },
+          ]
+        : []),
     ];
-  }, [tournament]);
+  }, [isAuthenticated, tournament]);
 
   const logoUrl = tournament?.logo ? resolveAssetUrl(tournament.logo) : '';
 

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import cn from 'classnames';
+import { Link, useLocation } from 'react-router-dom';
 import { IMatch, ITournament, MatchStatus } from 'interfaces';
 import { getLeagueLabel, normalizeMatchDate, normalizeMatchTime, notify, resolveAssetUrl } from 'helpers';
-import { useAppDispatch } from 'store';
+import { useAppDispatch, useAppSelector } from 'store';
 import { setPredict } from 'store/slices/predict';
 import useModal from 'hooks/useModal';
+import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import ShowPredicts from '../ShowPredicts/ShowPredicts';
 import styles from './MatchCard.module.scss';
 
@@ -75,6 +77,8 @@ const ListIcon = () => (
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const dispatch = useAppDispatch();
+  const location = useLocation();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const { isOpen, openModal, closeModal } = useModal();
 
@@ -90,6 +94,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const stageLabel = match.stage !== 'Group Stage' ? stageLabels[match.stage] || match.stage : '';
 
   const savePredict = async (home: string, away: string) => {
+    if (!isAuthenticated) {
+      notify.error('Увійдіть, щоб зробити прогноз');
+      return;
+    }
+
     try {
       const predict = {
         matchId: match.id,
@@ -184,32 +193,45 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           <div className={styles.center}>
             {isScheduled ? (
               <>
-                <span className={styles.centerLabel}>Ваш прогноз</span>
-                <div className={styles.inputs}>
-                  <input
-                    name="home"
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]"
-                    maxLength={1}
-                    value={homeScore}
-                    onChange={handleChange}
-                    className={styles.input}
-                    aria-label={`Прогноз для ${match.homeTeam.name}`}
-                  />
-                  <span className={styles.inputsDivider}>:</span>
-                  <input
-                    name="away"
-                    type="tel"
-                    inputMode="numeric"
-                    pattern="[0-9]"
-                    maxLength={1}
-                    value={awayScore}
-                    onChange={handleChange}
-                    className={styles.input}
-                    aria-label={`Прогноз для ${match.awayTeam.name}`}
-                  />
-                </div>
+                {isAuthenticated ? (
+                  <>
+                    <span className={styles.centerLabel}>Ваш прогноз</span>
+                    <div className={styles.inputs}>
+                      <input
+                        name="home"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]"
+                        maxLength={1}
+                        value={homeScore}
+                        onChange={handleChange}
+                        className={styles.input}
+                        aria-label={`Прогноз для ${match.homeTeam.name}`}
+                      />
+                      <span className={styles.inputsDivider}>:</span>
+                      <input
+                        name="away"
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]"
+                        maxLength={1}
+                        value={awayScore}
+                        onChange={handleChange}
+                        className={styles.input}
+                        aria-label={`Прогноз для ${match.awayTeam.name}`}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.centerLabel}>Прогнози доступні після входу</span>
+                    <Link
+                      to={`${AuthRoutesEnum.SignIn}?from=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
+                      className={styles.predictsButton}>
+                      Увійти
+                    </Link>
+                  </>
+                )}
               </>
             ) : (
               <>
@@ -218,9 +240,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                   <span className={styles.scoreDash}>:</span>
                   <span className={styles.scoreValue}>{match.awayScore}</span>
                 </div>
-                <span className={styles.predictChip}>
-                  {hasPredict ? `Ваш прогноз ${homeScore}:${awayScore}` : 'Прогнозу не було'}
-                </span>
+                {isAuthenticated && (
+                  <span className={styles.predictChip}>
+                    {hasPredict ? `Ваш прогноз ${homeScore}:${awayScore}` : 'Прогнозу не було'}
+                  </span>
+                )}
               </>
             )}
           </div>
@@ -228,7 +252,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           {renderTeam(match.awayTeam, 'away')}
         </div>
 
-        {!isScheduled && (
+        {!isScheduled && isAuthenticated && (
           <footer className={styles.foot}>
             <div className={styles.pointsWrap}>
               <span className={cn(styles.points, styles[getPointsTone(points)])}>{points}</span>

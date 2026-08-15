@@ -20,7 +20,7 @@ export const AuthRoutes = () => {
     { path: AuthRoutesEnum.ForgotPassword, element: <ForgotPassword /> },
     { path: AuthRoutesEnum.CheckCode, element: <CheckValidationCode /> },
     { path: AuthRoutesEnum.SetPassword, element: <SetPassword /> },
-    { path: '*', element: <Navigate to={AuthRoutesEnum.SignIn} /> },
+    { path: '*', element: <Navigate to="/" /> },
   ]);
   return routes;
 };

@@ -6,14 +6,15 @@ export const getMatches = createAsyncThunk(
   'match/getMatches',
   async ({ tournamentId, _background = false }: { tournamentId: number; _background?: boolean }) => {
     const {
-      data: authData,
-      error: authError,
-    } = await supabase.auth.getUser();
-    if (authError) {
-      throw new Error(authError.message);
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw new Error(sessionError.message);
     }
 
-    const userId = authData.user?.id;
+    // Public pages can be viewed without auth; personal predicts are loaded only for signed-in users.
+    const userId = session?.user?.id;
 
     const { data: matchesRaw, error: matchesError } = await supabase
       .from('matches')

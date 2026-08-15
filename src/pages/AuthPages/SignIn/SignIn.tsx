@@ -5,9 +5,9 @@ import { useAppDispatch, useAppSelector } from 'store';
 import { signInUser, signInWithGoogle } from 'store/slices/auth';
 import { GoogleIcon } from 'assets/icons';
 import { notify } from 'helpers';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const validationRules = {
   email: (value: string) => {
@@ -28,8 +28,30 @@ interface FormValues {
 
 const SignIn: React.FC = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { isLoading } = useAppSelector((state) => state.auth.signInUserRequest);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const redirectTo = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const from = params.get('from')?.trim();
+    if (!from || !from.startsWith('/')) {
+      return '/';
+    }
+    return from;
+  }, [location.search]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    const pendingFrom = sessionStorage.getItem('auth:returnTo') || redirectTo;
+    sessionStorage.removeItem('auth:returnTo');
+    navigate(pendingFrom || '/', { replace: true });
+  }, [isAuthenticated, navigate, redirectTo]);
 
   const { values, errors, handleChange, setFieldError, handleSubmit } = useForm<FormValues>(
     { email: '', password: '' },
@@ -42,6 +64,7 @@ const SignIn: React.FC = () => {
   const handleLogin = async (formValues: FormValues) => {
     try {
       await dispatch(signInUser(formValues)).unwrap();
+      navigate(redirectTo, { replace: true });
     } catch (err: any) {
       if (err.message?.toLowerCase().includes('invalid login credentials')) {
         setFieldError('email', '');
@@ -54,9 +77,11 @@ const SignIn: React.FC = () => {
   const handleGoogleLogin = async () => {
     setIsGoogleLoading(true);
     try {
+      sessionStorage.setItem('auth:returnTo', redirectTo);
       await dispatch(signInWithGoogle()).unwrap();
     } catch (err: any) {
       notify.error(err.message || 'Не вдалося увійти через Google');
+      sessionStorage.removeItem('auth:returnTo');
       setIsGoogleLoading(false);
     }
   };

@@ -4,6 +4,9 @@ const isLocalhost = Boolean(
   window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/),
 );
 
+const SW_RESET_VERSION = '2026-08-15-auth-routing';
+const SW_RESET_STORAGE_KEY = 'sw:reset-version';
+
 const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
 
 const registerValidSW = async () => {
@@ -38,6 +41,25 @@ export const registerServiceWorker = () => {
   }
 
   window.addEventListener('load', () => {
+    const shouldReset = localStorage.getItem(SW_RESET_STORAGE_KEY) !== SW_RESET_VERSION;
+    if (shouldReset) {
+      const reset = async () => {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+
+        localStorage.setItem(SW_RESET_STORAGE_KEY, SW_RESET_VERSION);
+        window.location.reload();
+      };
+
+      void reset();
+      return;
+    }
+
     if (isLocalhost) {
       void checkValidServiceWorker();
       return;

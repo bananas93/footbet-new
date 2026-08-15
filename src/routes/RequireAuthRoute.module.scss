@@ -1,0 +1,39 @@
+.gate {
+  margin: 1.5rem 0;
+  padding: 1.5rem;
+  border: 1px solid #e5eaf3;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+  box-shadow: 0 12px 26px -22px rgba(10, 20, 40, 0.35);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #131a2a;
+}
+
+.subtitle {
+  margin: 0.75rem 0 0;
+  color: #53617a;
+  line-height: 1.5;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.1rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: #1d4ed8;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background: #1e40af;
+  }
+}

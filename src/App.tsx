@@ -1,8 +1,8 @@
 import { CookieConsent, InstallBanner, Layout, LoginLayout, Toast } from 'components';
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from 'routes/AppRoutes';
-import { AuthRoutes } from 'routes/AuthRoutes';
+import { AuthRoutes, AuthRoutesEnum } from 'routes/AuthRoutes';
 import { useAppDispatch, useAppSelector } from 'store';
 import { handleOAuthCallback, hydrateAuth, setIsAuthenticated } from 'store/slices/auth';
 import { clearUser, getUserProfile } from 'store/slices/user';
@@ -10,6 +10,13 @@ import { clearPushSubscription, supabase } from 'helpers';
 import 'react-toastify/dist/ReactToastify.css';
 
 const DEFAULT_TITLE = 'Турнір прогнозистів | Footbet';
+const AUTH_PATHS = new Set<string>([
+  AuthRoutesEnum.SignIn,
+  AuthRoutesEnum.SignUp,
+  AuthRoutesEnum.ForgotPassword,
+  AuthRoutesEnum.CheckCode,
+  AuthRoutesEnum.SetPassword,
+]);
 
 const getRouteTitle = (pathname: string): string => {
   if (pathname === '/') return 'Головна | Footbet';
@@ -27,9 +34,12 @@ const getRouteTitle = (pathname: string): string => {
 
 const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const dispatch = useAppDispatch();
-  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname, search, state } = location;
+  const { isAuthenticated } = useAppSelector((appState) => appState.auth);
+  const isAuthPage = AUTH_PATHS.has(pathname);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -38,6 +48,29 @@ const App: React.FC = () => {
   useEffect(() => {
     document.title = getRouteTitle(pathname);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isAuthPage) {
+      sessionStorage.setItem('last-public-route', `${pathname}${search}` || '/');
+    }
+  }, [isAuthPage, pathname, search]);
+
+  useEffect(() => {
+    if (isAuthenticated || pathname !== AuthRoutesEnum.SignIn) {
+      return;
+    }
+
+    const hasFromQuery = new URLSearchParams(search).has('from');
+    const navState = (state || {}) as { from?: string; authIntent?: boolean };
+    const hasIntentState = !!navState.from || !!navState.authIntent;
+
+    if (hasFromQuery || hasIntentState) {
+      return;
+    }
+
+    const fallbackRoute = sessionStorage.getItem('last-public-route') || '/';
+    navigate(fallbackRoute, { replace: true });
+  }, [isAuthenticated, navigate, pathname, search, state]);
 
   useEffect(() => {
     let isMounted = true;
@@ -88,24 +121,25 @@ const App: React.FC = () => {
     return <div>Loading...</div>;
   }
 
-  if (isAuthenticated) {
+  if (isAuthPage) {
     return (
       <>
-        <Layout>
-          <AppRoutes />
-          <Toast position="top-center" />
-        </Layout>
+        <LoginLayout>
+          <AuthRoutes />
+          <Toast />
+        </LoginLayout>
         <InstallBanner />
         <CookieConsent />
       </>
     );
   }
+
   return (
     <>
-      <LoginLayout>
-        <AuthRoutes />
-        <Toast />
-      </LoginLayout>
+      <Layout>
+        <AppRoutes />
+        <Toast position="top-center" />
+      </Layout>
       <InstallBanner />
       <CookieConsent />
     </>

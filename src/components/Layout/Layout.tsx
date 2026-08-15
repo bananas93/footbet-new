@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppDispatch } from 'store';
+import { useAppDispatch, useAppSelector } from 'store';
 import { getTournaments } from 'store/slices/tournament';
 import { RoutesEnum } from 'routes/AppRoutes';
 import Header from './Header/Header';
@@ -31,16 +31,23 @@ const BallIcon = ({ className }: { className?: string }) => (
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     const fetchData = async () => {
-      await Promise.all([dispatch(getTournaments()), dispatch(getUserProfile(false))]);
+      const requests: Promise<unknown>[] = [dispatch(getTournaments()).unwrap()];
+
+      if (isAuthenticated) {
+        requests.push(dispatch(getUserProfile(false)).unwrap());
+      }
+
+      await Promise.all(requests);
     };
 
     fetchData();
-  }, [dispatch]);
+  }, [dispatch, isAuthenticated]);
 
   return (
     <div className={styles.layout}>
@@ -66,9 +73,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </Link>
               <Link to={RoutesEnum.Rules} className={styles.footerLink}>
                 Правила
-              </Link>
-              <Link to={RoutesEnum.User} className={styles.footerLink}>
-                Профіль
               </Link>
             </nav>
           </div>
