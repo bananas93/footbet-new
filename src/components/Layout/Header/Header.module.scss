@@ -123,6 +123,37 @@ $line: rgba(20, 21, 58, 0.1);
   flex: 0 0 auto;
 }
 
+.signInButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #1b1b4a 0%, #33338a 100%);
+  box-shadow: 0 8px 18px -12px rgba(27, 27, 74, 0.8);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 12px 22px -14px rgba(27, 27, 74, 0.85);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(47, 108, 255, 0.4);
+    outline-offset: 2px;
+  }
+}
+
 /* ---------- user ---------- */
 
 .user {
@@ -206,7 +237,8 @@ $line: rgba(20, 21, 58, 0.1);
 
 @media (prefers-reduced-motion: reduce) {
   .brand:hover,
-  .user:hover {
+  .user:hover,
+  .signInButton:hover {
     transform: none;
   }
 }
@@ -231,6 +263,10 @@ $line: rgba(20, 21, 58, 0.1);
     padding: 0.25rem 0.75rem 0.25rem 0.25rem;
   }
 
+  .signInButton {
+    padding: 0.45rem 0.85rem;
+  }
+
   .userAvatar {
     width: 1.85rem;
     height: 1.85rem;
@@ -252,5 +288,9 @@ $line: rgba(20, 21, 58, 0.1);
 
   .user {
     padding: 0.3rem;
+  }
+
+  .signInButton {
+    padding: 0.45rem 0.8rem;
   }
 }

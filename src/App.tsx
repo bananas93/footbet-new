@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from 'store';
 import { handleOAuthCallback, hydrateAuth, setIsAuthenticated } from 'store/slices/auth';
 import { clearUser, getUserProfile } from 'store/slices/user';
 import { clearPushSubscription, supabase } from 'helpers';
+import styles from './App.module.scss';
 import 'react-toastify/dist/ReactToastify.css';
 
 const DEFAULT_TITLE = 'Турнір прогнозистів | Footbet';
@@ -17,6 +18,24 @@ const AUTH_PATHS = new Set<string>([
   AuthRoutesEnum.CheckCode,
   AuthRoutesEnum.SetPassword,
 ]);
+
+const iconProps = {
+  viewBox: '0 0 24 24',
+  'aria-hidden': true,
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.7,
+  strokeLinecap: 'round' as const,
+  strokeLinejoin: 'round' as const,
+};
+
+const BallIcon = ({ className }: { className?: string }) => (
+  <svg {...iconProps} className={className}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.2l2.8 2-1 3.3h-3.6l-1-3.3 2.8-2Z" />
+    <path d="M12 3.5v3.7M6.1 9.4l4.1 2.9M17.9 9.4l-4.1 2.9M9.3 15.4 7.6 19M14.7 15.4 16.4 19" />
+  </svg>
+);
 
 const getRouteTitle = (pathname: string): string => {
   if (pathname === '/') return 'Головна | Footbet';
@@ -118,7 +137,24 @@ const App: React.FC = () => {
   }, [dispatch]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className={styles.boot}>
+        <div className={styles.bootCard}>
+          <div className={styles.bootBrand}>
+            <span className={styles.bootMark} aria-hidden>
+              <BallIcon className={styles.bootMarkIcon} />
+            </span>
+            <span className={styles.bootTitle}>Footbet</span>
+          </div>
+          <div className={styles.loader} aria-hidden>
+            <span className={styles.loaderDot} />
+            <span className={styles.loaderDot} />
+            <span className={styles.loaderDot} />
+          </div>
+          <p className={styles.bootText}>Завантажуємо турніри та оновлюємо сесію...</p>
+        </div>
+      </div>
+    );
   }
 
   if (isAuthPage) {

@@ -1,7 +1,8 @@
 import cn from 'classnames';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useAppSelector } from 'store';
 import { RoutesEnum } from 'routes/AppRoutes';
+import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import styles from './Header.module.scss';
 
@@ -32,8 +33,10 @@ const ExternalIcon = () => (
 
 const Header: React.FC = () => {
   const { user } = useAppSelector((state) => state.user);
+  const location = useLocation();
   const displayName = user ? getUserDisplayName(user.name, user.nickname) : '';
   const initials = user ? getUserInitials(user.name, user.nickname) : '';
+  const signInHref = `${AuthRoutesEnum.SignIn}?from=${encodeURIComponent(`${location.pathname}${location.search}`)}`;
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) => cn(styles.navLink, { [styles.active]: isActive });
 
@@ -66,7 +69,7 @@ const Header: React.FC = () => {
           )}
         </nav>
 
-        {user && (
+        {user ? (
           <Link to={RoutesEnum.User} className={styles.user} title={displayName}>
             <span className={styles.userAvatar}>
               {user.avatar ? (
@@ -79,6 +82,10 @@ const Header: React.FC = () => {
               <span className={styles.userLabel}>Профіль</span>
               <span className={styles.userName}>{displayName}</span>
             </span>
+          </Link>
+        ) : (
+          <Link to={signInHref} className={styles.signInButton}>
+            Увійти
           </Link>
         )}
       </div>
