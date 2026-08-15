@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import cn from 'classnames';
 import { useAppSelector } from 'store';
 import { useTournament } from '../../Tournament';
-import { IStandingsItem } from 'interfaces';
+import { IMatch, IStandingsItem } from 'interfaces';
 import { useMobile } from 'hooks';
 import { getLeagueLabel, resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
@@ -175,7 +175,87 @@ const Standings: React.FC = () => {
   const [activeLeague, setActiveLeague] = useState<string | null>(null);
 
   const standings = useAppSelector((state) => state.tournament.standings)[tournament.id];
-  const groups = useMemo(() => Object.entries(standings?.standings || {}), [standings]);
+  const matchesByTournament = useAppSelector((state) => state.match.matches);
+
+  const fallbackStandings = useMemo<Record<string, IStandingsItem[]>>(() => {
+    const matches = matchesByTournament[tournament.id] || [];
+    const allMatches = matches.flatMap((stage) => stage.data || []);
+    if (!allMatches.length) {
+      return {};
+    }
+
+    const sections = new Map<
+      string,
+      Map<number, { id: number; name: string; logo: string; league: string; group: string }>
+    >();
+
+    const addTeam = (match: IMatch, type: 'home' | 'away') => {
+      const team = type === 'home' ? match.homeTeam : match.awayTeam;
+      const teamId = type === 'home' ? match.homeTeamId : match.awayTeamId;
+
+      if (!teamId || !team?.name) {
+        return;
+      }
+
+      const leagueLabel = tournament.leagues > 1 ? getLeagueLabel(Number(match.tournamentLeague) || 1) : '';
+      const groupLabel = (match.groupName || '').trim() || 'Загальна';
+      const sectionKey = `${leagueLabel}::${groupLabel}`;
+
+      if (!sections.has(sectionKey)) {
+        sections.set(sectionKey, new Map());
+      }
+
+      const section = sections.get(sectionKey)!;
+      if (!section.has(teamId)) {
+        section.set(teamId, {
+          id: teamId,
+          name: team.name,
+          logo: team.logo || '',
+          league: leagueLabel,
+          group: groupLabel,
+        });
+      }
+    };
+
+    allMatches.forEach((match) => {
+      addTeam(match, 'home');
+      addTeam(match, 'away');
+    });
+
+    const result: Record<string, IStandingsItem[]> = {};
+    sections.forEach((teams, key) => {
+      const items = Array.from(teams.values())
+        .sort((a, b) => a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' }))
+        .map((team) => ({
+          id: String(team.id),
+          team: team.name,
+          league: team.league || undefined,
+          group: team.group,
+          logo: team.logo,
+          played: 0,
+          won: 0,
+          lost: 0,
+          drawn: 0,
+          goalsScored: 0,
+          goalsAgainst: 0,
+          points: 0,
+          form: [],
+        }));
+
+      if (items.length) {
+        result[key] = items;
+      }
+    });
+
+    return result;
+  }, [matchesByTournament, tournament.id, tournament.leagues]);
+
+  const effectiveStandings = useMemo(
+    () => (Object.keys(standings?.standings || {}).length ? standings?.standings || {} : fallbackStandings),
+    [standings, fallbackStandings],
+  );
+
+  const groups = useMemo(() => Object.entries(effectiveStandings), [effectiveStandings]);
   const thirdPlace = useMemo(() => standings?.thirdPlacesStandings || [], [standings]);
   const isNationsLeague = !!tournament.isNationsLeague;
 
@@ -347,34 +427,28 @@ const Standings: React.FC = () => {
               1-2 місце: плей-оф
             </span>
             <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-              <span className={styles.legendDot} />
-              3 місце: стикові матчі
+              <span className={styles.legendDot} />3 місце: стикові матчі
             </span>
             <span className={cn(styles.legendItem, styles.relegation)}>
-              <span className={styles.legendDot} />
-              4 місце: пониження
+              <span className={styles.legendDot} />4 місце: пониження
             </span>
           </>
         ) : (
           <>
             <span className={cn(styles.legendItem, styles.promotion)}>
-              <span className={styles.legendDot} />
-              1 місце: підвищення
+              <span className={styles.legendDot} />1 місце: підвищення
             </span>
             <span className={cn(styles.legendItem, styles.promotionPlayoff)}>
-              <span className={styles.legendDot} />
-              2 місце: стики на підвищення
+              <span className={styles.legendDot} />2 місце: стики на підвищення
             </span>
             {!isBottomLeague && (
               <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-                <span className={styles.legendDot} />
-                3 місце: стики на пониження
+                <span className={styles.legendDot} />3 місце: стики на пониження
               </span>
             )}
             {!isBottomLeague && (
               <span className={cn(styles.legendItem, styles.relegation)}>
-                <span className={styles.legendDot} />
-                4 місце: пониження
+                <span className={styles.legendDot} />4 місце: пониження
               </span>
             )}
           </>
@@ -486,12 +560,10 @@ const Standings: React.FC = () => {
                 Ліга A: 1-2 місце вихід у плей-оф
               </span>
               <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-                <span className={styles.legendDot} />
-                3 місце: стикові матчі
+                <span className={styles.legendDot} />3 місце: стикові матчі
               </span>
               <span className={cn(styles.legendItem, styles.relegation)}>
-                <span className={styles.legendDot} />
-                4 місце: пониження в лігу нижче
+                <span className={styles.legendDot} />4 місце: пониження в лігу нижче
               </span>
               <span className={cn(styles.legendItem, styles.promotion)}>
                 <span className={styles.legendDot} />
@@ -530,7 +602,7 @@ const Standings: React.FC = () => {
             <TableIcon />
           </span>
           <h3 className={styles.emptyTitle}>Таблиця ще не сформована</h3>
-          <p className={styles.empty}>Дані з’являться після перших матчів турніру.</p>
+          <p className={styles.empty}>Додайте матчі в календар, і таблиця команд зʼявиться автоматично.</p>
         </section>
       )}
 
