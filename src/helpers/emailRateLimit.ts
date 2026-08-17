@@ -1,3 +1,5 @@
+import { translate } from 'i18n';
+
 const AUTH_EMAIL_ATTEMPTS_KEY = 'auth-email-attempts';
 
 export const AUTH_EMAIL_LIMIT_PER_HOUR = 2;
@@ -55,8 +57,8 @@ export const formatRemainingTime = (remainingMs: number) => {
   const seconds = totalSeconds % 60;
 
   if (minutes > 0) {
-    return `${minutes} хв ${seconds} сек`;
+    return translate('helpers.time.minSec', undefined, { minutes, seconds });
   }
 
-  return `${seconds} сек`;
+  return translate('helpers.time.sec', undefined, { seconds });
 };

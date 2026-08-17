@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { IHttpRequestResult } from 'interfaces';
 import { createExtraReducersForResponses, createHttpRequestInitResult, supabase, trackEvent } from 'helpers';
+import { translate } from 'i18n';
 
 interface IAuthResponse {
   userId: string;
@@ -32,7 +33,7 @@ export const signInUser = createAsyncThunk(
     }
 
     if (!data.user) {
-      throw new Error('Не вдалося авторизуватися');
+      throw new Error(translate('errors.auth.signInFailed'));
     }
 
     trackEvent('login_success', { method: 'password' });
@@ -61,7 +62,7 @@ export const signUpUser = createAsyncThunk('auth/signUpUser', async (data: ISign
   }
 
   if (!response.user) {
-    throw new Error('Не вдалося зареєструвати користувача');
+    throw new Error(translate('errors.auth.signUpFailed'));
   }
 
   trackEvent('signup_success', { method: 'password' });
@@ -87,7 +88,7 @@ export const checkVerificationCode = createAsyncThunk(
   async ({ code }: { email: string; code: string }) => {
     // Supabase password recovery validates via recovery link token, not manual OTP from API.
     if (!code) {
-      throw new Error('Код підтвердження не вказано');
+      throw new Error(translate('errors.auth.codeRequired'));
     }
   },
 );

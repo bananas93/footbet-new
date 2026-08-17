@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import Modal from 'components/Modal/Modal';
 import { readLocalCache, writeLocalCache } from 'helpers';
 import styles from './ProjectSupportPopup.module.scss';
+import { useI18n } from 'i18n';
 
 const MONOBANK_JAR_URL = 'https://send.monobank.ua/jar/3FAaWCR37r';
 const POPUP_CACHE_KEY = 'project-support-popup-seen';
 const ONE_WEEK_SECONDS = 7 * 24 * 60 * 60;
 
 const ProjectSupportPopup: React.FC = () => {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   const markAsSeen = () => {
@@ -33,14 +35,10 @@ const ProjectSupportPopup: React.FC = () => {
   }, []);
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Підтримка Footbet">
+    <Modal isOpen={isOpen} onClose={handleClose} title={t('components.projectSupportPopup.title')}>
       <div className={styles.content}>
-        <p className={styles.text}>
-          Для стабільної роботи та розвитку Footbet проєкту потрібно приблизно <strong>10 000 грн на рік</strong>.
-        </p>
-        <p className={styles.text}>
-          Якщо маєте можливість, будь ласка, підтримайте проєкт. Дякуємо за вашу довіру і допомогу.
-        </p>
+        <p className={styles.text}>{t('components.projectSupportPopup.text1')}</p>
+        <p className={styles.text}>{t('components.projectSupportPopup.text2')}</p>
 
         <a
           className={styles.cta}
@@ -48,11 +46,11 @@ const ProjectSupportPopup: React.FC = () => {
           target="_blank"
           rel="noreferrer noopener"
           onClick={handleDonateClick}>
-          Підтримати через Monobank
+          {t('components.projectSupportPopup.cta')}
         </a>
 
         <p className={styles.linkText}>
-          Посилання на банку:{' '}
+          {t('components.projectSupportPopup.bankLink')}{' '}
           <a href={MONOBANK_JAR_URL} target="_blank" rel="noreferrer noopener">
             send.monobank.ua/jar/3FAaWCR37r
           </a>

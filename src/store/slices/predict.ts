@@ -6,6 +6,7 @@ import {
   supabase,
   trackEvent,
 } from 'helpers';
+import { translate } from 'i18n';
 import { IHttpRequestResult } from 'interfaces/api';
 import { IPredict } from 'interfaces';
 import { getMatches } from './match';
@@ -43,7 +44,7 @@ export const setPredict = createAsyncThunk('predict/setPredict', async (predict:
 
   const userId = authData.user?.id;
   if (!userId) {
-    throw new Error('Користувач не авторизований');
+    throw new Error(translate('errors.user.notAuthorized'));
   }
 
   const { data: existingPrediction, error: existingPredictionError } = await supabase

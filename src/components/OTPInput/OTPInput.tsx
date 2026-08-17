@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import cn from 'classnames';
 import styles from './OTPInput.module.scss';
+import { useI18n } from 'i18n';
 
 interface Props {
   otp: string[];
@@ -13,6 +14,7 @@ interface Props {
 }
 
 const OTPInput = ({ otp, setOtp, codeLength, timerDuration, resendCode, isError, error }: Props) => {
+  const { t } = useI18n();
   const [timer, setTimer] = useState(timerDuration || 60);
 
   const inputRefs = useRef<HTMLInputElement[]>([]);
@@ -80,7 +82,7 @@ const OTPInput = ({ otp, setOtp, codeLength, timerDuration, resendCode, isError,
       <div className={styles.timerContainer}>
         <p className={styles.timerText}>{`0:${timer < 10 ? `0${timer}` : timer}`}</p>
         <button type="button" className={styles.resend} onClick={handleResendCode} disabled={timer > 0}>
-          Надіслати ще раз
+          {t('otp.resend')}
         </button>
       </div>
     </>

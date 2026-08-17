@@ -9,23 +9,25 @@ import { getPredictsTable } from 'store/slices/predict';
 import { ITournament, TournamentStatus } from 'interfaces';
 import { notify, playNotification, resolveAssetUrl, supabase } from 'helpers';
 import styles from './Tournament.module.scss';
+import { useI18n } from 'i18n';
 
 type ContextType = {
   tournament: ITournament;
 };
 
-const statusLabels: Record<TournamentStatus, string> = {
-  scheduled: 'Заплановано',
-  live: 'Live',
-  completed: 'Завершено',
-};
-
 const Tournament: React.FC = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { tournamentId } = useParams<{ tournamentId: string }>();
   const tournament = useAppSelector((state) => state.tournament.tournaments.find((t) => t.id === Number(tournamentId)));
   const { isAuthenticated } = useAppSelector((state) => state.auth);
   const { isLoading } = useAppSelector((state) => state.match.getMatchesRequest);
+
+  const statusLabels: Record<TournamentStatus, string> = {
+    scheduled: t('pages.status.scheduled'),
+    live: t('pages.status.live'),
+    completed: t('pages.status.completed'),
+  };
 
   const getStandings = useCallback(async () => {
     const requests: Promise<unknown>[] = [
@@ -47,9 +49,9 @@ const Tournament: React.FC = () => {
   useEffect(() => {
     document.title = `${tournament?.name} | Footbet`;
     return () => {
-      document.title = 'Турнір прогнозистів | Footbet';
+      document.title = t('app.defaultTitle');
     };
-  }, [tournament?.name]);
+  }, [t, tournament?.name]);
 
   useEffect(() => {
     if (!tournamentId) {
@@ -84,7 +86,7 @@ const Tournament: React.FC = () => {
 
           if (!updatedMatch) {
             playNotification();
-            notify.success('Матч оновлено', 5000);
+            notify.success(t('pages.tournament.matchUpdated'), 5000);
             getStandings();
             return;
           }
@@ -105,7 +107,7 @@ const Tournament: React.FC = () => {
               5000,
             );
           } else {
-            notify.success('Матч оновлено', 5000);
+            notify.success(t('pages.tournament.matchUpdated'), 5000);
           }
 
           getStandings();
@@ -124,17 +126,19 @@ const Tournament: React.FC = () => {
     }
 
     return [
-      { to: `/tournament/${tournament.id}`, label: 'Прогнози', end: true },
-      ...(tournament.hasTable ? [{ to: `/tournament/${tournament.id}/standings`, label: 'Турнірна таблиця' }] : []),
+      { to: `/tournament/${tournament.id}`, label: t('pages.tournament.navPredictions'), end: true },
+      ...(tournament.hasTable
+        ? [{ to: `/tournament/${tournament.id}/standings`, label: t('pages.tournament.navStandings') }]
+        : []),
       ...(isAuthenticated
         ? [
-            { to: `/tournament/${tournament.id}/leagues`, label: 'Загальна ліга' },
-            { to: `/tournament/${tournament.id}/rooms`, label: 'Кімнати' },
-            { to: `/tournament/${tournament.id}/achievements`, label: 'Досягнення' },
+            { to: `/tournament/${tournament.id}/leagues`, label: t('pages.tournament.navLeague') },
+            { to: `/tournament/${tournament.id}/rooms`, label: t('pages.tournament.navRooms') },
+            { to: `/tournament/${tournament.id}/achievements`, label: t('pages.tournament.navAchievements') },
           ]
         : []),
     ];
-  }, [isAuthenticated, tournament]);
+  }, [isAuthenticated, t, tournament]);
 
   const logoUrl = tournament?.logo ? resolveAssetUrl(tournament.logo) : '';
 
@@ -165,14 +169,20 @@ const Tournament: React.FC = () => {
                 )}
                 {!!tournament && (
                   <span className={styles.metaBadge}>
-                    {tournament.type === 'national' ? 'Національний' : 'Клубний'}
+                    {tournament.type === 'national'
+                      ? t('pages.tournament.typeNational')
+                      : t('pages.tournament.typeClub')}
                   </span>
                 )}
                 {!!tournament && tournament.groupNumber > 1 && (
-                  <span className={styles.metaBadge}>Груп: {tournament.groupNumber}</span>
+                  <span className={styles.metaBadge}>
+                    {t('pages.tournament.groups', undefined, { count: tournament.groupNumber })}
+                  </span>
                 )}
                 {!!tournament && tournament.knockoutRound > 0 && (
-                  <span className={styles.metaBadge}>Плей-оф: {tournament.knockoutRound}</span>
+                  <span className={styles.metaBadge}>
+                    {t('pages.tournament.playoff', undefined, { count: tournament.knockoutRound })}
+                  </span>
                 )}
               </div>
 

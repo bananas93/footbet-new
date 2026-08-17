@@ -14,6 +14,7 @@ import {
 import { useAppSelector } from 'store';
 import { MatchStatus } from 'interfaces';
 import styles from './MatchDetails.module.scss';
+import { useI18n } from 'i18n';
 
 type MatchDetailsResponse = {
   hasExternalData: boolean;
@@ -49,24 +50,24 @@ const LIVE_STATUSES = ['1H', '2H', 'HT', 'ET', 'BT', 'P', 'INT', 'LIVE'];
 const FINISHED_STATUSES = ['FT', 'AET', 'PEN'];
 
 const STAT_LABELS: Record<string, string> = {
-  'Ball Possession': 'Володіння',
-  'Total Shots': 'Удари',
-  'Shots on Goal': 'Удари в ціль',
-  'Shots off Goal': 'Удари повз',
-  'Blocked Shots': 'Заблоковані удари',
-  'Shots insidebox': 'Удари зі штрафного',
-  'Shots outsidebox': 'Удари з-за меж штрафного',
-  'Corner Kicks': 'Кутові',
-  Offsides: 'Офсайди',
-  Fouls: 'Фоли',
-  'Yellow Cards': 'Жовті картки',
-  'Red Cards': 'Червоні картки',
-  'Goalkeeper Saves': 'Сейви',
-  'Total passes': 'Передачі',
-  'Passes accurate': 'Точні передачі',
-  'Passes %': 'Точність передач',
-  expected_goals: 'xG',
-  goals_prevented: 'Відвернені голи',
+  'Ball Possession': 'pages.matchDetails.stats.ballPossession',
+  'Total Shots': 'pages.matchDetails.stats.totalShots',
+  'Shots on Goal': 'pages.matchDetails.stats.shotsOnGoal',
+  'Shots off Goal': 'pages.matchDetails.stats.shotsOffGoal',
+  'Blocked Shots': 'pages.matchDetails.stats.blockedShots',
+  'Shots insidebox': 'pages.matchDetails.stats.shotsInsideBox',
+  'Shots outsidebox': 'pages.matchDetails.stats.shotsOutsideBox',
+  'Corner Kicks': 'pages.matchDetails.stats.cornerKicks',
+  Offsides: 'pages.matchDetails.stats.offsides',
+  Fouls: 'pages.matchDetails.stats.fouls',
+  'Yellow Cards': 'pages.matchDetails.stats.yellowCards',
+  'Red Cards': 'pages.matchDetails.stats.redCards',
+  'Goalkeeper Saves': 'pages.matchDetails.stats.goalkeeperSaves',
+  'Total passes': 'pages.matchDetails.stats.totalPasses',
+  'Passes accurate': 'pages.matchDetails.stats.passesAccurate',
+  'Passes %': 'pages.matchDetails.stats.passesPercent',
+  expected_goals: 'pages.matchDetails.stats.expectedGoals',
+  goals_prevented: 'pages.matchDetails.stats.goalsPrevented',
 };
 
 const STAT_ORDER = [
@@ -88,23 +89,23 @@ const STAT_ORDER = [
 ];
 
 const POSITION_LABELS: Record<string, string> = {
-  G: 'ВР',
-  D: 'ЗХ',
-  M: 'ПЗ',
-  F: 'НП',
+  G: 'pages.matchDetails.positions.goalkeeper',
+  D: 'pages.matchDetails.positions.defender',
+  M: 'pages.matchDetails.positions.midfielder',
+  F: 'pages.matchDetails.positions.forward',
 };
 
 const GOAL_DETAILS: Record<string, string> = {
-  'Normal Goal': 'Гол',
-  'Own Goal': 'Автогол',
-  Penalty: 'Гол з пенальті',
-  'Missed Penalty': 'Нереалізований пенальті',
+  'Normal Goal': 'pages.matchDetails.event.goal',
+  'Own Goal': 'pages.matchDetails.event.ownGoal',
+  Penalty: 'pages.matchDetails.event.penaltyGoal',
+  'Missed Penalty': 'pages.matchDetails.event.missedPenalty',
 };
 
 const CARD_DETAILS: Record<string, string> = {
-  'Yellow Card': 'Жовта картка',
-  'Second Yellow card': 'Друга жовта картка',
-  'Red Card': 'Червона картка',
+  'Yellow Card': 'pages.matchDetails.event.yellowCard',
+  'Second Yellow card': 'pages.matchDetails.event.secondYellowCard',
+  'Red Card': 'pages.matchDetails.event.redCard',
 };
 
 const toStatNumber = (value: unknown) => {
@@ -265,6 +266,7 @@ const EmptyIcon = () => (
 );
 
 const MatchDetails: React.FC = () => {
+  const { t, lang } = useI18n();
   const { tournamentId, matchId } = useParams<{ tournamentId: string; matchId: string }>();
   const matchesByTournament = useAppSelector((state) => state.match.matches);
   const [data, setData] = useState<MatchDetailsResponse | null>(null);
@@ -316,7 +318,7 @@ const MatchDetails: React.FC = () => {
       });
 
       if (error) {
-        throw new Error(error.message || 'Не вдалося отримати деталі матчу');
+        throw new Error(error.message || t('pages.matchDetails.errors.fetchFailed'));
       }
 
       const resolvedData = json as MatchDetailsResponse;
@@ -332,7 +334,7 @@ const MatchDetails: React.FC = () => {
         MATCH_LOCAL_CACHE_TTL_SECONDS,
       );
     } catch (error: any) {
-      notify.error(error.message || 'Не вдалося отримати деталі матчу');
+      notify.error(error.message || t('pages.matchDetails.errors.fetchFailed'));
     } finally {
       if (!silent) {
         setIsLoading(false);
@@ -367,14 +369,14 @@ const MatchDetails: React.FC = () => {
 
   const homeTeam = {
     id: fixture?.teams?.home?.id ?? currentMatch?.homeTeamId,
-    name: fixture?.teams?.home?.name || currentMatch?.homeTeam?.name || 'Господарі',
+    name: fixture?.teams?.home?.name || currentMatch?.homeTeam?.name || t('pages.matchDetails.homeTeamFallback'),
     logo: fixture?.teams?.home?.logo || resolveAssetUrl(currentMatch?.homeTeam?.logo) || FALLBACK_LOGO,
     localId: currentMatch?.homeTeam?.id,
   };
 
   const awayTeam = {
     id: fixture?.teams?.away?.id ?? currentMatch?.awayTeamId,
-    name: fixture?.teams?.away?.name || currentMatch?.awayTeam?.name || 'Гості',
+    name: fixture?.teams?.away?.name || currentMatch?.awayTeam?.name || t('pages.matchDetails.awayTeamFallback'),
     logo: fixture?.teams?.away?.logo || resolveAssetUrl(currentMatch?.awayTeam?.logo) || FALLBACK_LOGO,
     localId: currentMatch?.awayTeam?.id,
   };
@@ -419,7 +421,7 @@ const MatchDetails: React.FC = () => {
 
         return {
           type,
-          label: STAT_LABELS[type] || type,
+          label: STAT_LABELS[type] ? t(STAT_LABELS[type]) : type,
           home: toStatText(homeValue),
           away: toStatText(awayValue),
           homeShare: total ? Math.round((homeNumber / total) * 100) : 50,
@@ -427,7 +429,7 @@ const MatchDetails: React.FC = () => {
         };
       })
       .filter((row) => row.home !== '0' || row.away !== '0');
-  }, [data, homeTeam.id]);
+  }, [data, homeTeam.id, t]);
 
   const lineups = useMemo(() => {
     const response = data?.external?.lineups?.response || [];
@@ -476,16 +478,16 @@ const MatchDetails: React.FC = () => {
 
         if (normalizedType === 'goal') {
           tone = detail === 'Missed Penalty' ? 'eventMiss' : 'eventGoal';
-          label = GOAL_DETAILS[detail] || 'Гол';
+          label = GOAL_DETAILS[detail] ? t(GOAL_DETAILS[detail]) : t('pages.matchDetails.event.goal');
         } else if (normalizedType === 'card') {
           tone = detail === 'Yellow Card' ? 'eventYellow' : 'eventRed';
-          label = CARD_DETAILS[detail] || 'Картка';
+          label = CARD_DETAILS[detail] ? t(CARD_DETAILS[detail]) : t('pages.matchDetails.event.card');
         } else if (normalizedType === 'subst') {
           tone = 'eventSubst';
-          label = 'Заміна';
+          label = t('pages.matchDetails.event.substitution');
         } else if (normalizedType === 'var') {
           tone = 'eventVar';
-          label = `VAR · ${detail}`;
+          label = t('pages.matchDetails.event.varWithDetail', undefined, { detail });
         }
 
         const elapsed = Number(item?.time?.elapsed);
@@ -504,7 +506,7 @@ const MatchDetails: React.FC = () => {
         };
       })
       .sort((a, b) => a.sortKey - b.sortKey);
-  }, [data, homeTeam.id]);
+  }, [data, homeTeam.id, t]);
 
   const renderEventIcon = (type: string) => {
     if (type === 'goal') {
@@ -569,11 +571,17 @@ const MatchDetails: React.FC = () => {
       <div className={styles.topBar}>
         <Link to={`/tournament/${tournamentId}`} className={styles.backLink}>
           <ArrowLeftIcon />
-          До матчів
+          {t('pages.matchDetails.backToMatches')}
         </Link>
 
         <div className={styles.topBarActions}>
-          {!!lastUpdated && <span className={styles.chip}>Оновлено {lastUpdated.toLocaleTimeString('uk-UA')}</span>}
+          {!!lastUpdated && (
+            <span className={styles.chip}>
+              {t('pages.matchDetails.updatedAt', undefined, {
+                time: lastUpdated.toLocaleTimeString(lang === 'ua' ? 'uk-UA' : 'en-US'),
+              })}
+            </span>
+          )}
 
           <button
             type="button"
@@ -581,7 +589,7 @@ const MatchDetails: React.FC = () => {
             onClick={() => void handleRefresh()}
             disabled={isRefreshing || !fixtureId}>
             <RefreshIcon />
-            {isRefreshing ? 'Оновлення...' : 'Оновити'}
+            {isRefreshing ? t('pages.matchDetails.refreshing') : t('pages.matchDetails.refresh')}
           </button>
         </div>
       </div>
@@ -593,11 +601,16 @@ const MatchDetails: React.FC = () => {
           {isLive ? (
             <span className={cn(styles.heroBadge, styles.heroBadgeLive)}>
               <span className={styles.liveDot} />
-              Live{fixture?.fixture?.status?.elapsed ? ` · ${fixture.fixture.status.elapsed}'` : ''}
+              {t('pages.status.live')}
+              {fixture?.fixture?.status?.elapsed ? ` · ${fixture.fixture.status.elapsed}'` : ''}
             </span>
           ) : (
             <span className={styles.heroBadge}>
-              {isFinished ? 'Завершено' : matchDate ? normalizeMatchTime(matchDate) : 'Заплановано'}
+              {isFinished
+                ? t('pages.status.completed')
+                : matchDate
+                  ? normalizeMatchTime(matchDate)
+                  : t('pages.status.scheduled')}
             </span>
           )}
 
@@ -616,7 +629,9 @@ const MatchDetails: React.FC = () => {
 
           <div className={styles.heroScore}>
             {isScheduled && homeGoals === undefined ? (
-              <span className={styles.heroKickoff}>{matchDate ? normalizeMatchTime(matchDate) : 'VS'}</span>
+              <span className={styles.heroKickoff}>
+                {matchDate ? normalizeMatchTime(matchDate) : t('pages.matchDetails.vs')}
+              </span>
             ) : (
               <div className={cn(styles.scoreLine, { [styles.scoreLive]: isLive })}>
                 <span className={styles.scoreValue}>{homeGoals ?? '-'}</span>
@@ -628,12 +643,18 @@ const MatchDetails: React.FC = () => {
             <div className={styles.scoreMeta}>
               {!!fixture?.score?.halftime && fixture.score.halftime.home !== null && (
                 <span className={styles.scoreMetaItem}>
-                  1-й тайм {fixture.score.halftime.home}:{fixture.score.halftime.away}
+                  {t('pages.matchDetails.halftimeScore', undefined, {
+                    home: fixture.score.halftime.home,
+                    away: fixture.score.halftime.away,
+                  })}
                 </span>
               )}
               {!!fixture?.score?.penalty && fixture.score.penalty.home !== null && (
                 <span className={styles.scoreMetaItem}>
-                  Пенальті {fixture.score.penalty.home}:{fixture.score.penalty.away}
+                  {t('pages.matchDetails.penaltyScore', undefined, {
+                    home: fixture.score.penalty.home,
+                    away: fixture.score.penalty.away,
+                  })}
                 </span>
               )}
             </div>
@@ -650,7 +671,11 @@ const MatchDetails: React.FC = () => {
                 {fixture.fixture.venue.city ? `, ${fixture.fixture.venue.city}` : ''}
               </span>
             )}
-            {!!fixture?.fixture?.referee && <span className={styles.heroTag}>Арбітр: {fixture.fixture.referee}</span>}
+            {!!fixture?.fixture?.referee && (
+              <span className={styles.heroTag}>
+                {t('pages.matchDetails.referee', undefined, { name: fixture.fixture.referee })}
+              </span>
+            )}
           </div>
         )}
       </header>
@@ -660,12 +685,7 @@ const MatchDetails: React.FC = () => {
           <span className={styles.emptyIcon}>
             <EmptyIcon />
           </span>
-          <h3 className={styles.emptyTitle}>Детальна статистика недоступна</h3>
-          {/* <p className={styles.empty}>
-            {!fixtureId
-              ? 'Для цього матчу ще не заповнено api_fixture_id в базі даних.'
-              : data?.message || 'Для цього матчу ще не привʼязано apiFixtureId.'}
-          </p> */}
+          <h3 className={styles.emptyTitle}>{t('pages.matchDetails.emptyTitle')}</h3>
         </div>
       )}
 
@@ -676,9 +696,9 @@ const MatchDetails: React.FC = () => {
               <ChartIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Статистика</h3>
+              <h3 className={styles.sectionTitle}>{t('pages.matchDetails.statsTitle')}</h3>
               <p className={styles.sectionMeta}>
-                {homeTeam.name} проти {awayTeam.name}
+                {t('pages.matchDetails.versus', undefined, { home: homeTeam.name, away: awayTeam.name })}
               </p>
             </div>
           </div>
@@ -714,8 +734,8 @@ const MatchDetails: React.FC = () => {
               <ClockIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Хід матчу</h3>
-              <p className={styles.sectionMeta}>Голи, картки та заміни</p>
+              <h3 className={styles.sectionTitle}>{t('pages.matchDetails.timelineTitle')}</h3>
+              <p className={styles.sectionMeta}>{t('pages.matchDetails.timelineMeta')}</p>
             </div>
             <span className={styles.sectionCount}>{events.length}</span>
           </div>
@@ -772,8 +792,8 @@ const MatchDetails: React.FC = () => {
               <UsersIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Склади</h3>
-              <p className={styles.sectionMeta}>Стартові одинадцятки та запасні</p>
+              <h3 className={styles.sectionTitle}>{t('pages.matchDetails.lineupsTitle')}</h3>
+              <p className={styles.sectionMeta}>{t('pages.matchDetails.lineupsMeta')}</p>
             </div>
           </div>
 
@@ -792,21 +812,27 @@ const MatchDetails: React.FC = () => {
                   </span>
                   <div className={styles.lineupHeadText}>
                     <p className={styles.lineupTeam}>{lineup.teamName}</p>
-                    {!!lineup.coach && <p className={styles.lineupCoach}>Тренер: {lineup.coach}</p>}
+                    {!!lineup.coach && (
+                      <p className={styles.lineupCoach}>
+                        {t('pages.matchDetails.coach', undefined, { name: lineup.coach })}
+                      </p>
+                    )}
                   </div>
                   {!!lineup.formation && <span className={styles.formationChip}>{lineup.formation}</span>}
                 </div>
 
                 {!!lineup.startXI.length && (
                   <>
-                    <p className={styles.lineupGroupTitle}>Стартовий склад</p>
+                    <p className={styles.lineupGroupTitle}>{t('pages.matchDetails.startingLineup')}</p>
                     <ul className={styles.playerList}>
                       {lineup.startXI.map((player: any) => (
                         <li key={player.id || player.name} className={styles.playerRow}>
                           <span className={styles.playerNumber}>{player.number ?? '—'}</span>
                           <span className={styles.playerName}>{player.name}</span>
                           {!!player.pos && (
-                            <span className={styles.playerPos}>{POSITION_LABELS[player.pos] || player.pos}</span>
+                            <span className={styles.playerPos}>
+                              {POSITION_LABELS[player.pos] ? t(POSITION_LABELS[player.pos]) : player.pos}
+                            </span>
                           )}
                         </li>
                       ))}
@@ -816,14 +842,16 @@ const MatchDetails: React.FC = () => {
 
                 {!!lineup.substitutes.length && (
                   <>
-                    <p className={styles.lineupGroupTitle}>Запасні</p>
+                    <p className={styles.lineupGroupTitle}>{t('pages.matchDetails.substitutes')}</p>
                     <ul className={styles.playerList}>
                       {lineup.substitutes.map((player: any) => (
                         <li key={player.id || player.name} className={cn(styles.playerRow, styles.playerRowMuted)}>
                           <span className={styles.playerNumber}>{player.number ?? '—'}</span>
                           <span className={styles.playerName}>{player.name}</span>
                           {!!player.pos && (
-                            <span className={styles.playerPos}>{POSITION_LABELS[player.pos] || player.pos}</span>
+                            <span className={styles.playerPos}>
+                              {POSITION_LABELS[player.pos] ? t(POSITION_LABELS[player.pos]) : player.pos}
+                            </span>
                           )}
                         </li>
                       ))}

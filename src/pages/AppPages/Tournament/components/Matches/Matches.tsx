@@ -9,6 +9,7 @@ import { toggleOnlyLiveMatches } from 'store/slices/user';
 import { useTournament } from '../../Tournament';
 import MatchCard from './MatchCard/MatchCard';
 import styles from './Matches.module.scss';
+import { useI18n } from 'i18n';
 
 type RoundTab = {
   key: string;
@@ -56,6 +57,7 @@ const countByStatus = (matches: IMatch[], status: MatchStatus) =>
   matches.filter((match) => match.status === status).length;
 
 const Matches: React.FC = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { tournament } = useTournament();
 
@@ -80,7 +82,7 @@ const Matches: React.FC = () => {
   const rounds = useMemo<RoundTab[]>(() => {
     const groupTabs = groupMatches.map((games, index) => ({
       key: `group-${index}`,
-      label: `Тур ${index + 1}`,
+      label: t('pages.matches.round', undefined, { index: index + 1 }),
       isKnockout: false,
       games,
     }));
@@ -98,9 +100,9 @@ const Matches: React.FC = () => {
         games: knockoutMatches[index],
       })),
     ];
-  }, [matches, groupMatchNumber, knockoutRound, thirdPlaceMatch]);
+  }, [groupMatchNumber, groupMatches, knockoutMatches, knockoutRound, t, thirdPlaceMatch]);
 
-  // Кількість ліг приходить з бекенду, список будується з ліг, які реально є в матчах
+  // League count comes from backend; tabs are built from leagues that exist in matches.
   const leagues = useMemo(() => {
     if (tournament.leagues <= 1) {
       return [];
@@ -156,13 +158,11 @@ const Matches: React.FC = () => {
         <div className={styles.heroText}>
           <span className={styles.heroEyebrow}>
             <BallIcon />
-            Матчі турніру
+            {t('pages.matches.title')}
           </span>
           <h2 className={styles.heroTitle}>{tournament.name}</h2>
           <p className={styles.heroSubtitle}>
-            {isMultiLeague
-              ? 'Ліги, календар турів, результати матчів та ваші прогнози'
-              : 'Календар турів, результати матчів та ваші прогнози'}
+            {isMultiLeague ? t('pages.matches.subtitleMulti') : t('pages.matches.subtitleSingle')}
           </p>
         </div>
 
@@ -171,24 +171,24 @@ const Matches: React.FC = () => {
             {isMultiLeague && (
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.leagues}</span>
-                <span className={styles.heroMetricLabel}>Ліг</span>
+                <span className={styles.heroMetricLabel}>{t('pages.matches.metrics.leagues')}</span>
               </div>
             )}
             <div className={styles.heroMetric}>
               <span className={styles.heroMetricValue}>{overview.rounds}</span>
-              <span className={styles.heroMetricLabel}>Турів</span>
+              <span className={styles.heroMetricLabel}>{t('pages.matches.metrics.rounds')}</span>
             </div>
             <div className={styles.heroMetric}>
               <span className={styles.heroMetricValue}>{overview.total}</span>
-              <span className={styles.heroMetricLabel}>Матчів</span>
+              <span className={styles.heroMetricLabel}>{t('pages.matches.metrics.matches')}</span>
             </div>
             <div className={cn(styles.heroMetric, { [styles.heroMetricLive]: overview.live > 0 })}>
               <span className={styles.heroMetricValue}>{overview.live}</span>
-              <span className={styles.heroMetricLabel}>Live</span>
+              <span className={styles.heroMetricLabel}>{t('pages.status.live')}</span>
             </div>
             <div className={styles.heroMetric}>
               <span className={styles.heroMetricValue}>{overview.finished}</span>
-              <span className={styles.heroMetricLabel}>Завершено</span>
+              <span className={styles.heroMetricLabel}>{t('pages.status.completed')}</span>
             </div>
           </div>
         )}
@@ -204,8 +204,8 @@ const Matches: React.FC = () => {
           <span className={styles.emptyIcon}>
             <CalendarIcon />
           </span>
-          <h3 className={styles.emptyTitle}>Матчів ще немає</h3>
-          <p className={styles.empty}>Календар турніру з’явиться найближчим часом.</p>
+          <h3 className={styles.emptyTitle}>{t('pages.matches.emptyTitle')}</h3>
+          <p className={styles.empty}>{t('pages.matches.emptyText')}</p>
         </section>
       </div>
     );
@@ -234,13 +234,17 @@ const Matches: React.FC = () => {
             <header className={styles.leagueBlockHead}>
               <span className={styles.leagueBadge}>{getLeagueLabel(league)}</span>
               <div className={styles.leagueBlockText}>
-                <h4 className={styles.leagueBlockTitle}>Ліга {getLeagueLabel(league)}</h4>
-                <p className={styles.leagueBlockMeta}>{leagueMatches.length} матчів</p>
+                <h4 className={styles.leagueBlockTitle}>
+                  {t('pages.standings.league', undefined, { label: getLeagueLabel(league) })}
+                </h4>
+                <p className={styles.leagueBlockMeta}>
+                  {t('pages.matches.matchesCount', undefined, { count: leagueMatches.length })}
+                </p>
               </div>
               {leagueLive > 0 && (
                 <span className={cn(styles.chip, styles.chipLive)}>
                   <span className={styles.liveDot} />
-                  Live {leagueLive}
+                  {t('pages.status.live')} {leagueLive}
                 </span>
               )}
             </header>
@@ -276,9 +280,11 @@ const Matches: React.FC = () => {
           <div className={styles.panelHeadText}>
             <div className={styles.panelTitleRow}>
               <h3 className={styles.panelTitle}>{round.label}</h3>
-              {round.isKnockout && <span className={styles.stageChip}>Плей-оф</span>}
+              {round.isKnockout && <span className={styles.stageChip}>{t('pages.matches.playoff')}</span>}
               {isMultiLeague && !!activeLeague && (
-                <span className={styles.leagueChip}>Ліга {getLeagueLabel(activeLeague)}</span>
+                <span className={styles.leagueChip}>
+                  {t('pages.standings.league', undefined, { label: getLeagueLabel(activeLeague) })}
+                </span>
               )}
             </div>
             {!!dateRange && (
@@ -294,11 +300,19 @@ const Matches: React.FC = () => {
               {liveCount > 0 && (
                 <span className={cn(styles.chip, styles.chipLive)}>
                   <span className={styles.liveDot} />
-                  Live {liveCount}
+                  {t('pages.status.live')} {liveCount}
                 </span>
               )}
-              {finishedCount > 0 && <span className={styles.chip}>Завершено {finishedCount}</span>}
-              {scheduledCount > 0 && <span className={styles.chip}>Заплановано {scheduledCount}</span>}
+              {finishedCount > 0 && (
+                <span className={styles.chip}>
+                  {t('pages.matches.chipCompleted', undefined, { count: finishedCount })}
+                </span>
+              )}
+              {scheduledCount > 0 && (
+                <span className={styles.chip}>
+                  {t('pages.matches.chipScheduled', undefined, { count: scheduledCount })}
+                </span>
+              )}
             </div>
 
             <button
@@ -307,7 +321,7 @@ const Matches: React.FC = () => {
               onClick={toggleLiveMatches}
               aria-pressed={onlyLiveMatches}>
               <span className={styles.liveDot} />
-              {onlyLiveMatches ? 'Тільки Live' : 'Показати Live'}
+              {onlyLiveMatches ? t('pages.matches.onlyLive') : t('pages.matches.showLive')}
             </button>
           </div>
         </div>
@@ -322,17 +336,19 @@ const Matches: React.FC = () => {
             </span>
             <p className={styles.emptyTitle}>
               {onlyLiveMatches
-                ? 'Немає матчів у прямому ефірі'
+                ? t('pages.matches.emptyRoundLive')
                 : isMultiLeague && !!activeLeague
-                  ? `У Лізі ${getLeagueLabel(activeLeague)} немає матчів у цьому турі`
-                  : 'У цьому турі ще немає матчів'}
+                  ? t('pages.matches.emptyRoundLeague', undefined, {
+                      league: t('pages.standings.league', undefined, { label: getLeagueLabel(activeLeague) }),
+                    })
+                  : t('pages.matches.emptyRound')}
             </p>
             <p className={styles.empty}>
               {onlyLiveMatches
-                ? 'Вимкніть фільтр Live, щоб побачити всі матчі туру.'
+                ? t('pages.matches.emptyRoundLiveText')
                 : isMultiLeague && !!activeLeague
-                  ? 'Оберіть іншу лігу або тур.'
-                  : 'Розклад з’явиться найближчим часом.'}
+                  ? t('pages.matches.emptyRoundLeagueText')
+                  : t('pages.matches.emptyRoundText')}
             </p>
           </div>
         )}
@@ -350,7 +366,7 @@ const Matches: React.FC = () => {
             type="button"
             className={cn(styles.leagueTab, { [styles.leagueTabActive]: !activeLeague })}
             onClick={() => setActiveLeague(null)}>
-            Всі ліги
+            {t('pages.standings.allLeagues')}
           </button>
           {leagues.map((league, index) => (
             <button
@@ -361,7 +377,7 @@ const Matches: React.FC = () => {
               })}
               onClick={() => setActiveLeague(league)}>
               <span className={styles.leagueTabDot} />
-              Ліга {getLeagueLabel(league)}
+              {t('pages.standings.league', undefined, { label: getLeagueLabel(league) })}
             </button>
           ))}
         </div>

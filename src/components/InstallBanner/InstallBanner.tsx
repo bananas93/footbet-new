@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { enablePushSubscription, getPushSupportState, trackEvent } from 'helpers';
 import { useAppSelector } from 'store';
 import styles from './InstallBanner.module.scss';
+import { useI18n } from 'i18n';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -45,6 +46,7 @@ const isIOSDevice = (): boolean => {
 };
 
 const InstallBanner: React.FC = () => {
+  const { t } = useI18n();
   const userId = useAppSelector((state) => state.user.user?.id || '');
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -145,17 +147,17 @@ const InstallBanner: React.FC = () => {
   return (
     <aside className={styles.banner} role="status" aria-live="polite">
       <div className={styles.textWrap}>
-        <h3 className={styles.title}>Встанови Footbet на телефон</h3>
-        <p className={styles.text}>Отримуй швидкий доступ з Home Screen і користуйся як застосунком.</p>
-        {isManualIOSInstall && <p className={styles.note}>На iPhone: Поділитися → На екран Додому.</p>}
+        <h3 className={styles.title}>{t('components.installBanner.title')}</h3>
+        <p className={styles.text}>{t('components.installBanner.text')}</p>
+        {isManualIOSInstall && <p className={styles.note}>{t('components.installBanner.iosNote')}</p>}
       </div>
       <div className={styles.actions}>
         <button type="button" className={styles.secondary} onClick={handleDismiss}>
-          Пізніше
+          {t('components.installBanner.later')}
         </button>
         {!!deferredPrompt && (
           <button type="button" className={styles.primary} onClick={handleInstall} disabled={isInstalling}>
-            {isInstalling ? 'Встановлюємо...' : 'Встановити'}
+            {isInstalling ? t('components.installBanner.installing') : t('components.installBanner.install')}
           </button>
         )}
       </div>

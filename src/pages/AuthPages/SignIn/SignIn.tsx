@@ -8,18 +8,7 @@ import { notify } from 'helpers';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import { useEffect, useMemo, useState } from 'react';
-
-const validationRules = {
-  email: (value: string) => {
-    if (!value) return 'Потрібно вказати email';
-    if (!/\S+@\S+\.\S+/.test(value)) return 'Email некоректний';
-    return '';
-  },
-  password: (value: string) => {
-    if (!value) return 'Потрібно вказати пароль';
-    return '';
-  },
-};
+import { useI18n } from 'i18n';
 
 interface FormValues {
   email: string;
@@ -27,6 +16,7 @@ interface FormValues {
 }
 
 const SignIn: React.FC = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,6 +43,18 @@ const SignIn: React.FC = () => {
     navigate(pendingFrom || '/', { replace: true });
   }, [isAuthenticated, navigate, redirectTo]);
 
+  const validationRules = {
+    email: (value: string) => {
+      if (!value) return t('auth.common.emailRequired');
+      if (!/\S+@\S+\.\S+/.test(value)) return t('auth.common.emailInvalid');
+      return '';
+    },
+    password: (value: string) => {
+      if (!value) return t('auth.common.passwordRequired');
+      return '';
+    },
+  };
+
   const { values, errors, handleChange, setFieldError, handleSubmit } = useForm<FormValues>(
     { email: '', password: '' },
     validationRules,
@@ -68,9 +70,9 @@ const SignIn: React.FC = () => {
     } catch (err: any) {
       if (err.message?.toLowerCase().includes('invalid login credentials')) {
         setFieldError('email', '');
-        setFieldError('password', 'Не правильний email або пароль');
+        setFieldError('password', t('auth.signIn.invalidCredentials'));
       }
-      notify.error(err.message || 'Помилка входу');
+      notify.error(err.message || t('auth.signIn.loginError'));
     }
   };
 
@@ -80,7 +82,7 @@ const SignIn: React.FC = () => {
       sessionStorage.setItem('auth:returnTo', redirectTo);
       await dispatch(signInWithGoogle()).unwrap();
     } catch (err: any) {
-      notify.error(err.message || 'Не вдалося увійти через Google');
+      notify.error(err.message || t('auth.signIn.googleLoginError'));
       sessionStorage.removeItem('auth:returnTo');
       setIsGoogleLoading(false);
     }
@@ -89,50 +91,50 @@ const SignIn: React.FC = () => {
   return (
     <div className={styles.auth}>
       <header className={styles.head}>
-        <span className={styles.eyebrow}>Вхід</span>
-        <h1 className={styles.title}>Вітаємо у Footbet</h1>
-        <p className={styles.subtitle}>Увійдіть, щоб робити прогнози та стежити за таблицею турніру.</p>
+        <span className={styles.eyebrow}>{t('auth.signIn.eyebrow')}</span>
+        <h1 className={styles.title}>{t('auth.signIn.title')}</h1>
+        <p className={styles.subtitle}>{t('auth.signIn.subtitle')}</p>
       </header>
 
       <button type="button" onClick={handleGoogleLogin} className={styles.google} disabled={isGoogleLoading}>
         <GoogleIcon />
-        {isGoogleLoading ? 'Переходимо до Google...' : 'Увійти через Google'}
+        {isGoogleLoading ? t('auth.signIn.googleInProgress') : t('auth.signIn.googleButton')}
       </button>
 
-      <div className={styles.divider}>або</div>
+      <div className={styles.divider}>{t('auth.signIn.or')}</div>
 
       <div className={styles.form}>
         <TextInput
           name="email"
           type="email"
-          label="Email"
+          label={t('auth.common.emailLabel')}
           value={values.email}
           error={errors.email}
           onChange={(e) => handleChange('email', e.target.value)}
-          placeholder="Ваш email"
+          placeholder={t('auth.common.emailPlaceholder')}
         />
         <TextInput
           name="password"
           type="password"
-          label="Пароль"
+          label={t('auth.common.passwordLabel')}
           value={values.password}
           error={errors.password}
           onChange={(e) => handleChange('password', e.target.value)}
-          placeholder="Ваш пароль"
+          placeholder={t('auth.common.passwordPlaceholder')}
         />
         <Link to={AuthRoutesEnum.ForgotPassword} className={styles.forgot}>
-          Забули пароль?
+          {t('auth.signIn.forgotPassword')}
         </Link>
       </div>
 
       <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading}>
-        {isLoading ? 'Входимо...' : 'Увійти'}
+        {isLoading ? t('auth.signIn.submitLoading') : t('auth.signIn.submit')}
       </button>
 
       <p className={styles.footer}>
-        Не маєте акаунту?{' '}
+        {t('auth.signIn.noAccount')}{' '}
         <Link to={AuthRoutesEnum.SignUp} className={styles.footerLink}>
-          Зареєструватись
+          {t('auth.signIn.signUpLink')}
         </Link>
       </p>
     </div>

@@ -5,6 +5,7 @@ import { useAppSelector } from 'store';
 import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import { useTournament } from '../../Tournament';
 import styles from './Achievements.module.scss';
+import { useI18n } from 'i18n';
 
 type Tone = 'gold' | 'violet' | 'blue' | 'teal' | 'orange' | 'slate' | 'green';
 
@@ -133,20 +134,23 @@ const RankBadgeIcon: React.FC<{ type: RankBadgeType }> = ({ type }) => (
   </svg>
 );
 
-const getRankBadge = (rank: number) => {
+const getRankBadge = (
+  rank: number,
+  t: (key: string, fallback?: string, params?: Record<string, string | number>) => string,
+) => {
   if (rank <= 1) {
-    return { label: 'Лідер', className: 'leader' } as RankBadge;
+    return { label: t('pages.achievements.badges.leader'), className: 'leader' } as RankBadge;
   }
 
   if (rank <= 3) {
-    return { label: 'Топ-3', className: 'top3' } as RankBadge;
+    return { label: t('pages.achievements.badges.top3'), className: 'top3' } as RankBadge;
   }
 
   if (rank <= 10) {
-    return { label: 'Топ-10', className: 'top10' } as RankBadge;
+    return { label: t('pages.achievements.badges.top10'), className: 'top10' } as RankBadge;
   }
 
-  return { label: 'У грі', className: 'participant' } as RankBadge;
+  return { label: t('pages.achievements.badges.participant'), className: 'participant' } as RankBadge;
 };
 
 const getRankedWinners = (
@@ -168,7 +172,8 @@ const getRankedWinners = (
 };
 
 const RankBadgeView: React.FC<{ rank: number }> = ({ rank }) => {
-  const badge = getRankBadge(rank);
+  const { t } = useI18n();
+  const badge = getRankBadge(rank, t);
   return (
     <span className={cn(styles.badge, styles[badge.className])}>
       <RankBadgeIcon type={badge.className} />
@@ -182,8 +187,9 @@ const WinnersRow: React.FC<{ winners: Winner[]; tournamentId: number; limit?: nu
   tournamentId,
   limit = 3,
 }) => {
+  const { t } = useI18n();
   if (!winners.length) {
-    return <p className={styles.winnersEmpty}>Немає даних</p>;
+    return <p className={styles.winnersEmpty}>{t('pages.achievements.noData')}</p>;
   }
 
   const visible = winners.slice(0, limit);
@@ -198,7 +204,11 @@ const WinnersRow: React.FC<{ winners: Winner[]; tournamentId: number; limit?: nu
           className={styles.winner}
           title={winner.name}>
           <span className={styles.winnerAvatar}>
-            {winner.avatar ? <img src={resolveAssetUrl(winner.avatar)} alt={winner.name} /> : getUserInitials(winner.name)}
+            {winner.avatar ? (
+              <img src={resolveAssetUrl(winner.avatar)} alt={winner.name} />
+            ) : (
+              getUserInitials(winner.name)
+            )}
           </span>
           <span className={styles.winnerName}>{winner.name}</span>
         </Link>
@@ -209,6 +219,7 @@ const WinnersRow: React.FC<{ winners: Winner[]; tournamentId: number; limit?: nu
 };
 
 const Achievements = () => {
+  const { t } = useI18n();
   const { tournament } = useTournament();
   const [searchParams] = useSearchParams();
   const user = useAppSelector((state) => state.user.user);
@@ -241,76 +252,76 @@ const Achievements = () => {
     return [
       {
         key: 'points',
-        title: 'Лідер турніру',
-        description: 'Максимум очок у загальній таблиці',
+        title: t('pages.achievements.cards.points.title'),
+        description: t('pages.achievements.cards.points.description'),
         value: `${points.value}`,
-        unit: 'очк.',
+        unit: t('pages.achievements.cards.points.unit'),
         tone: 'gold',
         icon: 'trophy',
         winners: points.winners,
       },
       {
         key: 'exact',
-        title: 'Снайпер рахунку',
-        description: 'Найбільше вгаданих точних рахунків',
+        title: t('pages.achievements.cards.exact.title'),
+        description: t('pages.achievements.cards.exact.description'),
         value: `${exact.value}`,
-        unit: 'точн.',
+        unit: t('pages.achievements.cards.exact.unit'),
         tone: 'violet',
         icon: 'target',
         winners: exact.winners,
       },
       {
         key: 'outcomes',
-        title: 'Майстер результатів',
-        description: 'Найбільше вгаданих результатів',
+        title: t('pages.achievements.cards.outcomes.title'),
+        description: t('pages.achievements.cards.outcomes.description'),
         value: `${outcomes.value}`,
-        unit: 'рез.',
+        unit: t('pages.achievements.cards.outcomes.unit'),
         tone: 'blue',
         icon: 'shield',
         winners: outcomes.winners,
       },
       {
         key: 'differences',
-        title: 'Експерт різниць',
-        description: 'Найбільше вгаданих різниць мʼячів',
+        title: t('pages.achievements.cards.differences.title'),
+        description: t('pages.achievements.cards.differences.description'),
         value: `${differences.value}`,
-        unit: 'різн.',
+        unit: t('pages.achievements.cards.differences.unit'),
         tone: 'teal',
         icon: 'scales',
         winners: differences.winners,
       },
       {
         key: 'goals',
-        title: 'Ризиковий аналітик',
-        description: 'Найбільше матчів із 5+ голами',
+        title: t('pages.achievements.cards.goals.title'),
+        description: t('pages.achievements.cards.goals.description'),
         value: `${goals.value}`,
-        unit: 'матч.',
+        unit: t('pages.achievements.cards.goals.unit'),
         tone: 'orange',
         icon: 'flame',
         winners: goals.winners,
       },
       {
         key: 'consistency',
-        title: 'Стабільний гравець',
-        description: 'Найбільше закритих матчів прогнозами',
+        title: t('pages.achievements.cards.consistency.title'),
+        description: t('pages.achievements.cards.consistency.description'),
         value: `${consistency.value}`,
-        unit: 'матч.',
+        unit: t('pages.achievements.cards.consistency.unit'),
         tone: 'slate',
         icon: 'calendar',
         winners: consistency.winners,
       },
       {
         key: 'efficiency',
-        title: 'Ефективність туру',
-        description: 'Найбільше очок у середньому за матч',
+        title: t('pages.achievements.cards.efficiency.title'),
+        description: t('pages.achievements.cards.efficiency.description'),
         value: efficiency.value.toFixed(2),
-        unit: 'очк./матч',
+        unit: t('pages.achievements.cards.efficiency.unit'),
         tone: 'green',
         icon: 'bolt',
         winners: efficiency.winners,
       },
     ];
-  }, [table]);
+  }, [t, table]);
 
   const overview = useMemo(() => {
     return {
@@ -408,29 +419,29 @@ const Achievements = () => {
           <div className={styles.heroText}>
             <span className={styles.heroEyebrow}>
               <AchievementIcon name="trophy" className={styles.heroEyebrowIcon} />
-              Зала досягнень
+              {t('pages.achievements.title')}
             </span>
             <h2 className={styles.heroTitle}>{tournament.name}</h2>
-            <p className={styles.heroSubtitle}>Рекорди турніру, персональні нагороди та боротьба за перше місце</p>
+            <p className={styles.heroSubtitle}>{t('pages.achievements.subtitle')}</p>
           </div>
 
           {!!table.length && (
             <div className={styles.heroMetrics}>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.players}</span>
-                <span className={styles.heroMetricLabel}>Гравців</span>
+                <span className={styles.heroMetricLabel}>{t('pages.achievements.metrics.players')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.predicts}</span>
-                <span className={styles.heroMetricLabel}>Прогнозів</span>
+                <span className={styles.heroMetricLabel}>{t('pages.achievements.metrics.predictions')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.exactScores}</span>
-                <span className={styles.heroMetricLabel}>Точних рахунків</span>
+                <span className={styles.heroMetricLabel}>{t('pages.achievements.metrics.exactScores')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{achievements.length}</span>
-                <span className={styles.heroMetricLabel}>Нагород</span>
+                <span className={styles.heroMetricLabel}>{t('pages.achievements.metrics.awards')}</span>
               </div>
             </div>
           )}
@@ -442,8 +453,8 @@ const Achievements = () => {
           <span className={styles.emptyIcon}>
             <AchievementIcon name="trophy" />
           </span>
-          <h3 className={styles.emptyTitle}>Нагороди ще не розіграні</h3>
-          <p className={styles.empty}>Поки немає даних для підрахунку досягнень.</p>
+          <h3 className={styles.emptyTitle}>{t('pages.achievements.emptyTitle')}</h3>
+          <p className={styles.empty}>{t('pages.achievements.emptyText')}</p>
         </section>
       )}
 
@@ -457,7 +468,7 @@ const Achievements = () => {
                   <AchievementIcon name={spotlight.icon} />
                 </span>
                 <div>
-                  <span className={styles.spotlightTag}>Головна нагорода</span>
+                  <span className={styles.spotlightTag}>{t('pages.achievements.mainAward')}</span>
                   <h3 className={styles.spotlightTitle}>{spotlight.title}</h3>
                   <p className={styles.spotlightDescription}>{spotlight.description}</p>
                   <WinnersRow winners={spotlight.winners} tournamentId={tournament.id} limit={4} />
@@ -470,18 +481,20 @@ const Achievements = () => {
                 </p>
                 <p className={styles.spotlightHint}>
                   {overview.players < 2
-                    ? 'Перший претендент на трофей'
+                    ? t('pages.achievements.spotlight.firstContender')
                     : overview.leaderGap > 0
-                      ? `Відрив від 2-го місця: ${overview.leaderGap} очк.`
-                      : 'Рівна боротьба за перше місце'}
+                      ? t('pages.achievements.spotlight.leaderGap', undefined, { gap: overview.leaderGap })
+                      : t('pages.achievements.spotlight.tightRace')}
                 </p>
               </div>
             </section>
           )}
 
           <div className={styles.sectionHead}>
-            <h3 className={styles.sectionTitle}>Номінації турніру</h3>
-            <span className={styles.sectionMeta}>{restAchievements.length} категорій</span>
+            <h3 className={styles.sectionTitle}>{t('pages.achievements.categoriesTitle')}</h3>
+            <span className={styles.sectionMeta}>
+              {t('pages.achievements.categoriesCount', undefined, { count: restAchievements.length })}
+            </span>
           </div>
 
           <div className={styles.grid}>
@@ -514,34 +527,36 @@ const Achievements = () => {
             <div className={styles.myTitleRow}>
               <div className={styles.myIdentity}>
                 <span className={styles.myAvatar}>
-                  {panelAvatar ? <img src={resolveAssetUrl(panelAvatar)} alt={panelName} /> : getUserInitials(panelName)}
+                  {panelAvatar ? (
+                    <img src={resolveAssetUrl(panelAvatar)} alt={panelName} />
+                  ) : (
+                    getUserInitials(panelName)
+                  )}
                 </span>
                 <div>
                   <span className={styles.myEyebrow}>
-                    {isViewingAnotherUser ? 'Досягнення гравця' : 'Мої досягнення'}
+                    {isViewingAnotherUser
+                      ? t('pages.achievements.playerAchievements')
+                      : t('pages.achievements.myAchievements')}
                   </span>
                   <h3 className={styles.myTitle}>{panelName}</h3>
                 </div>
               </div>
               {isViewingAnotherUser && user && (
                 <Link to={userAchievementsLink} className={styles.myBackLink}>
-                  Повернутись до моїх
+                  {t('pages.achievements.backToMine')}
                 </Link>
               )}
             </div>
 
-            {!mySummary && (
-              <p className={styles.myEmpty}>Увійдіть у профіль або відкрийте досягнення користувача з таблиці.</p>
-            )}
+            {!mySummary && <p className={styles.myEmpty}>{t('pages.achievements.myEmpty')}</p>}
 
             {mySummary && !mySummary.found && mySummary.isMissingUser && (
-              <p className={styles.myEmpty}>Користувача не знайдено в таблиці турніру.</p>
+              <p className={styles.myEmpty}>{t('pages.achievements.userNotFound')}</p>
             )}
 
             {mySummary && !mySummary.found && !mySummary.isMissingUser && (
-              <p className={styles.myEmpty}>
-                Поки вас немає в таблиці цього турніру. Зробіть кілька прогнозів, щоб потрапити в рейтинг.
-              </p>
+              <p className={styles.myEmpty}>{t('pages.achievements.notInTableYet')}</p>
             )}
 
             {mySummary && mySummary.found && (
@@ -551,20 +566,22 @@ const Achievements = () => {
                     <div className={styles.myRankRing} style={{ '--progress': rankPercent } as React.CSSProperties}>
                       <div className={styles.myRankRingInner}>
                         <span className={styles.myRankPlace}>#{mySummary.place}</span>
-                        <span className={styles.myRankTotal}>з {mySummary.total}</span>
+                        <span className={styles.myRankTotal}>
+                          {t('pages.achievements.ofTotal', undefined, { total: mySummary.total })}
+                        </span>
                       </div>
                     </div>
                     <div className={styles.myRankInfo}>
                       <RankBadgeView rank={mySummary.place} />
                       <p className={styles.myRankHint}>
-                        Ви кращі за {rankPercent}% учасників турніру за сумою очок.
+                        {t('pages.achievements.rankHint', undefined, { percent: rankPercent })}
                       </p>
                     </div>
                   </div>
 
                   <div className={styles.myProgress}>
                     <div className={styles.myProgressHead}>
-                      <span className={styles.myProgressLabel}>Очки</span>
+                      <span className={styles.myProgressLabel}>{t('pages.achievements.points')}</span>
                       <span className={styles.myProgressValue}>
                         {mySummary.points}
                         <span className={styles.myProgressOf}>/ {mySummary.leaderPoints}</span>
@@ -579,33 +596,39 @@ const Achievements = () => {
                     </div>
                     <div className={styles.myProgressFoot}>
                       <span>
-                        {mySummary.pointsGap > 0 ? `Від лідера: ${mySummary.pointsGap} очк.` : 'Ви очолюєте турнір'}
+                        {mySummary.pointsGap > 0
+                          ? t('pages.achievements.gapFromLeader', undefined, { points: mySummary.pointsGap })
+                          : t('pages.achievements.youAreLeader')}
                       </span>
-                      <span>{mySummary.totalMatches} матч.</span>
+                      <span>{t('pages.achievements.matchesCount', undefined, { count: mySummary.totalMatches })}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className={styles.myStats}>
                   <div className={styles.myStat}>
-                    <p className={styles.myLabel}>Точні рахунки</p>
+                    <p className={styles.myLabel}>{t('pages.achievements.stats.exactScores')}</p>
                     <p className={styles.myValue}>#{mySummary.exactRank}</p>
                     <RankBadgeView rank={mySummary.exactRank} />
                   </div>
                   <div className={styles.myStat}>
-                    <p className={styles.myLabel}>Результати</p>
+                    <p className={styles.myLabel}>{t('pages.achievements.stats.results')}</p>
                     <p className={styles.myValue}>#{mySummary.outcomeRank}</p>
                     <RankBadgeView rank={mySummary.outcomeRank} />
                   </div>
                   <div className={styles.myStat}>
-                    <p className={styles.myLabel}>Різниці</p>
+                    <p className={styles.myLabel}>{t('pages.achievements.stats.differences')}</p>
                     <p className={styles.myValue}>#{mySummary.differenceRank}</p>
                     <RankBadgeView rank={mySummary.differenceRank} />
                   </div>
                   <div className={styles.myStat}>
-                    <p className={styles.myLabel}>Ефективність</p>
+                    <p className={styles.myLabel}>{t('pages.achievements.stats.efficiency')}</p>
                     <p className={styles.myValue}>#{mySummary.efficiencyRank}</p>
-                    <p className={styles.myHint}>{mySummary.efficiencyValue.toFixed(2)} очк./матч</p>
+                    <p className={styles.myHint}>
+                      {t('pages.achievements.efficiencyValue', undefined, {
+                        value: mySummary.efficiencyValue.toFixed(2),
+                      })}
+                    </p>
                     <RankBadgeView rank={mySummary.efficiencyRank} />
                   </div>
                 </div>

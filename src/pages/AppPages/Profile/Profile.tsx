@@ -6,6 +6,7 @@ import { getTournaments } from 'store/slices/tournament';
 import { getProfile } from 'store/slices/profile';
 import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import styles from './Profile.module.scss';
+import { useI18n } from 'i18n';
 
 const iconProps = {
   viewBox: '0 0 24 24',
@@ -75,12 +76,6 @@ const EmptyIcon = ({ className }: { className?: string }) => (
 
 type Tone = 'gold' | 'teal' | 'blue' | 'orange';
 
-const PREDICTION_LABELS: Record<string, string> = {
-  home: 'Перемога господарів',
-  away: 'Перемога гостей',
-  draw: 'Нічия',
-};
-
 const EMPTY_STATISTICS = {
   total: 0,
   totalPoints: 0,
@@ -130,6 +125,7 @@ const ProfileMessage = ({ title, text }: { title: string; text: string }) => (
 );
 
 const Profile = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -139,16 +135,20 @@ const Profile = () => {
   const queryTournamentId = searchParams.get('tournamentId');
 
   const parsedRouteTournamentId = tournamentId ? Number(tournamentId) : NaN;
-  const selectedTournamentId = queryTournamentId || (Number.isFinite(parsedRouteTournamentId) ? String(parsedRouteTournamentId) : 'all');
+  const selectedTournamentId =
+    queryTournamentId || (Number.isFinite(parsedRouteTournamentId) ? String(parsedRouteTournamentId) : 'all');
   const selectedTournamentNumeric = selectedTournamentId === 'all' ? null : Number(selectedTournamentId);
 
   const selectedTournamentName = useMemo(() => {
     if (selectedTournamentId === 'all') {
-      return 'Всі турніри';
+      return t('pages.profile.allTournaments');
     }
 
-    return tournaments.find((item) => String(item.id) === selectedTournamentId)?.name || 'Обраний турнір';
-  }, [selectedTournamentId, tournaments]);
+    return (
+      tournaments.find((item) => String(item.id) === selectedTournamentId)?.name ||
+      t('pages.profile.selectedTournament')
+    );
+  }, [selectedTournamentId, t, tournaments]);
 
   useEffect(() => {
     if (!tournaments.length) {
@@ -186,9 +186,9 @@ const Profile = () => {
     }
 
     return () => {
-      document.title = 'Турнір прогнозистів | Footbet';
+      document.title = t('app.defaultTitle');
     };
-  }, [data?.user, profileDisplayName]);
+  }, [data?.user, profileDisplayName, t]);
 
   const statistics = data?.statistics || EMPTY_STATISTICS;
 
@@ -199,74 +199,74 @@ const Profile = () => {
       {
         key: 'score',
         tone: 'gold' as Tone,
-        label: 'Ідеальний прогноз',
-        title: 'Точний рахунок',
+        label: t('pages.profile.accuracyCards.score.label'),
+        title: t('pages.profile.accuracyCards.score.title'),
         value: statistics.correctScore || 0,
         percent: toPercent(statistics.correctScore || 0, total),
       },
       {
         key: 'result',
         tone: 'teal' as Tone,
-        label: 'Базовий результат',
-        title: 'Вгаданий переможець',
+        label: t('pages.profile.accuracyCards.result.label'),
+        title: t('pages.profile.accuracyCards.result.title'),
         value: statistics.correctResult || 0,
         percent: toPercent(statistics.correctResult || 0, total),
       },
       {
         key: 'difference',
         tone: 'blue' as Tone,
-        label: 'Точна різниця',
-        title: 'Вгадана різниця мʼячів',
+        label: t('pages.profile.accuracyCards.difference.label'),
+        title: t('pages.profile.accuracyCards.difference.title'),
         value: statistics.correctDifference || 0,
         percent: toPercent(statistics.correctDifference || 0, total),
       },
       {
         key: 'fivePlus',
         tone: 'orange' as Tone,
-        label: 'Максимум за матч',
-        title: 'Точний рахунок у матчі 5+ голів',
+        label: t('pages.profile.accuracyCards.fivePlus.label'),
+        title: t('pages.profile.accuracyCards.fivePlus.title'),
         value: statistics.fivePlusGoals || 0,
         percent: toPercent(statistics.fivePlusGoals || 0, total),
       },
     ];
-  }, [statistics]);
+  }, [statistics, t]);
 
   const streaks = useMemo(() => {
     return [
       {
         key: 'scoreRow',
         tone: 'gold' as Tone,
-        title: 'Точні рахунки поспіль',
-        meta: 'Найдовша серія',
+        title: t('pages.profile.streakCards.scoreRow.title'),
+        meta: t('pages.profile.streakCards.scoreRow.meta'),
         value: statistics.correctScorePerRow || 0,
       },
       {
         key: 'resultRow',
         tone: 'teal' as Tone,
-        title: 'Вгадані результати поспіль',
-        meta: 'Найдовша серія',
+        title: t('pages.profile.streakCards.resultRow.title'),
+        meta: t('pages.profile.streakCards.resultRow.meta'),
         value: statistics.correctResultPerRow || 0,
       },
       {
         key: 'losing',
         tone: 'orange' as Tone,
-        title: 'Матчі без очок поспіль',
-        meta: 'Найгірша серія',
+        title: t('pages.profile.streakCards.losing.title'),
+        meta: t('pages.profile.streakCards.losing.meta'),
         value: statistics.longestLosingStreak || 0,
       },
     ];
-  }, [statistics]);
+  }, [statistics, t]);
 
   if (isLoading) {
     return <ProfileSkeleton />;
   }
 
   if (!userId) {
-    return <ProfileMessage title="Некоректне посилання" text="Не вдалося визначити гравця. Спробуйте ще раз." />;
+    return <ProfileMessage title={t('pages.profile.invalidLinkTitle')} text={t('pages.profile.invalidLinkText')} />;
   }
 
   if (!data) {
-    return <ProfileMessage title="Профіль недоступний" text="Не вдалося завантажити профіль гравця. Спробуйте пізніше." />;
+    return <ProfileMessage title={t('pages.profile.notAvailableTitle')} text={t('pages.profile.notAvailableText')} />;
   }
 
   const total = statistics.total || 0;
@@ -284,13 +284,23 @@ const Profile = () => {
   const favoriteTeams = statistics.topFiveFavoriteTeams || [];
   const topTeamPoints = favoriteTeams.reduce((max, team) => Math.max(max, team.points || 0), 0);
 
-  const favoritePrediction = PREDICTION_LABELS[statistics.mostCommonPrediction] || '—';
+  const predictionLabels: Record<string, string> = {
+    home: t('pages.profile.predictionHome'),
+    away: t('pages.profile.predictionAway'),
+    draw: t('pages.profile.predictionDraw'),
+  };
+
+  const favoritePrediction = predictionLabels[statistics.mostCommonPrediction] || '—';
 
   const heroMetrics = [
-    { key: 'points', value: statistics.totalPoints || 0, label: 'Очок' },
-    { key: 'total', value: total, label: 'Прогнозів' },
-    { key: 'exact', value: statistics.correctScore || 0, label: 'Точних рахунків' },
-    { key: 'accuracy', value: `${toPercent(statistics.correctResult || 0, total)}%`, label: 'Влучність' },
+    { key: 'points', value: statistics.totalPoints || 0, label: t('pages.profile.metricPoints') },
+    { key: 'total', value: total, label: t('pages.profile.metricPredictions') },
+    { key: 'exact', value: statistics.correctScore || 0, label: t('pages.profile.metricExact') },
+    {
+      key: 'accuracy',
+      value: `${toPercent(statistics.correctResult || 0, total)}%`,
+      label: t('pages.profile.metricAccuracy'),
+    },
   ];
 
   return (
@@ -300,7 +310,7 @@ const Profile = () => {
         <div className={styles.heroContent}>
           <button type="button" className={styles.backButton} onClick={() => navigate(-1)}>
             <ArrowLeftIcon className={styles.buttonIcon} />
-            Назад
+            {t('pages.profile.back')}
           </button>
 
           <div className={styles.heroMain}>
@@ -311,25 +321,25 @@ const Profile = () => {
               <div className={styles.heroText}>
                 <span className={styles.heroEyebrow}>
                   <UserIcon className={styles.heroEyebrowIcon} />
-                  Профіль гравця
+                  {t('pages.profile.playerProfile')}
                 </span>
                 <h1 className={styles.heroTitle}>{profileDisplayName}</h1>
                 <p className={styles.heroSubtitle}>
                   {hasPredictions
                     ? isAllTournaments
-                      ? 'Статистика прогнозів гравця в усіх турнірах'
-                      : 'Статистика прогнозів гравця в обраному турнірі'
+                      ? t('pages.profile.subtitleAll')
+                      : t('pages.profile.subtitleSelected')
                     : isAllTournaments
-                      ? 'Гравець ще не зробив жодного прогнозу'
-                      : 'Гравець ще не зробив жодного прогнозу в обраному турнірі'}
+                      ? t('pages.profile.subtitleNoPredictionsAll')
+                      : t('pages.profile.subtitleNoPredictionsSelected')}
                 </p>
                 <div className={styles.filterRow}>
-                  <span className={styles.filterLabel}>Оберіть турнір</span>
+                  <span className={styles.filterLabel}>{t('pages.profile.filterLabel')}</span>
                   <select
                     className={styles.filterSelect}
                     value={selectedTournamentId}
                     onChange={(e) => handleTournamentFilterChange(e.target.value)}>
-                    <option value="all">Всі турніри</option>
+                    <option value="all">{t('pages.profile.allTournaments')}</option>
                     {tournaments.map((item) => (
                       <option key={item.id} value={String(item.id)}>
                         {item.name}
@@ -357,18 +367,18 @@ const Profile = () => {
           <span className={styles.emptyIcon}>
             <EmptyIcon />
           </span>
-          <h2 className={styles.emptyTitle}>Ще немає прогнозів</h2>
+          <h2 className={styles.emptyTitle}>{t('pages.profile.emptyPredictionsTitle')}</h2>
           <p className={styles.emptyText}>
             {isAllTournaments
-              ? 'Статистика зʼявиться після першого зіграного матчу з прогнозом.'
-              : `Для турніру "${selectedTournamentName}" поки немає прогнозів.`}
+              ? t('pages.profile.emptyPredictionsAll')
+              : t('pages.profile.emptyPredictionsSelected', undefined, { name: selectedTournamentName })}
           </p>
         </div>
       ) : (
         <>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Ефективність прогнозів</h2>
-            <span className={styles.sectionMeta}>{total} прогнозів</span>
+            <h2 className={styles.sectionTitle}>{t('pages.profile.efficiencyTitle')}</h2>
+            <span className={styles.sectionMeta}>{t('pages.profile.efficiencyMeta', undefined, { count: total })}</span>
           </div>
 
           <div className={styles.grid}>
@@ -380,21 +390,25 @@ const Profile = () => {
                 <div className={styles.cardGlow} aria-hidden />
                 <p className={styles.cardValue}>
                   {card.value}
-                  <span className={styles.cardUnit}>з {total}</span>
+                  <span className={styles.cardUnit}>
+                    {t('pages.profile.from')} {total}
+                  </span>
                 </p>
                 <span className={styles.cardLabel}>{card.label}</span>
                 <h3 className={styles.cardTitle}>{card.title}</h3>
                 <div className={styles.cardBar}>
                   <span className={styles.cardBarFill} style={{ width: `${card.percent}%` }} />
                 </div>
-                <span className={styles.cardPercent}>{card.percent}% матчів</span>
+                <span className={styles.cardPercent}>
+                  {t('pages.profile.matchesPercent', undefined, { count: card.percent })}
+                </span>
               </article>
             ))}
           </div>
 
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Серії</h2>
-            <span className={styles.sectionMeta}>Найдовші відрізки поспіль</span>
+            <h2 className={styles.sectionTitle}>{t('pages.profile.streaksTitle')}</h2>
+            <span className={styles.sectionMeta}>{t('pages.profile.streaksMeta')}</span>
           </div>
 
           <div className={styles.streaks}>
@@ -422,8 +436,8 @@ const Profile = () => {
                   <ChartIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Вгадані переможці</h2>
-                  <p className={styles.panelMeta}>Розподіл між господарями та гостями</p>
+                  <h2 className={styles.panelTitle}>{t('pages.profile.winsTitle')}</h2>
+                  <p className={styles.panelMeta}>{t('pages.profile.winsMeta')}</p>
                 </div>
               </header>
 
@@ -435,18 +449,18 @@ const Profile = () => {
               <div className={styles.splitLegend}>
                 <div className={styles.splitItem}>
                   <span className={cn(styles.splitDot, styles.splitHome)} />
-                  <span className={styles.splitLabel}>Перемоги господарів</span>
+                  <span className={styles.splitLabel}>{t('pages.profile.winsHome')}</span>
                   <span className={styles.splitValue}>{correctHome}</span>
                 </div>
                 <div className={styles.splitItem}>
                   <span className={cn(styles.splitDot, styles.splitAway)} />
-                  <span className={styles.splitLabel}>Перемоги гостей</span>
+                  <span className={styles.splitLabel}>{t('pages.profile.winsAway')}</span>
                   <span className={styles.splitValue}>{correctAway}</span>
                 </div>
               </div>
 
               <div className={styles.factRow}>
-                <span className={styles.factLabel}>Найчастіший прогноз</span>
+                <span className={styles.factLabel}>{t('pages.profile.mostCommonPrediction')}</span>
                 <span className={styles.factPill}>
                   <BallIcon className={styles.factIcon} />
                   {favoritePrediction}
@@ -460,26 +474,26 @@ const Profile = () => {
                   <TargetIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Улюблені рахунки</h2>
-                  <p className={styles.panelMeta}>Найчастіші комбінації гравця</p>
+                  <h2 className={styles.panelTitle}>{t('pages.profile.favoriteScoresTitle')}</h2>
+                  <p className={styles.panelMeta}>{t('pages.profile.favoriteScoresMeta')}</p>
                 </div>
               </header>
 
               <div className={styles.scoreList}>
                 <div className={styles.scoreRow}>
-                  <span className={styles.scoreLabel}>Найчастіший вгаданий рахунок</span>
+                  <span className={styles.scoreLabel}>{t('pages.profile.mostCommonCorrect')}</span>
                   <span className={cn(styles.scoreValue, styles.scoreValueAccent)}>
                     {isScore(statistics.mostCommonCorrectScore) ? statistics.mostCommonCorrectScore : '—'}
                   </span>
                 </div>
                 <div className={styles.scoreRow}>
-                  <span className={styles.scoreLabel}>Найпопулярніший прогноз</span>
+                  <span className={styles.scoreLabel}>{t('pages.profile.mostPopularPredicted')}</span>
                   <span className={styles.scoreValue}>
                     {isScore(statistics.mostPopularPredictedScore) ? statistics.mostPopularPredictedScore : '—'}
                   </span>
                 </div>
                 <div className={styles.scoreRow}>
-                  <span className={styles.scoreLabel}>Влучність точного рахунку</span>
+                  <span className={styles.scoreLabel}>{t('pages.profile.exactAccuracy')}</span>
                   <span className={styles.scoreValue}>{toPercent(statistics.correctScore || 0, total)}%</span>
                 </div>
               </div>
@@ -489,13 +503,16 @@ const Profile = () => {
           {favoriteTeams.length > 0 && (
             <>
               <div className={styles.sectionHead}>
-                <h2 className={styles.sectionTitle}>Улюблені команди</h2>
-                <span className={styles.sectionMeta}>Найбільше зароблених очок</span>
+                <h2 className={styles.sectionTitle}>{t('pages.profile.favoriteTeamsTitle')}</h2>
+                <span className={styles.sectionMeta}>{t('pages.profile.favoriteTeamsMeta')}</span>
               </div>
 
               <div className={styles.teams}>
                 {favoriteTeams.map((team, index) => (
-                  <div className={styles.team} key={`${team.team}-${index}`} style={{ '--i': index } as React.CSSProperties}>
+                  <div
+                    className={styles.team}
+                    key={`${team.team}-${index}`}
+                    style={{ '--i': index } as React.CSSProperties}>
                     <span className={cn(styles.teamRank, { [styles.teamRankTop]: index === 0 })}>
                       {index === 0 ? <StarIcon className={styles.teamRankIcon} /> : index + 1}
                     </span>
@@ -504,7 +521,9 @@ const Profile = () => {
                       <div className={styles.teamBar}>
                         <span
                           className={styles.teamBarFill}
-                          style={{ width: `${topTeamPoints > 0 ? Math.round((team.points / topTeamPoints) * 100) : 0}%` }}
+                          style={{
+                            width: `${topTeamPoints > 0 ? Math.round((team.points / topTeamPoints) * 100) : 0}%`,
+                          }}
                         />
                       </div>
                     </div>

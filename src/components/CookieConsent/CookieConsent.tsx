@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ConsentValue, getAnalyticsConsent, setAnalyticsConsent } from 'helpers';
 import styles from './CookieConsent.module.scss';
+import { useI18n } from 'i18n';
 
 const CookieConsent: React.FC = () => {
+  const { t } = useI18n();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -22,19 +24,16 @@ const CookieConsent: React.FC = () => {
   }
 
   return (
-    <aside className={styles.banner} role="dialog" aria-live="polite" aria-label="Налаштування cookie">
+    <aside className={styles.banner} role="dialog" aria-live="polite" aria-label={t('components.cookie.ariaLabel')}>
       <div className={styles.content}>
-        <p className={styles.text}>
-          Ми використовуємо cookie для входу в акаунт, збереження сесії та покращення роботи сайту. Ви можете прийняти
-          всі cookie або залишити лише необхідні.
-        </p>
+        <p className={styles.text}>{t('components.cookie.text')}</p>
 
         <div className={styles.actions}>
           <button type="button" className={styles.secondaryButton} onClick={() => handleConsent('necessary')}>
-            Лише необхідні
+            {t('components.cookie.necessary')}
           </button>
           <button type="button" className={styles.primaryButton} onClick={() => handleConsent('accepted')}>
-            Прийняти всі
+            {t('components.cookie.acceptAll')}
           </button>
         </div>
       </div>

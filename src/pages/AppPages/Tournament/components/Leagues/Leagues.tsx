@@ -6,14 +6,13 @@ import { useMobile } from 'hooks';
 import { getUserInitials, resolveAssetUrl } from 'helpers';
 import { useTournament } from '../../Tournament';
 import styles from './Leagues.module.scss';
+import { useI18n } from 'i18n';
 
 const PAGE_SIZE = 25;
 
 type PodiumTone = 'gold' | 'silver' | 'bronze';
 
 const podiumTones: PodiumTone[] = ['gold', 'silver', 'bronze'];
-
-const podiumLabels = ['Чемпіон ліги', 'Друге місце', 'Третє місце'];
 
 const SearchIcon = () => (
   <svg
@@ -59,6 +58,7 @@ const CrownIcon = () => (
 );
 
 const Leagues: React.FC = () => {
+  const { t } = useI18n();
   const { tournament } = useTournament();
   const isMobile = useMobile();
   const user = useAppSelector((state) => state.user.user);
@@ -101,6 +101,11 @@ const Leagues: React.FC = () => {
   }, [searchQuery, onlyActive]);
 
   const isFiltering = !!searchQuery.trim() || onlyActive;
+  const podiumLabels = [
+    t('pages.leagues.podium.champion'),
+    t('pages.leagues.podium.second'),
+    t('pages.leagues.podium.third'),
+  ];
 
   return (
     <div className={styles.container}>
@@ -110,29 +115,29 @@ const Leagues: React.FC = () => {
           <div className={styles.heroText}>
             <span className={styles.heroEyebrow}>
               <CrownIcon />
-              Загальна ліга
+              {t('pages.leagues.title')}
             </span>
             <h2 className={styles.heroTitle}>{tournament.name}</h2>
-            <p className={styles.heroSubtitle}>Рейтинг усіх прогнозистів турніру за сумою набраних очок</p>
+            <p className={styles.heroSubtitle}>{t('pages.leagues.subtitle')}</p>
           </div>
 
           {!!table.length && (
             <div className={styles.heroMetrics}>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.players}</span>
-                <span className={styles.heroMetricLabel}>Гравців</span>
+                <span className={styles.heroMetricLabel}>{t('pages.leagues.metrics.players')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.predicts}</span>
-                <span className={styles.heroMetricLabel}>Прогнозів</span>
+                <span className={styles.heroMetricLabel}>{t('pages.leagues.metrics.predictions')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.exactScores}</span>
-                <span className={styles.heroMetricLabel}>Точних рахунків</span>
+                <span className={styles.heroMetricLabel}>{t('pages.leagues.metrics.exactScores')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.leaderPoints}</span>
-                <span className={styles.heroMetricLabel}>Очок у лідера</span>
+                <span className={styles.heroMetricLabel}>{t('pages.leagues.metrics.leaderPoints')}</span>
               </div>
             </div>
           )}
@@ -176,21 +181,21 @@ const Leagues: React.FC = () => {
 
                 <p className={styles.podiumPoints}>
                   {item.points}
-                  <span className={styles.podiumPointsUnit}>очк.</span>
+                  <span className={styles.podiumPointsUnit}>{t('pages.leagues.pointsShort')}</span>
                 </p>
 
                 <div className={styles.podiumStats}>
                   <div className={styles.podiumStat}>
                     <span className={styles.podiumStatValue}>{item.correctScore}</span>
-                    <span className={styles.podiumStatLabel}>Точні</span>
+                    <span className={styles.podiumStatLabel}>{t('pages.leagues.table.exact')}</span>
                   </div>
                   <div className={styles.podiumStat}>
                     <span className={styles.podiumStatValue}>{item.correctResult}</span>
-                    <span className={styles.podiumStatLabel}>Результат</span>
+                    <span className={styles.podiumStatLabel}>{t('pages.leagues.table.result')}</span>
                   </div>
                   <div className={styles.podiumStat}>
                     <span className={styles.podiumStatValue}>{item.totalMatches}</span>
-                    <span className={styles.podiumStatLabel}>Матчів</span>
+                    <span className={styles.podiumStatLabel}>{t('pages.leagues.table.matches')}</span>
                   </div>
                 </div>
               </article>
@@ -202,10 +207,12 @@ const Leagues: React.FC = () => {
       <section className={styles.panel}>
         <div className={styles.panelHead}>
           <div>
-            <h3 className={styles.panelTitle}>Таблиця ліги</h3>
+            <h3 className={styles.panelTitle}>{t('pages.leagues.tableTitle')}</h3>
             <p className={styles.panelSubtitle}>
-              Показано {shownTable.length} з {filteredTable.length}
-              {isFiltering && table.length !== filteredTable.length ? ` (всього ${table.length})` : ''}
+              {t('pages.leagues.shownOf', undefined, { shown: shownTable.length, total: filteredTable.length })}
+              {isFiltering && table.length !== filteredTable.length
+                ? ` (${t('pages.leagues.overall', undefined, { total: table.length })})`
+                : ''}
             </p>
           </div>
 
@@ -217,7 +224,7 @@ const Leagues: React.FC = () => {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Пошук по імені"
+                placeholder={t('pages.leagues.searchPlaceholder')}
                 className={styles.searchInput}
                 autoComplete="off"
               />
@@ -226,7 +233,7 @@ const Leagues: React.FC = () => {
                   type="button"
                   className={styles.searchClear}
                   onClick={() => setSearchQuery('')}
-                  aria-label="Очистити пошук">
+                  aria-label={t('pages.leagues.clearSearch')}>
                   ×
                 </button>
               )}
@@ -237,7 +244,7 @@ const Leagues: React.FC = () => {
               className={cn(styles.pill, { [styles.pillActive]: onlyActive })}
               onClick={() => setOnlyActive((prev) => !prev)}>
               <FilterIcon />
-              {onlyActive ? 'Показати всіх' : 'Тільки активні'}
+              {onlyActive ? t('pages.leagues.showAll') : t('pages.leagues.onlyActive')}
             </button>
           </div>
         </div>
@@ -245,13 +252,19 @@ const Leagues: React.FC = () => {
         <div className={styles.tableWrap}>
           <div className={cn(styles.row, styles.headRow)}>
             <div className={cn(styles.col, styles.colRank)}>#</div>
-            <div className={cn(styles.col, styles.colName)}>Гравець</div>
-            <div className={styles.col}>{isMobile ? 'М' : 'Матчів'}</div>
-            <div className={styles.col}>{isMobile ? 'Т' : 'Точні'}</div>
-            <div className={cn(styles.col, styles.colWide)}>Результат</div>
-            <div className={cn(styles.col, styles.colWide)}>Різниці</div>
-            <div className={cn(styles.col, styles.colWide)}>5+ голів</div>
-            <div className={cn(styles.col, styles.colPoints)}>{isMobile ? 'Очк.' : 'Очки'}</div>
+            <div className={cn(styles.col, styles.colName)}>{t('pages.leagues.table.player')}</div>
+            <div className={styles.col}>
+              {isMobile ? t('pages.leagues.table.matchesShort') : t('pages.leagues.table.matches')}
+            </div>
+            <div className={styles.col}>
+              {isMobile ? t('pages.leagues.table.exactShort') : t('pages.leagues.table.exact')}
+            </div>
+            <div className={cn(styles.col, styles.colWide)}>{t('pages.leagues.table.result')}</div>
+            <div className={cn(styles.col, styles.colWide)}>{t('pages.leagues.table.differences')}</div>
+            <div className={cn(styles.col, styles.colWide)}>{t('pages.leagues.table.fivePlus')}</div>
+            <div className={cn(styles.col, styles.colPoints)}>
+              {isMobile ? t('pages.leagues.table.pointsShort') : t('pages.leagues.table.points')}
+            </div>
           </div>
 
           {shownTable.map((item) => {
@@ -268,7 +281,11 @@ const Leagues: React.FC = () => {
                 </div>
                 <div className={cn(styles.col, styles.colName)}>
                   <span className={styles.rowAvatar}>
-                    {item.avatar ? <img src={resolveAssetUrl(item.avatar)} alt={item.name} /> : getUserInitials(item.name)}
+                    {item.avatar ? (
+                      <img src={resolveAssetUrl(item.avatar)} alt={item.name} />
+                    ) : (
+                      getUserInitials(item.name)
+                    )}
                   </span>
                   <Link
                     to={`/profile/${item.id}?tournamentId=${tournament.id}`}
@@ -276,7 +293,7 @@ const Leagues: React.FC = () => {
                     title={item.name}>
                     {item.name}
                   </Link>
-                  {isMe && <span className={styles.meChip}>Ви</span>}
+                  {isMe && <span className={styles.meChip}>{t('pages.leagues.me')}</span>}
                 </div>
                 <div className={styles.col}>{item.totalMatches}</div>
                 <div className={styles.col}>{item.correctScore}</div>
@@ -296,12 +313,10 @@ const Leagues: React.FC = () => {
                 <SearchIcon />
               </span>
               <p className={styles.emptyTitle}>
-                {isFiltering ? 'Нікого не знайдено' : 'Поки немає даних для таблиці'}
+                {isFiltering ? t('pages.leagues.emptyFilteredTitle') : t('pages.leagues.emptyTitle')}
               </p>
               <p className={styles.empty}>
-                {isFiltering
-                  ? 'Спробуйте змінити запит або скинути фільтри.'
-                  : 'Рейтинг з’явиться після перших прогнозів у турнірі.'}
+                {isFiltering ? t('pages.leagues.emptyFilteredText') : t('pages.leagues.emptyText')}
               </p>
             </div>
           )}
@@ -313,7 +328,9 @@ const Leagues: React.FC = () => {
               type="button"
               className={styles.moreButton}
               onClick={() => setVisibleRows((prev) => prev + PAGE_SIZE)}>
-              Показати ще {Math.min(PAGE_SIZE, filteredTable.length - visibleRows)}
+              {t('pages.leagues.showMore', undefined, {
+                count: Math.min(PAGE_SIZE, filteredTable.length - visibleRows),
+              })}
             </button>
           </div>
         )}

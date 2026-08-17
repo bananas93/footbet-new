@@ -7,10 +7,10 @@ import { useAppDispatch, useAppSelector } from 'store';
 import { handleOAuthCallback, hydrateAuth, setIsAuthenticated } from 'store/slices/auth';
 import { clearUser, getUserProfile } from 'store/slices/user';
 import { ANALYTICS_CONSENT_EVENT, clearPushSubscription, initAnalytics, supabase, trackPageView } from 'helpers';
+import { useI18n } from 'i18n';
 import styles from './App.module.scss';
 import 'react-toastify/dist/ReactToastify.css';
 
-const DEFAULT_TITLE = 'Турнір прогнозистів | Footbet';
 const AUTH_PATHS = new Set<string>([
   AuthRoutesEnum.SignIn,
   AuthRoutesEnum.SignUp,
@@ -37,22 +37,23 @@ const BallIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const getRouteTitle = (pathname: string): string => {
-  if (pathname === '/') return 'Головна | Footbet';
-  if (pathname === '/rules') return 'Правила | Footbet';
-  if (pathname === '/project-support') return 'Допомога проєкту | Footbet';
-  if (pathname === '/user') return 'Профіль | Footbet';
-  if (pathname === '/signin') return 'Вхід | Footbet';
-  if (pathname === '/signup') return 'Реєстрація | Footbet';
-  if (pathname === '/forgot-password') return 'Відновлення пароля | Footbet';
-  if (pathname === '/check-code') return 'Код підтвердження | Footbet';
-  if (pathname === '/set-password') return 'Новий пароль | Footbet';
-  if (pathname.startsWith('/tournament/')) return 'Турнір | Footbet';
-  if (pathname.startsWith('/profile/')) return 'Профіль користувача | Footbet';
-  return DEFAULT_TITLE;
+const getRouteTitle = (pathname: string, t: (key: string, fallback?: string) => string): string => {
+  if (pathname === '/') return t('app.routes.home');
+  if (pathname === '/rules') return t('app.routes.rules');
+  if (pathname === '/project-support') return t('app.routes.projectSupport');
+  if (pathname === '/user') return t('app.routes.user');
+  if (pathname === '/signin') return t('app.routes.signin');
+  if (pathname === '/signup') return t('app.routes.signup');
+  if (pathname === '/forgot-password') return t('app.routes.forgotPassword');
+  if (pathname === '/check-code') return t('app.routes.checkCode');
+  if (pathname === '/set-password') return t('app.routes.setPassword');
+  if (pathname.startsWith('/tournament/')) return t('app.routes.tournament');
+  if (pathname.startsWith('/profile/')) return t('app.routes.profile');
+  return t('app.defaultTitle');
 };
 
 const App: React.FC = () => {
+  const { t } = useI18n();
   const [isLoading, setIsLoading] = useState(true);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -66,8 +67,8 @@ const App: React.FC = () => {
   }, [pathname]);
 
   useEffect(() => {
-    document.title = getRouteTitle(pathname);
-  }, [pathname]);
+    document.title = getRouteTitle(pathname, t);
+  }, [pathname, t]);
 
   useEffect(() => {
     initAnalytics();
@@ -172,7 +173,7 @@ const App: React.FC = () => {
             <span className={styles.loaderDot} />
             <span className={styles.loaderDot} />
           </div>
-          <p className={styles.bootText}>Завантажуємо турніри та оновлюємо сесію...</p>
+          <p className={styles.bootText}>{t('app.boot.loading')}</p>
         </div>
       </div>
     );

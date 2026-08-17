@@ -5,6 +5,7 @@ import { RoutesEnum } from 'routes/AppRoutes';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import { getUserDisplayName, getUserInitials, resolveAssetUrl } from 'helpers';
 import styles from './Header.module.scss';
+import { addLangPrefix, Lang, useI18n } from 'i18n';
 
 const iconProps = {
   viewBox: '0 0 24 24',
@@ -25,6 +26,7 @@ const BallIcon = () => (
 );
 
 const Header: React.FC = () => {
+  const { t, lang } = useI18n();
   const { user } = useAppSelector((state) => state.user);
   const location = useLocation();
   const displayName = user ? getUserDisplayName(user.name, user.nickname) : '';
@@ -32,6 +34,15 @@ const Header: React.FC = () => {
   const signInHref = `${AuthRoutesEnum.SignIn}?from=${encodeURIComponent(`${location.pathname}${location.search}`)}`;
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) => cn(styles.navLink, { [styles.active]: isActive });
+
+  const switchLanguage = (nextLang: Lang) => {
+    if (nextLang === lang) {
+      return;
+    }
+
+    const nextPath = addLangPrefix(location.pathname, nextLang);
+    window.location.assign(`${nextPath}${location.search}${location.hash}`);
+  };
 
   return (
     <header className={styles.header}>
@@ -45,37 +56,56 @@ const Header: React.FC = () => {
 
         <nav className={styles.nav}>
           <NavLink to={RoutesEnum.Home} end className={navLinkClass}>
-            Головна
+            {t('layout.header.home')}
           </NavLink>
           <NavLink to={RoutesEnum.Rules} className={navLinkClass}>
-            Правила
+            {t('layout.header.rules')}
           </NavLink>
           {user?.role === 'admin' && (
             <NavLink to="/admin" className={navLinkClass}>
-              Адмінка
+              {t('layout.header.admin')}
             </NavLink>
           )}
         </nav>
 
-        {user ? (
-          <Link to={RoutesEnum.User} className={styles.user} title={displayName}>
-            <span className={styles.userAvatar}>
-              {user.avatar ? (
-                <img src={resolveAssetUrl(user.avatar)} alt={displayName} />
-              ) : (
-                <span className={styles.userInitials}>{initials}</span>
-              )}
-            </span>
-            <span className={styles.userText}>
-              <span className={styles.userLabel}>Профіль</span>
-              <span className={styles.userName}>{displayName}</span>
-            </span>
-          </Link>
-        ) : (
-          <Link to={signInHref} className={styles.signInButton}>
-            Увійти
-          </Link>
-        )}
+        <div className={styles.actions}>
+          <div className={styles.langSwitcher} role="group" aria-label={t('layout.header.language')}>
+            <button
+              type="button"
+              className={cn(styles.langButton, { [styles.langButtonActive]: lang === 'ua' })}
+              onClick={() => switchLanguage('ua')}
+              aria-pressed={lang === 'ua'}>
+              {t('layout.header.langUa')}
+            </button>
+            <button
+              type="button"
+              className={cn(styles.langButton, { [styles.langButtonActive]: lang === 'en' })}
+              onClick={() => switchLanguage('en')}
+              aria-pressed={lang === 'en'}>
+              {t('layout.header.langEn')}
+            </button>
+          </div>
+
+          {user ? (
+            <Link to={RoutesEnum.User} className={styles.user} title={displayName}>
+              <span className={styles.userAvatar}>
+                {user.avatar ? (
+                  <img src={resolveAssetUrl(user.avatar)} alt={displayName} />
+                ) : (
+                  <span className={styles.userInitials}>{initials}</span>
+                )}
+              </span>
+              <span className={styles.userText}>
+                <span className={styles.userLabel}>{t('layout.header.profile')}</span>
+                <span className={styles.userName}>{displayName}</span>
+              </span>
+            </Link>
+          ) : (
+            <Link to={signInHref} className={styles.signInButton}>
+              {t('layout.header.signIn')}
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

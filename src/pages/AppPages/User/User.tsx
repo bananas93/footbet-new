@@ -19,30 +19,7 @@ import { useAppDispatch, useAppSelector } from 'store';
 import { changeUserPassword, deleteUserAccount, editUserProfile } from 'store/slices/user';
 import { signOutUser } from 'store/slices/auth';
 import styles from './User.module.scss';
-
-const validationRules = {
-  name: (value: string) => {
-    if (!value) return "Потрібно вказати ім'я";
-    return '';
-  },
-};
-
-const changePassValidationRules = {
-  oldPassword: (value: string) => {
-    if (!value) return 'Потрібно вказати пароль';
-    return '';
-  },
-  password: (value: string) => {
-    if (!value) return 'Потрібно вказати пароль';
-    if (value.length < 7) return 'Пароль має містити принаймні 8 символів';
-    return '';
-  },
-  confirmPassword: (value: string, values: any) => {
-    if (!value) return 'Потрібно підтвердити пароль';
-    if (value !== values.password) return 'Паролі не збігаються';
-    return '';
-  },
-};
+import { useI18n } from 'i18n';
 
 interface FormValues {
   name: string;
@@ -143,6 +120,7 @@ const UserSkeleton = () => (
 );
 
 const User: React.FC = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.user);
   const { isLoading } = useAppSelector((state) => state.user.editUserProfileRequest);
@@ -154,11 +132,35 @@ const User: React.FC = () => {
   const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
   const [pushSupport, setPushSupport] = useState<'supported' | 'unsupported' | 'insecure'>('unsupported');
 
+  const validationRules = {
+    name: (value: string) => {
+      if (!value) return t('auth.signUp.nameRequired');
+      return '';
+    },
+  };
+
+  const changePassValidationRules = {
+    oldPassword: (value: string) => {
+      if (!value) return t('auth.common.passwordRequired');
+      return '';
+    },
+    password: (value: string) => {
+      if (!value) return t('auth.common.passwordRequired');
+      if (value.length < 7) return t('auth.common.passwordMin');
+      return '';
+    },
+    confirmPassword: (value: string, values: any) => {
+      if (!value) return t('auth.common.passwordConfirmRequired');
+      if (value !== values.password) return t('auth.common.passwordMismatch');
+      return '';
+    },
+  };
+
   const handleSaveProfile = async (formValues: FormValues) => {
     try {
       await dispatch(editUserProfile({ ...formValues, avatarFile })).unwrap();
       setAvatarFile(null);
-      notify.success('Профіль збережено');
+      notify.success(t('pages.user.profileSaved'));
     } catch (err: any) {
       notify.error(err.message);
     }
@@ -199,7 +201,7 @@ const User: React.FC = () => {
       await dispatch(
         changeUserPassword({ oldPassword: formValues.oldPassword, password: formValues.password }),
       ).unwrap();
-      notify.success('Пароль змінено');
+      notify.success(t('pages.user.passwordChanged'));
       clearPassForm();
     } catch (err: any) {
       notify.error(err.message);
@@ -230,12 +232,12 @@ const User: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    const firstConfirm = window.confirm('Видалити акаунт назавжди? Цю дію неможливо скасувати.');
+    const firstConfirm = window.confirm(t('pages.user.deleteConfirm1'));
     if (!firstConfirm) {
       return;
     }
 
-    const secondConfirm = window.confirm('Підтвердіть ще раз: буде видалено профіль, прогнози та участь у кімнатах.');
+    const secondConfirm = window.confirm(t('pages.user.deleteConfirm2'));
     if (!secondConfirm) {
       return;
     }
@@ -243,7 +245,7 @@ const User: React.FC = () => {
     try {
       await dispatch(deleteUserAccount()).unwrap();
       localStorage.removeItem('reduxState');
-      notify.success('Акаунт видалено');
+      notify.success(t('pages.user.accountDeleted'));
       try {
         await dispatch(signOutUser()).unwrap();
       } catch {
@@ -255,11 +257,11 @@ const User: React.FC = () => {
   };
 
   useEffect(() => {
-    document.title = 'Профіль | Footbet';
+    document.title = t('app.routes.user');
     return () => {
-      document.title = 'Турнір прогнозистів | Footbet';
+      document.title = t('app.defaultTitle');
     };
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     let isMounted = true;
@@ -299,7 +301,7 @@ const User: React.FC = () => {
 
   const handleEnablePush = async () => {
     if (!user?.id) {
-      notify.error('Користувач не авторизований');
+      notify.error(t('errors.user.notAuthorized'));
       return;
     }
 
@@ -311,12 +313,12 @@ const User: React.FC = () => {
       setIsPushEnabled(hasSubscription);
       if (hasSubscription) {
         trackEvent('push_enabled', { source: 'user_settings' });
-        notify.success('Push-сповіщення увімкнено');
+        notify.success(t('pages.user.pushEnabled'));
       } else {
-        notify.info('Дозвіл на сповіщення не надано');
+        notify.info(t('pages.user.pushPermissionMissing'));
       }
     } catch (err: any) {
-      notify.error(err.message || 'Не вдалося увімкнути push-сповіщення');
+      notify.error(err.message || t('pages.user.pushEnableError'));
     } finally {
       setIsPushLoading(false);
     }
@@ -328,9 +330,9 @@ const User: React.FC = () => {
       await clearPushSubscription();
       setIsPushEnabled(false);
       trackEvent('push_disabled', { source: 'user_settings' });
-      notify.success('Push-сповіщення вимкнено');
+      notify.success(t('pages.user.pushDisabled'));
     } catch (err: any) {
-      notify.error(err.message || 'Не вдалося вимкнути push-сповіщення');
+      notify.error(err.message || t('pages.user.pushDisableError'));
     } finally {
       setIsPushLoading(false);
     }
@@ -355,7 +357,7 @@ const User: React.FC = () => {
             <div className={styles.heroText}>
               <span className={styles.heroEyebrow}>
                 <UserIcon className={styles.heroEyebrowIcon} />
-                Мій акаунт
+                {t('pages.user.hero')}
               </span>
               <h1 className={styles.heroTitle}>{displayName}</h1>
               <div className={styles.heroChips}>
@@ -372,7 +374,7 @@ const User: React.FC = () => {
                 {isGoogleAuth && (
                   <span className={cn(styles.heroChip, styles.googleChip)}>
                     <GoogleIcon className={styles.heroChipIcon} />
-                    Вхід через Google
+                    {t('pages.user.googleLogin')}
                   </span>
                 )}
               </div>
@@ -381,7 +383,7 @@ const User: React.FC = () => {
 
           <button type="button" className={styles.logoutButton} onClick={handleLogout}>
             <LogoutIcon className={styles.buttonIcon} />
-            Вийти
+            {t('pages.user.logout')}
           </button>
         </div>
       </section>
@@ -393,8 +395,8 @@ const User: React.FC = () => {
               <UserIcon />
             </span>
             <span className={styles.navText}>
-              <span className={styles.navTitle}>Деталі профілю</span>
-              <span className={styles.navMeta}>Імʼя, нікнейм, контакти</span>
+              <span className={styles.navTitle}>{t('pages.user.nav.profileTitle')}</span>
+              <span className={styles.navMeta}>{t('pages.user.nav.profileMeta')}</span>
             </span>
           </Tab>
           <Tab className={styles.navItem}>
@@ -402,8 +404,12 @@ const User: React.FC = () => {
               <LockIcon />
             </span>
             <span className={styles.navText}>
-              <span className={styles.navTitle}>{isGoogleAuth ? 'Спосіб входу' : 'Зміна паролю'}</span>
-              <span className={styles.navMeta}>{isGoogleAuth ? 'Підключено Google' : 'Безпека акаунта'}</span>
+              <span className={styles.navTitle}>
+                {isGoogleAuth ? t('pages.user.nav.authMethod') : t('pages.user.nav.changePassword')}
+              </span>
+              <span className={styles.navMeta}>
+                {isGoogleAuth ? t('pages.user.nav.googleConnected') : t('pages.user.nav.accountSecurity')}
+              </span>
             </span>
           </Tab>
           <Tab className={styles.navItem}>
@@ -411,8 +417,8 @@ const User: React.FC = () => {
               <ShieldIcon />
             </span>
             <span className={styles.navText}>
-              <span className={styles.navTitle}>Конфіденційність</span>
-              <span className={styles.navMeta}>Як ми працюємо з даними</span>
+              <span className={styles.navTitle}>{t('pages.user.nav.privacyTitle')}</span>
+              <span className={styles.navMeta}>{t('pages.user.nav.privacyMeta')}</span>
             </span>
           </Tab>
           <Tab className={styles.navItem}>
@@ -420,8 +426,8 @@ const User: React.FC = () => {
               <SettingsIcon />
             </span>
             <span className={styles.navText}>
-              <span className={styles.navTitle}>Налаштування</span>
-              <span className={styles.navMeta}>Push і керування акаунтом</span>
+              <span className={styles.navTitle}>{t('pages.user.nav.settingsTitle')}</span>
+              <span className={styles.navMeta}>{t('pages.user.nav.settingsMeta')}</span>
             </span>
           </Tab>
         </TabList>
@@ -434,20 +440,20 @@ const User: React.FC = () => {
                   <UserIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Деталі профілю</h2>
-                  <p className={styles.panelMeta}>Нікнейм видно іншим гравцям у таблицях та кімнатах</p>
+                  <h2 className={styles.panelTitle}>{t('pages.user.profile.title')}</h2>
+                  <p className={styles.panelMeta}>{t('pages.user.profile.meta')}</p>
                 </div>
               </header>
 
               <div className={styles.form}>
                 <div className={styles.field}>
-                  <TextInput name="email" label="Email" value={user.email} disabled />
-                  <span className={styles.fieldHint}>Email використовується для входу і не змінюється</span>
+                  <TextInput name="email" label={t('auth.common.emailLabel')} value={user.email} disabled />
+                  <span className={styles.fieldHint}>{t('pages.user.profile.emailHint')}</span>
                 </div>
                 <div className={styles.field}>
                   <TextInput
                     name="name"
-                    label="Імʼя"
+                    label={t('pages.user.profile.name')}
                     onChange={(e) => handleChange('name', e.target.value)}
                     value={values.name}
                     error={errors.name}
@@ -456,23 +462,23 @@ const User: React.FC = () => {
                 <div className={styles.field}>
                   <TextInput
                     name="nickname"
-                    label="Нікнейм"
+                    label={t('pages.user.profile.nickname')}
                     onChange={(e) => handleChange('nickname', e.target.value)}
                     value={values.nickname}
                   />
-                  <span className={styles.fieldHint}>Якщо порожній, у таблицях показуємо імʼя</span>
+                  <span className={styles.fieldHint}>{t('pages.user.profile.nicknameHint')}</span>
                 </div>
                 <div className={styles.field}>
                   <TextInput
                     name="phone"
-                    label="Телефон"
+                    label={t('pages.user.profile.phone')}
                     onChange={(e) => handleChange('phone', e.target.value)}
                     value={values.phone}
                   />
                 </div>
                 <div className={styles.field}>
                   <label className={styles.fileLabel} htmlFor="avatarFile">
-                    Аватар
+                    {t('pages.user.profile.avatar')}
                   </label>
                   <input
                     id="avatarFile"
@@ -484,22 +490,24 @@ const User: React.FC = () => {
                   />
                   <span className={styles.fieldHint}>
                     {avatarFile
-                      ? `Обрано файл: ${avatarFile.name}`
+                      ? t('pages.user.profile.fileSelected', undefined, { name: avatarFile.name })
                       : isGoogleAuth
-                        ? 'Можна завантажити власний аватар, навіть якщо вхід через Google'
-                        : 'Підтримуються PNG, JPG, WEBP, SVG'}
+                        ? t('pages.user.profile.avatarGoogle')
+                        : t('pages.user.profile.avatarFormats')}
                   </span>
                 </div>
               </div>
 
               <div className={styles.panelFooter}>
-                <span className={styles.footerHint}>{isChanged ? 'Є незбережені зміни' : 'Усі зміни збережено'}</span>
+                <span className={styles.footerHint}>
+                  {isChanged ? t('pages.user.profile.unsaved') : t('pages.user.profile.saved')}
+                </span>
                 <button
                   type="button"
                   className={styles.submit}
                   onClick={handleSubmit}
                   disabled={!isChanged || isLoading}>
-                  {isLoading ? 'Збереження...' : 'Зберегти зміни'}
+                  {isLoading ? t('pages.user.profile.saving') : t('pages.user.profile.save')}
                 </button>
               </div>
             </section>
@@ -512,11 +520,11 @@ const User: React.FC = () => {
                   <LockIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>{isGoogleAuth ? 'Вхід через Google' : 'Зміна паролю'}</h2>
+                  <h2 className={styles.panelTitle}>
+                    {isGoogleAuth ? t('pages.user.security.googleTitle') : t('pages.user.security.passwordTitle')}
+                  </h2>
                   <p className={styles.panelMeta}>
-                    {isGoogleAuth
-                      ? 'Цей акаунт авторизується через Google, тому локальний пароль Footbet не використовується.'
-                      : 'Мінімум 8 символів, бажано з цифрами та літерами різного регістру'}
+                    {isGoogleAuth ? t('pages.user.security.googleMeta') : t('pages.user.security.passwordMeta')}
                   </p>
                 </div>
               </header>
@@ -527,11 +535,10 @@ const User: React.FC = () => {
                     <GoogleIcon className={styles.providerBadgeIcon} />
                     Google OAuth
                   </span>
-                  <p>
-                    Для зміни пароля використовуйте налаштування безпеки Google. Після зміни в Google новий пароль
-                    автоматично діятиме і для входу у Footbet через Google.
+                  <p>{t('pages.user.security.googleHint')}</p>
+                  <p className={styles.providerHint}>
+                    {t('pages.user.security.emailLabel', undefined, { email: user.email })}
                   </p>
-                  <p className={styles.providerHint}>Email акаунту: {user.email}</p>
                 </div>
               ) : (
                 <>
@@ -539,7 +546,7 @@ const User: React.FC = () => {
                     <div className={styles.field}>
                       <TextInput
                         name="oldPassword"
-                        label="Поточний пароль"
+                        label={t('pages.user.security.currentPassword')}
                         type="password"
                         onChange={(e) => handlePassChange('oldPassword', e.target.value)}
                         value={passValues.oldPassword}
@@ -549,7 +556,7 @@ const User: React.FC = () => {
                     <div className={styles.field}>
                       <TextInput
                         name="password"
-                        label="Новий пароль"
+                        label={t('pages.user.security.newPassword')}
                         type="password"
                         onChange={(e) => handlePassChange('password', e.target.value)}
                         value={passValues.password}
@@ -559,7 +566,7 @@ const User: React.FC = () => {
                     <div className={styles.field}>
                       <TextInput
                         name="confirmPassword"
-                        label="Підтвердження нового паролю"
+                        label={t('pages.user.security.confirmNewPassword')}
                         type="password"
                         onChange={(e) => handlePassChange('confirmPassword', e.target.value)}
                         value={passValues.confirmPassword}
@@ -569,13 +576,13 @@ const User: React.FC = () => {
                   </div>
 
                   <div className={styles.panelFooter}>
-                    <span className={styles.footerHint}>Після зміни паролю сесія залишиться активною</span>
+                    <span className={styles.footerHint}>{t('pages.user.security.sessionHint')}</span>
                     <button
                       type="button"
                       className={styles.submit}
                       onClick={handlePassSubmit}
                       disabled={isPasswordLoading}>
-                      {isPasswordLoading ? 'Змінюємо...' : 'Змінити пароль'}
+                      {isPasswordLoading ? t('pages.user.security.changing') : t('pages.user.security.change')}
                     </button>
                   </div>
                 </>
@@ -590,101 +597,12 @@ const User: React.FC = () => {
                   <ShieldIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Політика конфіденційності</h2>
-                  <p className={styles.panelMeta}>Оновлено 07.06.2024</p>
+                  <h2 className={styles.panelTitle}>{t('pages.user.privacy.title')}</h2>
+                  <p className={styles.panelMeta}>{t('pages.user.privacy.updated')}</p>
                 </div>
               </header>
 
-              <div className={styles.privacy}>
-                <p className={styles.privacyLead}>
-                  Ця Політика конфіденційності визначає, як наш вебсайт (footbet.pp.ua) збирає, використовує, зберігає
-                  та захищає персональні дані користувачів. Сайт призначений для користувачів, які реєструються та
-                  ставлять прогнози на футбольні матчі в рамках некомерційних змагань з іншими гравцями.
-                </p>
-                <h3>1. Збір інформації</h3>
-                <h4>1.1. Персональні дані</h4>
-                <p>Ми можемо збирати такі персональні дані:</p>
-                <ul>
-                  <li>Ім'я</li>
-                  <li>Електронна адреса</li>
-                  <li>Логін та пароль</li>
-                  <li>Інформація про активність на Сайті</li>
-                </ul>
-                <h4>1.2. Автоматично зібрані дані</h4>
-                <p>Ми також можемо автоматично збирати такі дані:</p>
-                <ul>
-                  <li>IP-адреса</li>
-                  <li>Тип браузера</li>
-                  <li>Час доступу та сторінки, які ви переглядаєте</li>
-                </ul>
-                <h3>2. Використання зібраної інформації</h3>
-                <h4>2.1. Забезпечення роботи Сайту</h4>
-                <p>Ваші дані використовуються для:</p>
-                <ul>
-                  <li>Реєстрації та управління вашим акаунтом</li>
-                  <li>Надання доступу до функцій Сайту</li>
-                  <li>Обробки ваших прогнозів</li>
-                </ul>
-                <h4>2.2. Покращення Сайту</h4>
-                <p>Ми можемо використовувати зібрані дані для аналізу та покращення функціонування Сайту.</p>
-                <h4>2.3. Комунікація з користувачами</h4>
-                <p>
-                  Ми можемо використовувати вашу електронну адресу для надсилання важливої інформації про ваш акаунт,
-                  оновлення та новини Сайту.
-                </p>
-                <h3>3. Зберігання та захист даних</h3>
-                <h4>3.1. Зберігання даних</h4>
-                <p>Ваші дані зберігаються на наших серверах та захищені відповідно до стандартних заходів безпеки.</p>
-                <h4>3.2. Захист даних</h4>
-                <p>
-                  Ми вживаємо технічних та організаційних заходів для захисту ваших персональних даних від
-                  несанкціонованого доступу, втрати або розкриття.
-                </p>
-                <h3>4. Права користувачів</h3>
-                <h4>4.1. Доступ до даних</h4>
-                <p>Ви маєте право на доступ до своїх персональних даних, які ми зберігаємо.</p>
-                <h4>4.2. Виправлення даних</h4>
-                <p>Ви маєте право на виправлення ваших персональних даних, якщо вони є неточними або неповними.</p>
-                <h4>4.3. Видалення даних</h4>
-                <p>
-                  Ви маєте право вимагати видалення ваших персональних даних, за винятком випадків, коли їх збереження є
-                  необхідним для виконання законодавчих вимог.
-                </p>
-                <h3>5. Передача даних третім сторонам</h3>
-                <h4>5.1. Відсутність комерційної передачі</h4>
-                <p>
-                  Ми не продаємо, не передаємо та не обмінюємо ваші персональні дані третім сторонам з комерційною
-                  метою.
-                </p>
-                <h4>5.2. Випадки передачі даних</h4>
-                <p>
-                  Ми можемо передавати ваші дані тільки у випадках, коли це необхідно для надання наших послуг або коли
-                  це вимагається законом.
-                </p>
-                <h3>6. Файли cookie</h3>
-                <h4>6.1. Використання файлів cookie</h4>
-                <p>
-                  Ми використовуємо файли cookie для покращення вашого досвіду на Сайті, зберігання налаштувань та
-                  аналізу трафіку.
-                </p>
-                <h4>6.2. Управління файлами cookie</h4>
-                <p>
-                  Ви можете налаштувати свій браузер для відмови від прийому файлів cookie або повідомлення вас про їх
-                  надходження.
-                </p>
-                <h3>7. Зміни до Політики конфіденційності</h3>
-                <p>
-                  Ми залишаємо за собою право змінювати цю Політику конфіденційності в будь-який час. Усі зміни будуть
-                  опубліковані на цій сторінці. Ми рекомендуємо регулярно переглядати цю сторінку для ознайомлення з
-                  актуальною версією Політики конфіденційності.
-                </p>
-                <h3>8. Контактна інформація</h3>
-                <p>
-                  Якщо у вас виникли питання або занепокоєння щодо цієї Політики конфіденційності, будь ласка,
-                  зв'яжіться з нами за електронною адресою:{' '}
-                  <a href="mailto:amerovdavid@gmail.com">amerovdavid@gmail.com</a>.
-                </p>
-              </div>
+              <div className={styles.privacy} dangerouslySetInnerHTML={{ __html: t('pages.user.privacy.html') }} />
             </section>
           </TabPanel>
 
@@ -695,8 +613,8 @@ const User: React.FC = () => {
                   <SettingsIcon />
                 </span>
                 <div className={styles.panelHeadText}>
-                  <h2 className={styles.panelTitle}>Налаштування</h2>
-                  <p className={styles.panelMeta}>Керуйте push-сповіщеннями та параметрами акаунта</p>
+                  <h2 className={styles.panelTitle}>{t('pages.user.settings.title')}</h2>
+                  <p className={styles.panelMeta}>{t('pages.user.settings.meta')}</p>
                 </div>
               </header>
 
@@ -704,20 +622,20 @@ const User: React.FC = () => {
                 <div className={styles.pushZone}>
                   <h3>
                     <BellIcon className={styles.pushIcon} />
-                    Push-сповіщення
+                    {t('pages.user.settings.pushTitle')}
                   </h3>
-                  <p>Отримуйте миттєві повідомлення про важливі оновлення матчів і турнірів у браузері.</p>
+                  <p>{t('pages.user.settings.pushText')}</p>
                   <p className={styles.pushStatus}>
-                    Статус:{' '}
+                    {t('pages.user.settings.status')}{' '}
                     {pushSupport === 'insecure'
-                      ? 'Недоступно (потрібен HTTPS)'
+                      ? t('pages.user.settings.statusInsecure')
                       : pushSupport === 'unsupported'
-                        ? 'Не підтримується цим браузером'
+                        ? t('pages.user.settings.statusUnsupported')
                         : isPushEnabled
-                          ? 'Увімкнено'
+                          ? t('pages.user.settings.statusEnabled')
                           : pushPermission === 'denied'
-                            ? 'Вимкнено в налаштуваннях браузера'
-                            : 'Вимкнено'}
+                            ? t('pages.user.settings.statusDenied')
+                            : t('pages.user.settings.statusDisabled')}
                   </p>
                   <div className={styles.pushActions}>
                     <button
@@ -725,30 +643,27 @@ const User: React.FC = () => {
                       className={styles.pushButton}
                       onClick={handleEnablePush}
                       disabled={isPushLoading || pushSupport !== 'supported'}>
-                      {isPushLoading ? 'Застосовуємо...' : 'Увімкнути push'}
+                      {isPushLoading ? t('pages.user.settings.applying') : t('pages.user.settings.enablePush')}
                     </button>
                     <button
                       type="button"
                       className={cn(styles.pushButton, styles.pushButtonSecondary)}
                       onClick={handleDisablePush}
                       disabled={isPushLoading || !isPushEnabled}>
-                      Вимкнути push
+                      {t('pages.user.settings.disablePush')}
                     </button>
                   </div>
                 </div>
 
                 <div className={styles.dangerZone}>
-                  <h3>Видалення акаунта</h3>
-                  <p>
-                    Після видалення акаунта всі ваші персональні дані, прогнози та членство в кімнатах будуть
-                    безповоротно видалені.
-                  </p>
+                  <h3>{t('pages.user.settings.dangerTitle')}</h3>
+                  <p>{t('pages.user.settings.dangerText')}</p>
                   <button
                     type="button"
                     className={styles.deleteButton}
                     onClick={handleDeleteAccount}
                     disabled={isDeleteLoading}>
-                    {isDeleteLoading ? 'Видаляємо акаунт...' : 'Видалити акаунт'}
+                    {isDeleteLoading ? t('pages.user.settings.deleting') : t('pages.user.settings.delete')}
                   </button>
                 </div>
               </div>

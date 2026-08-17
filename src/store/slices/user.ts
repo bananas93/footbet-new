@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { IUser, IHttpRequestResult } from 'interfaces';
 import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
+import { translate } from 'i18n';
 
 interface IChangeUserPasswordData {
   oldPassword: string;
@@ -18,7 +19,7 @@ export const getUserProfile = createAsyncThunk('user/getUserProfile', async (_ba
   }
 
   if (!user) {
-    throw new Error('Користувач не авторизований');
+    throw new Error(translate('errors.user.notAuthorized'));
   }
 
   const authProvider =
@@ -90,64 +91,64 @@ export const getUserProfile = createAsyncThunk('user/getUserProfile', async (_ba
 export const editUserProfile = createAsyncThunk(
   'user/editUserProfile',
   async (data: Partial<IUser> & { avatarFile?: File | null }, thunkAPI) => {
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
-  if (authError) {
-    throw new Error(authError.message);
-  }
-
-  if (!user) {
-    throw new Error('Користувач не авторизований');
-  }
-
-  let avatar = data.avatar;
-  if (data.avatarFile instanceof File && data.avatarFile.size > 0) {
-    const ext = data.avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'jpg';
-    const filePath = `avatars/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('logos')
-      .upload(filePath, data.avatarFile, { upsert: true, contentType: data.avatarFile.type || 'image/jpeg' });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
+    if (authError) {
+      throw new Error(authError.message);
     }
 
-    const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filePath);
-    avatar = publicUrlData.publicUrl;
-  }
+    if (!user) {
+      throw new Error(translate('errors.user.notAuthorized'));
+    }
 
-  const { data: updatedProfile, error } = await supabase
-    .from('profiles')
-    .update({
-      name: data.name,
-      phone: data.phone,
-      nickname: data.nickname,
-      avatar,
-    })
-    .eq('id', user.id)
-    .select('id, email, phone, name, nickname, avatar, role')
-    .single();
+    let avatar = data.avatar;
+    if (data.avatarFile instanceof File && data.avatarFile.size > 0) {
+      const ext = data.avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const safeExt = ext.replace(/[^a-z0-9]/g, '') || 'jpg';
+      const filePath = `avatars/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${safeExt}`;
 
-  if (error) {
-    throw new Error(error.message);
-  }
+      const { error: uploadError } = await supabase.storage
+        .from('logos')
+        .upload(filePath, data.avatarFile, { upsert: true, contentType: data.avatarFile.type || 'image/jpeg' });
 
-  await thunkAPI.dispatch(getUserProfile(true));
-  return {
-    id: updatedProfile.id,
-    email: updatedProfile.email || user.email || '',
-    phone: updatedProfile.phone || '',
-    name: updatedProfile.name,
-    nickname: updatedProfile.nickname || '',
-    avatar: updatedProfile.avatar || '',
-    role: updatedProfile.role,
-  } as IUser;
-},
+      if (uploadError) {
+        throw new Error(uploadError.message);
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('logos').getPublicUrl(filePath);
+      avatar = publicUrlData.publicUrl;
+    }
+
+    const { data: updatedProfile, error } = await supabase
+      .from('profiles')
+      .update({
+        name: data.name,
+        phone: data.phone,
+        nickname: data.nickname,
+        avatar,
+      })
+      .eq('id', user.id)
+      .select('id, email, phone, name, nickname, avatar, role')
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    await thunkAPI.dispatch(getUserProfile(true));
+    return {
+      id: updatedProfile.id,
+      email: updatedProfile.email || user.email || '',
+      phone: updatedProfile.phone || '',
+      name: updatedProfile.name,
+      nickname: updatedProfile.nickname || '',
+      avatar: updatedProfile.avatar || '',
+      role: updatedProfile.role,
+    } as IUser;
+  },
 );
 
 export const changeUserPassword = createAsyncThunk('user/changeUserPassword', async (data: IChangeUserPasswordData) => {
@@ -161,7 +162,7 @@ export const changeUserPassword = createAsyncThunk('user/changeUserPassword', as
   }
 
   if (!user) {
-    throw new Error('Користувач не авторизований');
+    throw new Error(translate('errors.user.notAuthorized'));
   }
 
   const authProvider =
@@ -170,7 +171,7 @@ export const changeUserPassword = createAsyncThunk('user/changeUserPassword', as
     'email';
 
   if (authProvider === 'google') {
-    throw new Error('Для акаунту Google зміна пароля недоступна. Використовуйте налаштування безпеки Google.');
+    throw new Error(translate('errors.user.googlePasswordDisabled'));
   }
 
   const { error } = await supabase.auth.updateUser({ password: data.password });

@@ -1,0 +1,811 @@
+{
+  "app": {
+    "defaultTitle": "Турнір прогнозистів | Footbet",
+    "routes": {
+      "home": "Головна | Footbet",
+      "rules": "Правила | Footbet",
+      "projectSupport": "Допомога проєкту | Footbet",
+      "user": "Профіль | Footbet",
+      "signin": "Вхід | Footbet",
+      "signup": "Реєстрація | Footbet",
+      "forgotPassword": "Відновлення пароля | Footbet",
+      "checkCode": "Код підтвердження | Footbet",
+      "setPassword": "Новий пароль | Footbet",
+      "tournament": "Турнір | Footbet",
+      "profile": "Профіль користувача | Footbet"
+    },
+    "boot": {
+      "loading": "Завантажуємо турніри та оновлюємо сесію..."
+    }
+  },
+  "auth": {
+    "common": {
+      "emailRequired": "Потрібно вказати email",
+      "emailInvalid": "Email некоректний",
+      "passwordRequired": "Потрібно вказати пароль",
+      "passwordMin": "Пароль має містити принаймні 8 символів",
+      "passwordConfirmRequired": "Потрібно підтвердити пароль",
+      "passwordMismatch": "Паролі не збігаються",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Ваш email",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Ваш пароль",
+      "confirmPasswordLabel": "Підтвердіть пароль",
+      "confirmPasswordPlaceholder": "Підтвердіть пароль",
+      "supabaseLimit": "Ліміт Supabase: {{limit}} листи/год.",
+      "supabaseLimitAttempts": "Ліміт Supabase: {{limit}} листи/год. Доступно спроб: {{attempts}}.",
+      "repeatAfter": "Повторно через {{time}}",
+      "backToSignIn": "Назад до входу"
+    },
+    "signIn": {
+      "eyebrow": "Вхід",
+      "title": "Вітаємо у Footbet",
+      "subtitle": "Увійдіть, щоб робити прогнози та стежити за таблицею турніру.",
+      "googleInProgress": "Переходимо до Google...",
+      "googleButton": "Увійти через Google",
+      "or": "або",
+      "forgotPassword": "Забули пароль?",
+      "submit": "Увійти",
+      "submitLoading": "Входимо...",
+      "noAccount": "Не маєте акаунту?",
+      "signUpLink": "Зареєструватись",
+      "invalidCredentials": "Неправильний email або пароль",
+      "loginError": "Помилка входу",
+      "googleLoginError": "Не вдалося увійти через Google"
+    },
+    "signUp": {
+      "nameRequired": "Потрібно вказати ім'я",
+      "eyebrow": "Реєстрація",
+      "title": "Створіть акаунт",
+      "subtitle": "Кілька полів - і ви вже у турнірі прогнозів разом з друзями.",
+      "nameLabel": "Ім'я",
+      "namePlaceholder": "Вашe ім'я",
+      "phoneLabel": "Телефон",
+      "phonePlaceholder": "Ваш номер телефону",
+      "submit": "Зареєструватися",
+      "submitLoading": "Реєстрація...",
+      "alreadyRegistered": "Вже зареєстровані?",
+      "signInLink": "Увійти",
+      "success": "Ви успішно зареєструвались",
+      "error": "Помилка реєстрації",
+      "rateLimitWait": "Ліміт Supabase: {{limit}} листи/год. Зачекайте {{time}}.",
+      "rateLimitRetry": "Ліміт Supabase: {{limit}} листи/год. Спробуйте ще раз через {{time}}."
+    },
+    "forgotPassword": {
+      "eyebrow": "Відновлення",
+      "title": "Забули пароль?",
+      "subtitle": "Вкажіть email, який використовували при реєстрації. Ми надішлемо посилання для встановлення нового пароля.",
+      "submit": "Надіслати посилання",
+      "submitLoading": "Надсилання...",
+      "success": "Лист для відновлення паролю відправлено на ваш email",
+      "error": "Помилка відправлення посилання для відновлення паролю",
+      "rateLimitWait": "Ліміт Supabase: {{limit}} листи/год. Зачекайте {{time}}.",
+      "rateLimitRetry": "Ліміт Supabase: {{limit}} листи/год. Спробуйте ще раз через {{time}}."
+    },
+    "checkCode": {
+      "eyebrow": "Підтвердження",
+      "title": "Введіть код з листа",
+      "subtitle": "Ми надіслали код підтвердження на"
+    },
+    "setPassword": {
+      "eyebrow": "Новий пароль",
+      "title": "Встановіть новий пароль",
+      "subtitle": "Введіть новий пароль двічі, щоб підтвердити зміну.",
+      "note": "Пароль має містити принаймні 8 символів.",
+      "submit": "Змінити пароль",
+      "submitLoading": "Завантаження...",
+      "success": "Пароль успішно змінено",
+      "backToSignIn": "Повернутися до входу"
+    }
+  },
+  "otp": {
+    "resend": "Надіслати ще раз",
+    "continue": "Продовжити",
+    "continueLoading": "Перевіряємо..."
+  },
+  "errors": {
+    "auth": {
+      "signInFailed": "Не вдалося авторизуватися",
+      "signUpFailed": "Не вдалося зареєструвати користувача",
+      "codeRequired": "Код підтвердження не вказано"
+    },
+    "user": {
+      "notAuthorized": "Користувач не авторизований",
+      "googlePasswordDisabled": "Для акаунту Google зміна пароля недоступна. Використовуйте налаштування безпеки Google."
+    }
+  },
+  "helpers": {
+    "time": {
+      "minSec": "{{minutes}} хв {{seconds}} сек",
+      "sec": "{{seconds}} сек"
+    },
+    "matches": {
+      "round16": "/16 фіналу",
+      "round16alt": "1/16 фіналу",
+      "round8": "1/8 фіналу",
+      "round4": "1/4 фіналу",
+      "round2": "1/2 фіналу",
+      "thirdPlace": "Матч за 3-тє місце",
+      "final": "Фінал"
+    }
+  },
+  "guard": {
+    "requireAuth": {
+      "title": "Функціонал доступний після входу",
+      "subtitle": "Перегляд турнірів і матчів відкритий для всіх, але ця секція доступна лише авторизованим користувачам.",
+      "button": "Увійти"
+    },
+    "admin": {
+      "title": "Доступ заборонено",
+      "subtitle": "Ваш акаунт не має ролі admin у таблиці profiles.",
+      "backHome": "Повернутися на головну"
+    }
+  },
+  "layout": {
+    "footer": {
+      "subtitle": "Твій простір для прогнозів та турнірної аналітики",
+      "navLabel": "Футер",
+      "home": "Головна",
+      "rules": "Правила",
+      "support": "Допомога проєкту",
+      "note": "Створено для фанів футболу"
+    },
+    "header": {
+      "home": "Головна",
+      "rules": "Правила",
+      "admin": "Адмінка",
+      "profile": "Профіль",
+      "signIn": "Увійти",
+      "language": "Мова",
+      "langUa": "UA",
+      "langEn": "EN"
+    },
+    "login": {
+      "featureLiveTitle": "Live-таблиця",
+      "featureLiveText": "Бали й позиції оновлюються після кожного матчу.",
+      "featureRoomsTitle": "Приватні кімнати",
+      "featureRoomsText": "Створюй турнір і змагайся з друзями та колегами.",
+      "featureAwardsTitle": "Досягнення",
+      "featureAwardsText": "Серії точних прогнозів, бонуси й нагороди сезону.",
+      "tagline": "Турнір прогнозів",
+      "eyebrow": "Прогнози на футбол",
+      "title": "Вгадуй результати, збирай бали, вигравай у друзів",
+      "subtitle": "Один акаунт для всіх турнірів: матчі, таблиці, кімнати та статистика в одному місці."
+    }
+  },
+  "components": {
+    "installBanner": {
+      "title": "Встанови Footbet на телефон",
+      "text": "Отримуй швидкий доступ з Home Screen і користуйся як застосунком.",
+      "iosNote": "На iPhone: Поділитися -> На екран Додому.",
+      "later": "Пізніше",
+      "installing": "Встановлюємо...",
+      "install": "Встановити"
+    },
+    "cookie": {
+      "ariaLabel": "Налаштування cookie",
+      "text": "Ми використовуємо cookie для входу в акаунт, збереження сесії та покращення роботи сайту. Ви можете прийняти всі cookie або залишити лише необхідні.",
+      "necessary": "Лише необхідні",
+      "acceptAll": "Прийняти всі"
+    },
+    "projectSupportPopup": {
+      "title": "Підтримка Footbet",
+      "text1": "Для стабільної роботи та розвитку Footbet проєкту потрібно приблизно 10 000 грн на рік.",
+      "text2": "Якщо маєте можливість, будь ласка, підтримайте проєкт. Дякуємо за вашу довіру і допомогу.",
+      "cta": "Підтримати через Monobank",
+      "bankLink": "Посилання на банку:"
+    },
+    "toast": {
+      "close": "Закрити сповіщення"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Турніри прогнозистів",
+      "subtitle": "Обирайте турнір, прогнозуйте матчі та змагайтеся з друзями у загальній лізі й приватних кімнатах",
+      "metricTotal": "Турнірів",
+      "metricLive": "Активних",
+      "metricScheduled": "Заплановано",
+      "metricCompleted": "Завершено",
+      "sectionTitle": "Усі турніри",
+      "sectionMeta": "{{count}} доступно",
+      "emptyTitle": "Турнірів поки немає",
+      "emptyText": "Щойно з'явиться новий турнір, він буде тут.",
+      "typeNational": "Національний",
+      "typeClub": "Клубний",
+      "groups": "Груп: {{count}}",
+      "playoff": "Плей-оф: {{count}}",
+      "cta": "Перейти до турніру"
+    },
+    "rules": {
+      "eyebrow": "Довідка",
+      "title": "Правила",
+      "subtitle": "Як нараховуються очки за прогнози та за якими критеріями визначаються позиції в таблиці",
+      "scoreTitle": "Нарахування очок",
+      "scoreMeta": "{{count}} варіанти",
+      "note": "Результат визначається наприкінці гри, тобто через 90 хвилин або через 120 хвилин якщо матч закінчується додатковим часом. Матчі, які завершились серією пенальті, зараховуються як нічия.",
+      "tiebreakTitle": "При однаковій кількості очок",
+      "tiebreakMeta": "Порядок критеріїв",
+      "scoring": {
+        "base": { "unit": "очки", "label": "Базовий результат", "title": "Вгаданий переможець матчу" },
+        "difference": {
+          "unit": "очки",
+          "label": "Точна різниця",
+          "title": "Вгаданий переможець і вгадана різниця м'ячів"
+        },
+        "perfect": { "unit": "очок", "label": "Ідеальний прогноз", "title": "Вгаданий точний рахунок" },
+        "max": { "unit": "очок", "label": "Максимум за матч", "title": "Вгаданий точний рахунок у матчі з 5+ голами" }
+      },
+      "tiebreak": {
+        "one": "Кількість точних прогнозів",
+        "two": "Кількість вгаданих результатів",
+        "three": "Кількість вгаданих різниць рахунку",
+        "four": "Кількість вгаданих 5+ рахунків",
+        "five": "Менша кількість прогнозів"
+      }
+    },
+    "profile": {
+      "predictionHome": "Перемога господарів",
+      "predictionAway": "Перемога гостей",
+      "predictionDraw": "Нічия",
+      "allTournaments": "Всі турніри",
+      "selectedTournament": "Обраний турнір",
+      "invalidLinkTitle": "Некоректне посилання",
+      "invalidLinkText": "Не вдалося визначити гравця. Спробуйте ще раз.",
+      "notAvailableTitle": "Профіль недоступний",
+      "notAvailableText": "Не вдалося завантажити профіль гравця. Спробуйте пізніше.",
+      "metricPoints": "Очок",
+      "metricPredictions": "Прогнозів",
+      "metricExact": "Точних рахунків",
+      "metricAccuracy": "Влучність",
+      "back": "Назад",
+      "playerProfile": "Профіль гравця",
+      "subtitleAll": "Статистика прогнозів гравця в усіх турнірах",
+      "subtitleSelected": "Статистика прогнозів гравця в обраному турнірі",
+      "subtitleNoPredictionsAll": "Гравець ще не зробив жодного прогнозу",
+      "subtitleNoPredictionsSelected": "Гравець ще не зробив жодного прогнозу в обраному турнірі",
+      "filterLabel": "Оберіть турнір",
+      "emptyPredictionsTitle": "Ще немає прогнозів",
+      "emptyPredictionsAll": "Статистика з'явиться після першого зіграного матчу з прогнозом.",
+      "emptyPredictionsSelected": "Для турніру \"{{name}}\" поки немає прогнозів.",
+      "efficiencyTitle": "Ефективність прогнозів",
+      "efficiencyMeta": "{{count}} прогнозів",
+      "from": "з",
+      "matchesPercent": "{{count}}% матчів",
+      "streaksTitle": "Серії",
+      "streaksMeta": "Найдовші відрізки поспіль",
+      "winsTitle": "Вгадані переможці",
+      "winsMeta": "Розподіл між господарями та гостями",
+      "winsHome": "Перемоги господарів",
+      "winsAway": "Перемоги гостей",
+      "mostCommonPrediction": "Найчастіший прогноз",
+      "favoriteScoresTitle": "Улюблені рахунки",
+      "favoriteScoresMeta": "Найчастіші комбінації гравця",
+      "mostCommonCorrect": "Найчастіший вгаданий рахунок",
+      "mostPopularPredicted": "Найпопулярніший прогноз",
+      "exactAccuracy": "Влучність точного рахунку",
+      "favoriteTeamsTitle": "Улюблені команди",
+      "favoriteTeamsMeta": "Найбільше зароблених очок",
+      "accuracyCards": {
+        "score": { "label": "Ідеальний прогноз", "title": "Точний рахунок" },
+        "result": { "label": "Базовий результат", "title": "Вгаданий переможець" },
+        "difference": { "label": "Точна різниця", "title": "Вгадана різниця м'ячів" },
+        "fivePlus": { "label": "Максимум за матч", "title": "Точний рахунок у матчі 5+ голів" }
+      },
+      "streakCards": {
+        "scoreRow": { "title": "Точні рахунки поспіль", "meta": "Найдовша серія" },
+        "resultRow": { "title": "Вгадані результати поспіль", "meta": "Найдовша серія" },
+        "losing": { "title": "Матчі без очок поспіль", "meta": "Найгірша серія" }
+      }
+    },
+    "projectSupport": {
+      "eyebrow": "Підтримка",
+      "title": "Допомога проєкту",
+      "subtitleLine1": "Щоб Footbet стабільно працював і розвивався, проєкту потрібно приблизно",
+      "subtitleLine2": "10 000 грн на рік.",
+      "cardTitle": "Фінансова підтримка",
+      "cardSubtitle": "Якщо маєте можливість, будь ласка, допомагайте підтримувати проєкт.",
+      "amountLabel": "Орієнтовна потреба на рік",
+      "amountValue": "10 000 грн",
+      "cta": "Підтримати через Monobank",
+      "jarLinkLabel": "Посилання на банку:",
+      "thanksTitle": "Подяка спільноті",
+      "thanks": {
+        "one": "Дякуємо кожному, хто підтримує розвиток Footbet.",
+        "two": "Кожен донат допомагає покривати домен, підтримку інфраструктури та розвиток нових функцій.",
+        "three": "Навіть невелика сума - це реальний внесок у стабільність проєкту."
+      }
+    },
+    "leagues": {
+      "title": "Загальна ліга",
+      "subtitle": "Рейтинг усіх прогнозистів турніру за сумою набраних очок",
+      "metrics": {
+        "players": "Гравців",
+        "predictions": "Прогнозів",
+        "exactScores": "Точних рахунків",
+        "leaderPoints": "Очок у лідера"
+      },
+      "podium": {
+        "champion": "Чемпіон ліги",
+        "second": "Друге місце",
+        "third": "Третє місце"
+      },
+      "pointsShort": "очк.",
+      "tableTitle": "Таблиця ліги",
+      "shownOf": "Показано {{shown}} з {{total}}",
+      "overall": "всього {{total}}",
+      "searchPlaceholder": "Пошук по імені",
+      "clearSearch": "Очистити пошук",
+      "showAll": "Показати всіх",
+      "onlyActive": "Тільки активні",
+      "me": "Ви",
+      "emptyFilteredTitle": "Нікого не знайдено",
+      "emptyTitle": "Поки немає даних для таблиці",
+      "emptyFilteredText": "Спробуйте змінити запит або скинути фільтри.",
+      "emptyText": "Рейтинг з'явиться після перших прогнозів у турнірі.",
+      "showMore": "Показати ще {{count}}",
+      "table": {
+        "player": "Гравець",
+        "matchesShort": "М",
+        "matches": "Матчів",
+        "exactShort": "Т",
+        "exact": "Точні",
+        "result": "Результат",
+        "differences": "Різниці",
+        "fivePlus": "5+ голів",
+        "pointsShort": "Очк.",
+        "points": "Очки"
+      }
+    },
+    "achievements": {
+      "title": "Зала досягнень",
+      "subtitle": "Рекорди турніру, персональні нагороди та боротьба за перше місце",
+      "mainAward": "Головна нагорода",
+      "categoriesTitle": "Номінації турніру",
+      "categoriesCount": "{{count}} категорій",
+      "playerAchievements": "Досягнення гравця",
+      "myAchievements": "Мої досягнення",
+      "backToMine": "Повернутись до моїх",
+      "myEmpty": "Увійдіть у профіль або відкрийте досягнення користувача з таблиці.",
+      "userNotFound": "Користувача не знайдено в таблиці турніру.",
+      "notInTableYet": "Поки вас немає в таблиці цього турніру. Зробіть кілька прогнозів, щоб потрапити в рейтинг.",
+      "rankHint": "Ви кращі за {{percent}}% учасників турніру за сумою очок.",
+      "points": "Очки",
+      "gapFromLeader": "Від лідера: {{points}} очк.",
+      "youAreLeader": "Ви очолюєте турнір",
+      "ofTotal": "з {{total}}",
+      "matchesCount": "{{count}} матч.",
+      "efficiencyValue": "{{value}} очк./матч",
+      "noData": "Немає даних",
+      "emptyTitle": "Нагороди ще не розіграні",
+      "emptyText": "Поки немає даних для підрахунку досягнень.",
+      "badges": {
+        "leader": "Лідер",
+        "top3": "Топ-3",
+        "top10": "Топ-10",
+        "participant": "У грі"
+      },
+      "metrics": {
+        "players": "Гравців",
+        "predictions": "Прогнозів",
+        "exactScores": "Точних рахунків",
+        "awards": "Нагород"
+      },
+      "spotlight": {
+        "firstContender": "Перший претендент на трофей",
+        "leaderGap": "Відрив від 2-го місця: {{gap}} очк.",
+        "tightRace": "Рівна боротьба за перше місце"
+      },
+      "stats": {
+        "exactScores": "Точні рахунки",
+        "results": "Результати",
+        "differences": "Різниці",
+        "efficiency": "Ефективність"
+      },
+      "cards": {
+        "points": { "title": "Лідер турніру", "description": "Максимум очок у загальній таблиці", "unit": "очк." },
+        "exact": { "title": "Снайпер рахунку", "description": "Найбільше вгаданих точних рахунків", "unit": "точн." },
+        "outcomes": { "title": "Майстер результатів", "description": "Найбільше вгаданих результатів", "unit": "рез." },
+        "differences": {
+          "title": "Експерт різниць",
+          "description": "Найбільше вгаданих різниць м'ячів",
+          "unit": "різн."
+        },
+        "goals": { "title": "Ризиковий аналітик", "description": "Найбільше матчів із 5+ голами", "unit": "матч." },
+        "consistency": {
+          "title": "Стабільний гравець",
+          "description": "Найбільше закритих матчів прогнозами",
+          "unit": "матч."
+        },
+        "efficiency": {
+          "title": "Ефективність туру",
+          "description": "Найбільше очок у середньому за матч",
+          "unit": "очк./матч"
+        }
+      }
+    },
+    "matches": {
+      "title": "Матчі турніру",
+      "subtitleMulti": "Ліги, календар турів, результати матчів та ваші прогнози",
+      "subtitleSingle": "Календар турів, результати матчів та ваші прогнози",
+      "round": "Тур {{index}}",
+      "playoff": "Плей-оф",
+      "matchesCount": "{{count}} матчів",
+      "chipCompleted": "Завершено {{count}}",
+      "chipScheduled": "Заплановано {{count}}",
+      "onlyLive": "Тільки Live",
+      "showLive": "Показати Live",
+      "emptyTitle": "Матчів ще немає",
+      "emptyText": "Календар турніру з'явиться найближчим часом.",
+      "emptyRoundLive": "Немає матчів у прямому ефірі",
+      "emptyRound": "У цьому турі ще немає матчів",
+      "emptyRoundLeague": "У {{league}} немає матчів у цьому турі",
+      "emptyRoundLiveText": "Вимкніть фільтр Live, щоб побачити всі матчі туру.",
+      "emptyRoundLeagueText": "Оберіть іншу лігу або тур.",
+      "emptyRoundText": "Розклад з'явиться найближчим часом.",
+      "metrics": {
+        "leagues": "Ліг",
+        "rounds": "Турів",
+        "matches": "Матчів"
+      }
+    },
+    "showPredicts": {
+      "title": "Прогнози {{home}} vs {{away}}",
+      "userAvatar": "Аватар користувача",
+      "unknownUser": "Невідомий користувач",
+      "me": "Ви",
+      "emptyTitle": "Прогнозів немає",
+      "emptyText": "Ніхто ще не зробив прогноз на цей матч.",
+      "chipTotal": "Прогнозів: {{count}}",
+      "chipExact": "Точних: {{count}}",
+      "chipBest": "Максимум: {{value}} очк.",
+      "table": {
+        "player": "Гравець",
+        "prediction": "Прогноз",
+        "points": "Очки"
+      }
+    },
+    "rooms": {
+      "title": "Приватні кімнати",
+      "subtitle": "Закриті ліги для друзів: власна таблиця, код запрошення та пароль",
+      "joinByCode": "Приєднатися за кодом",
+      "createRoom": "Створити кімнату",
+      "create": "Створити",
+      "join": "Приєднатися",
+      "cancel": "Скасувати",
+      "delete": "Видалити",
+      "leave": "Покинути",
+      "exit": "Вийти",
+      "copyCode": "Скопіювати код кімнати",
+      "code": "Код",
+      "codeLabel": "Код кімнати",
+      "codePlaceholder": "Вставте код кімнати",
+      "passwordLabel": "Пароль",
+      "passwordPlaceholder": "Пароль",
+      "roomNameLabel": "Назва кімнати",
+      "roomNamePlaceholder": "Назва кімнати",
+      "roomPasswordLabel": "Пароль кімнати",
+      "myRooms": "Мої кімнати",
+      "ownerBadge": "Власник",
+      "owner": "Власник: {{name}}",
+      "me": "Ви",
+      "placeholderTitle": "Кімнату не обрано",
+      "placeholderHasRooms": "Оберіть кімнату зі списку, щоб побачити її таблицю.",
+      "placeholderNoRooms": "Створіть кімнату або приєднайтеся за кодом, щоб почати закриту лігу.",
+      "closedTitle": "Турнір завершено",
+      "closedText": "Для завершеного турніру створення нових кімнат та приєднання за кодом недоступні.",
+      "emptyRoomTitle": "У цій кімнаті поки немає даних",
+      "emptyRoomText": "Таблиця з'явиться після перших прогнозів учасників.",
+      "sideEmptyTitle": "У вас поки немає кімнат",
+      "sideEmptyText": "Створіть свою або приєднайтеся за кодом.",
+      "modalCreateTitle": "Нова приватна кімната",
+      "modalCreateHint": "Пароль знадобиться друзям разом з кодом кімнати.",
+      "modalJoinTitle": "Вхід у кімнату",
+      "modalJoinHint": "Введіть код кімнати, який надіслав власник, та пароль.",
+      "participantsCount": "{{count}} учасників",
+      "metrics": {
+        "rooms": "Кімнат: {{count}}",
+        "participants": "Учасників: {{count}}"
+      },
+      "table": {
+        "player": "Гравець",
+        "matches": "Матчів",
+        "exact": "Точні",
+        "result": "Результат",
+        "difference": "Різниці",
+        "fivePlus": "5+ голів",
+        "points": "Очки"
+      },
+      "notifications": {
+        "privateCreated": "Приватну кімнату створено",
+        "joined": "Ви приєдналися до кімнати",
+        "left": "Ви покинули кімнату",
+        "deleted": "Кімнату видалено",
+        "codeCopied": "Код кімнати скопійовано"
+      },
+      "errors": {
+        "nameRequired": "Вкажіть назву кімнати",
+        "passwordRequired": "Для кімнати потрібен пароль",
+        "closedForCompletedTournament": "Турнір завершено. Створення і приєднання до кімнат недоступні.",
+        "createFailed": "Не вдалося створити кімнату",
+        "codeRequired": "Вкажіть код кімнати",
+        "invalidCodeOrPassword": "Невірний код кімнати або пароль",
+        "leaveFailed": "Не вдалося покинути кімнату",
+        "deleteFailed": "Не вдалося видалити кімнату",
+        "copyCodeFailed": "Не вдалося скопіювати код кімнати"
+      }
+    },
+    "matchCard": {
+      "signInToPredict": "Увійдіть, щоб зробити прогноз",
+      "openMatchDetails": "Відкрити деталі матчу {{home}} - {{away}}",
+      "saved": "Прогноз збережено",
+      "teamLogoAlt": "Лого команди",
+      "group": "Група {{name}}",
+      "yourPrediction": "Ваш прогноз",
+      "predictionFor": "Прогноз для {{team}}",
+      "predictionsAfterLogin": "Прогнози доступні після входу",
+      "yourPredictionValue": "Ваш прогноз {{home}}:{{away}}",
+      "noPrediction": "Прогнозу не було",
+      "pointsForPrediction": "{{points}} очок за прогноз",
+      "allPredictions": "Всі прогнози"
+    },
+    "matchDetails": {
+      "errors": {
+        "fetchFailed": "Не вдалося отримати деталі матчу"
+      },
+      "homeTeamFallback": "Господарі",
+      "awayTeamFallback": "Гості",
+      "backToMatches": "До матчів",
+      "updatedAt": "Оновлено {{time}}",
+      "refresh": "Оновити",
+      "refreshing": "Оновлення...",
+      "vs": "VS",
+      "halftimeScore": "1-й тайм {{home}}:{{away}}",
+      "penaltyScore": "Пенальті {{home}}:{{away}}",
+      "referee": "Арбітр: {{name}}",
+      "emptyTitle": "Детальна статистика недоступна",
+      "statsTitle": "Статистика",
+      "versus": "{{home}} проти {{away}}",
+      "timelineTitle": "Хід матчу",
+      "timelineMeta": "Голи, картки та заміни",
+      "lineupsTitle": "Склади",
+      "lineupsMeta": "Стартові одинадцятки та запасні",
+      "coach": "Тренер: {{name}}",
+      "startingLineup": "Стартовий склад",
+      "substitutes": "Запасні",
+      "positions": {
+        "goalkeeper": "ВР",
+        "defender": "ЗХ",
+        "midfielder": "ПЗ",
+        "forward": "НП"
+      },
+      "event": {
+        "goal": "Гол",
+        "ownGoal": "Автогол",
+        "penaltyGoal": "Гол з пенальті",
+        "missedPenalty": "Нереалізований пенальті",
+        "card": "Картка",
+        "yellowCard": "Жовта картка",
+        "secondYellowCard": "Друга жовта картка",
+        "redCard": "Червона картка",
+        "substitution": "Заміна",
+        "varWithDetail": "VAR · {{detail}}"
+      },
+      "stats": {
+        "ballPossession": "Володіння",
+        "totalShots": "Удари",
+        "shotsOnGoal": "Удари в ціль",
+        "shotsOffGoal": "Удари повз",
+        "blockedShots": "Заблоковані удари",
+        "shotsInsideBox": "Удари зі штрафного",
+        "shotsOutsideBox": "Удари з-за меж штрафного",
+        "cornerKicks": "Кутові",
+        "offsides": "Офсайди",
+        "fouls": "Фоли",
+        "yellowCards": "Жовті картки",
+        "redCards": "Червоні картки",
+        "goalkeeperSaves": "Сейви",
+        "totalPasses": "Передачі",
+        "passesAccurate": "Точні передачі",
+        "passesPercent": "Точність передач",
+        "expectedGoals": "xG",
+        "goalsPrevented": "Відвернені голи"
+      }
+    },
+    "user": {
+      "profileSaved": "Профіль збережено",
+      "passwordChanged": "Пароль змінено",
+      "deleteConfirm1": "Видалити акаунт назавжди? Цю дію неможливо скасувати.",
+      "deleteConfirm2": "Підтвердіть ще раз: буде видалено профіль, прогнози та участь у кімнатах.",
+      "accountDeleted": "Акаунт видалено",
+      "pushEnabled": "Push-сповіщення увімкнено",
+      "pushPermissionMissing": "Дозвіл на сповіщення не надано",
+      "pushEnableError": "Не вдалося увімкнути push-сповіщення",
+      "pushDisabled": "Push-сповіщення вимкнено",
+      "pushDisableError": "Не вдалося вимкнути push-сповіщення",
+      "hero": "Мій акаунт",
+      "googleLogin": "Вхід через Google",
+      "logout": "Вийти",
+      "nav": {
+        "profileTitle": "Деталі профілю",
+        "profileMeta": "Ім'я, нікнейм, контакти",
+        "authMethod": "Спосіб входу",
+        "changePassword": "Зміна паролю",
+        "googleConnected": "Підключено Google",
+        "accountSecurity": "Безпека акаунта",
+        "privacyTitle": "Конфіденційність",
+        "privacyMeta": "Як ми працюємо з даними",
+        "settingsTitle": "Налаштування",
+        "settingsMeta": "Push і керування акаунтом"
+      },
+      "profile": {
+        "title": "Деталі профілю",
+        "meta": "Нікнейм видно іншим гравцям у таблицях та кімнатах",
+        "emailHint": "Email використовується для входу і не змінюється",
+        "name": "Ім'я",
+        "nickname": "Нікнейм",
+        "nicknameHint": "Якщо порожній, у таблицях показуємо ім'я",
+        "phone": "Телефон",
+        "avatar": "Аватар",
+        "fileSelected": "Обрано файл: {{name}}",
+        "avatarGoogle": "Можна завантажити власний аватар, навіть якщо вхід через Google",
+        "avatarFormats": "Підтримуються PNG, JPG, WEBP, SVG",
+        "unsaved": "Є незбережені зміни",
+        "saved": "Усі зміни збережено",
+        "saving": "Збереження...",
+        "save": "Зберегти зміни"
+      },
+      "security": {
+        "googleTitle": "Вхід через Google",
+        "passwordTitle": "Зміна паролю",
+        "googleMeta": "Цей акаунт авторизується через Google, тому локальний пароль Footbet не використовується.",
+        "passwordMeta": "Мінімум 8 символів, бажано з цифрами та літерами різного регістру",
+        "googleHint": "Для зміни пароля використовуйте налаштування безпеки Google. Після зміни в Google новий пароль автоматично діятиме і для входу у Footbet через Google.",
+        "emailLabel": "Email акаунту: {{email}}",
+        "currentPassword": "Поточний пароль",
+        "newPassword": "Новий пароль",
+        "confirmNewPassword": "Підтвердження нового паролю",
+        "sessionHint": "Після зміни паролю сесія залишиться активною",
+        "changing": "Змінюємо...",
+        "change": "Змінити пароль"
+      },
+      "privacy": {
+        "title": "Політика конфіденційності",
+        "updated": "Оновлено 07.06.2024",
+        "html": "<p>Ця Політика конфіденційності визначає, як вебсайт footbet.pp.ua збирає, використовує та захищає персональні дані користувачів.</p><h3>1. Збір інформації</h3><p>Ми можемо збирати ім'я, електронну адресу, логін, пароль та дані активності на сайті.</p><h3>2. Використання інформації</h3><p>Дані використовуються для реєстрації, доступу до функцій сайту, обробки прогнозів та покращення сервісу.</p><h3>3. Захист даних</h3><p>Ми застосовуємо технічні та організаційні заходи безпеки для захисту персональних даних.</p><h3>4. Права користувача</h3><p>Ви можете отримати доступ до даних, виправити їх або запросити видалення у межах законодавства.</p><h3>5. Cookie</h3><p>Cookie використовуються для збереження сесії, налаштувань та аналітики.</p><h3>6. Контакти</h3><p>З питань конфіденційності звертайтесь: <a href=\"mailto:amerovdavid@gmail.com\">amerovdavid@gmail.com</a>.</p>"
+      },
+      "settings": {
+        "title": "Налаштування",
+        "meta": "Керуйте push-сповіщеннями та параметрами акаунта",
+        "pushTitle": "Push-сповіщення",
+        "pushText": "Отримуйте миттєві повідомлення про важливі оновлення матчів і турнірів у браузері.",
+        "status": "Статус:",
+        "statusInsecure": "Недоступно (потрібен HTTPS)",
+        "statusUnsupported": "Не підтримується цим браузером",
+        "statusEnabled": "Увімкнено",
+        "statusDenied": "Вимкнено в налаштуваннях браузера",
+        "statusDisabled": "Вимкнено",
+        "applying": "Застосовуємо...",
+        "enablePush": "Увімкнути push",
+        "disablePush": "Вимкнути push",
+        "dangerTitle": "Видалення акаунта",
+        "dangerText": "Після видалення акаунта всі ваші персональні дані, прогнози та членство в кімнатах будуть безповоротно видалені.",
+        "deleting": "Видаляємо акаунт...",
+        "delete": "Видалити акаунт"
+      }
+    },
+    "teamDetails": {
+      "position": { "gk": "Воротарі", "df": "Захисники", "mf": "Півзахисники", "fw": "Нападники" },
+      "apiTeamMissing": "Для цієї команди ще не заповнено api_team_id в базі даних.",
+      "fetchError": "Не вдалося отримати деталі команди",
+      "fallbackTeam": "Команда",
+      "played": "Зіграно",
+      "wins": "Перемоги",
+      "draws": "Нічиї",
+      "losses": "Поразки",
+      "founded": "Засновано",
+      "players": "Гравців",
+      "capacity": "Місткість",
+      "country": "Країна",
+      "stadium": "Стадіон",
+      "city": "Місто",
+      "toMatches": "До матчів",
+      "hero": "Команда",
+      "playersCount": "{{count}} гравців",
+      "form": "Форма",
+      "formWin": "Перемога",
+      "formDraw": "Нічия",
+      "formLose": "Поразка",
+      "emptyTitle": "Деталі поки недоступні",
+      "emptyText": "Для цієї команди ще не прив'язано apiTeamId.",
+      "infoTitle": "Інформація",
+      "infoMeta": "Клуб та домашня арена",
+      "statsTitle": "Статистика",
+      "currentSeason": "Поточний сезон",
+      "matchesCount": "{{count}} матчів",
+      "goalsFor": "Забито",
+      "goalsAgainst": "Пропущено",
+      "cleanSheets": "Сухі матчі",
+      "failedToScore": "Без голів",
+      "distributionWins": "Перемоги {{value}}%",
+      "distributionDraws": "Нічиї {{value}}%",
+      "distributionLosses": "Поразки {{value}}%",
+      "squadTitle": "Склад",
+      "squadMeta": "Гравці за амплуа",
+      "unknownAge": "Вік невідомий",
+      "years": "{{value}} років"
+    },
+    "standings": {
+      "teams": "{{count}} команд",
+      "groupsCount": "{{count}} груп",
+      "team": "Команда",
+      "matchesShort": "М",
+      "matches": "Матчів",
+      "won": "В",
+      "wonTitle": "Виграв",
+      "draw": "Н",
+      "drawTitle": "Нічия",
+      "lost": "П",
+      "lostTitle": "Поразка",
+      "goals": "Голи",
+      "formShort": "Ф",
+      "form": "Форма",
+      "pointsShort": "Очк.",
+      "points": "Очок",
+      "overallGroup": "Загальна",
+      "allLeagues": "Всі ліги",
+      "league": "Ліга {{label}}",
+      "group": "Група {{group}}",
+      "emptyTitle": "Таблиця ще не сформована",
+      "emptyText": "Додайте матчі в календар, і таблиця команд з'явиться автоматично.",
+      "title": "Турнірна таблиця",
+      "subtitleMulti": "Ліги, позиції команд, форма останніх матчів та зони виходу далі",
+      "subtitleSingle": "Позиції команд, форма останніх матчів та зони виходу далі",
+      "metrics": { "leagues": "Ліг", "groups": "Груп", "teams": "Команд", "matches": "Матчів", "goals": "Голів" },
+      "leagueTagNations": "Плей-оф / стики",
+      "leagueTagPlayoff": "Вихід у плей-оф",
+      "thirdPlaceTitleLeague": "3-тє місце · {{league}}",
+      "thirdPlaceTitle": "Команди, які зайняли 3-тє місце",
+      "legend": {
+        "championsLeague": "Ліга чемпіонів",
+        "europaLeague": "Ліга Європи",
+        "lastRelegation": "Останні {{count}}: виліт",
+        "qualificationHint": "Зони виходу діють для цієї ліги",
+        "onlyTopLeague": "Зони виходу — лише {{league}}",
+        "formHint": "Форма: останні матчі, зліва найдавніший",
+        "nations": {
+          "formatHint": "Формат Nations League: підвищення/пониження між лігами A/B/C/D",
+          "topPlayoff": "1-2 місце: плей-оф",
+          "topRelegationPlayoff": "3 місце: стикові матчі",
+          "topRelegation": "4 місце: пониження",
+          "lowerPromotion": "1 місце: підвищення",
+          "lowerPromotionPlayoff": "2 місце: стики на підвищення",
+          "lowerRelegationPlayoff": "3 місце: стики на пониження",
+          "lowerRelegation": "4 місце: пониження",
+          "singleTop": "Ліга A: 1-2 місце вихід у плей-оф",
+          "singleRelegationPlayoff": "3 місце: стикові матчі",
+          "singleRelegation": "4 місце: пониження в лігу нижче",
+          "singleLower": "Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення"
+        }
+      }
+    },
+    "tournament": {
+      "matchUpdated": "Матч оновлено",
+      "navPredictions": "Прогнози",
+      "navStandings": "Турнірна таблиця",
+      "navLeague": "Загальна ліга",
+      "navRooms": "Кімнати",
+      "navAchievements": "Досягнення",
+      "typeNational": "Національний",
+      "typeClub": "Клубний",
+      "groups": "Груп: {{count}}",
+      "playoff": "Плей-оф: {{count}}"
+    },
+    "status": {
+      "scheduled": "Заплановано",
+      "live": "Live",
+      "completed": "Завершено",
+      "postponed": "Перенесено"
+    }
+  }
+}

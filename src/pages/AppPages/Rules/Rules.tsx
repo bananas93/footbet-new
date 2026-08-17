@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import cn from 'classnames';
 import styles from './Rules.module.scss';
+import { useI18n } from 'i18n';
 
 type ScoringRule = {
   points: number;
@@ -8,45 +10,6 @@ type ScoringRule = {
   title: string;
   tone: 'blue' | 'teal' | 'gold' | 'orange';
 };
-
-const scoringRules: ScoringRule[] = [
-  {
-    points: 2,
-    unit: 'очки',
-    label: 'Базовий результат',
-    title: 'Вгаданий переможець матчу',
-    tone: 'blue',
-  },
-  {
-    points: 3,
-    unit: 'очки',
-    label: 'Точна різниця',
-    title: 'Вгаданий переможець і вгадана різниця мʼячів',
-    tone: 'teal',
-  },
-  {
-    points: 5,
-    unit: 'очок',
-    label: 'Ідеальний прогноз',
-    title: 'Вгаданий точний рахунок',
-    tone: 'gold',
-  },
-  {
-    points: 6,
-    unit: 'очок',
-    label: 'Максимум за матч',
-    title: 'Вгаданий точний рахунок у матчі з 5+ голами',
-    tone: 'orange',
-  },
-];
-
-const tiebreakRules = [
-  'Кількість точних прогнозів',
-  'Кількість вгаданих результатів',
-  'Кількість вгаданих різниць рахунку',
-  'Кількість вгаданих 5+ рахунків',
-  'Менша кількість прогнозів',
-];
 
 const iconProps = {
   viewBox: '0 0 24 24',
@@ -74,6 +37,53 @@ const InfoIcon = ({ className }: { className?: string }) => (
 );
 
 const Rules: React.FC = () => {
+  const { t } = useI18n();
+
+  const scoringRules: ScoringRule[] = useMemo(
+    () => [
+      {
+        points: 2,
+        unit: t('pages.rules.scoring.base.unit'),
+        label: t('pages.rules.scoring.base.label'),
+        title: t('pages.rules.scoring.base.title'),
+        tone: 'blue',
+      },
+      {
+        points: 3,
+        unit: t('pages.rules.scoring.difference.unit'),
+        label: t('pages.rules.scoring.difference.label'),
+        title: t('pages.rules.scoring.difference.title'),
+        tone: 'teal',
+      },
+      {
+        points: 5,
+        unit: t('pages.rules.scoring.perfect.unit'),
+        label: t('pages.rules.scoring.perfect.label'),
+        title: t('pages.rules.scoring.perfect.title'),
+        tone: 'gold',
+      },
+      {
+        points: 6,
+        unit: t('pages.rules.scoring.max.unit'),
+        label: t('pages.rules.scoring.max.label'),
+        title: t('pages.rules.scoring.max.title'),
+        tone: 'orange',
+      },
+    ],
+    [t],
+  );
+
+  const tiebreakRules = useMemo(
+    () => [
+      t('pages.rules.tiebreak.one'),
+      t('pages.rules.tiebreak.two'),
+      t('pages.rules.tiebreak.three'),
+      t('pages.rules.tiebreak.four'),
+      t('pages.rules.tiebreak.five'),
+    ],
+    [t],
+  );
+
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
@@ -81,18 +91,18 @@ const Rules: React.FC = () => {
         <div className={styles.heroContent}>
           <span className={styles.heroEyebrow}>
             <BookIcon className={styles.heroEyebrowIcon} />
-            Довідка
+            {t('pages.rules.eyebrow')}
           </span>
-          <h1 className={styles.heroTitle}>Правила</h1>
-          <p className={styles.heroSubtitle}>
-            Як нараховуються очки за прогнози та за якими критеріями визначаються позиції в таблиці
-          </p>
+          <h1 className={styles.heroTitle}>{t('pages.rules.title')}</h1>
+          <p className={styles.heroSubtitle}>{t('pages.rules.subtitle')}</p>
         </div>
       </section>
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>Нарахування очок</h2>
-        <span className={styles.sectionMeta}>{scoringRules.length} варіанти</span>
+        <h2 className={styles.sectionTitle}>{t('pages.rules.scoreTitle')}</h2>
+        <span className={styles.sectionMeta}>
+          {t('pages.rules.scoreMeta', undefined, { count: scoringRules.length })}
+        </span>
       </div>
 
       <div className={styles.grid}>
@@ -116,15 +126,12 @@ const Rules: React.FC = () => {
         <span className={styles.noteIcon}>
           <InfoIcon />
         </span>
-        <p className={styles.noteText}>
-          Результат визначається наприкінці гри, тобто через 90 хвилин або через 120 хвилин якщо матч закінчується
-          додатковим часом. Матчі, які завершились серією пенальті, зараховуються як нічия.
-        </p>
+        <p className={styles.noteText}>{t('pages.rules.note')}</p>
       </div>
 
       <div className={styles.sectionHead}>
-        <h2 className={styles.sectionTitle}>При однаковій кількості очок</h2>
-        <span className={styles.sectionMeta}>Порядок критеріїв</span>
+        <h2 className={styles.sectionTitle}>{t('pages.rules.tiebreakTitle')}</h2>
+        <span className={styles.sectionMeta}>{t('pages.rules.tiebreakMeta')}</span>
       </div>
 
       <ol className={styles.steps}>

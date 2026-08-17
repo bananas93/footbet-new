@@ -6,8 +6,10 @@ import { checkVerificationCode, resetPassword } from 'store/slices/auth';
 import styles from './CheckValidationCode.module.scss';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import { notify } from 'helpers';
+import { useI18n } from 'i18n';
 
 const CheckValidationCode = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { state: email } = useLocation();
 
@@ -44,10 +46,10 @@ const CheckValidationCode = () => {
   return (
     <div className={styles.auth}>
       <header className={styles.head}>
-        <span className={styles.eyebrow}>Підтвердження</span>
-        <h1 className={styles.title}>Введіть код з листа</h1>
+        <span className={styles.eyebrow}>{t('auth.checkCode.eyebrow')}</span>
+        <h1 className={styles.title}>{t('auth.checkCode.title')}</h1>
         <p className={styles.subtitle}>
-          Ми надіслали код підтвердження на <span className={styles.email}>{email}</span>
+          {t('auth.checkCode.subtitle')} <span className={styles.email}>{email}</span>
         </p>
       </header>
 
@@ -67,12 +69,12 @@ const CheckValidationCode = () => {
         className={styles.submit}
         onClick={handleVerification}
         disabled={buttonDisabled || isLoading}>
-        {isLoading ? 'Перевіряємо...' : 'Продовжити'}
+        {isLoading ? t('otp.continueLoading') : t('otp.continue')}
       </button>
 
       <p className={styles.footer}>
         <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
-          Назад до входу
+          {t('auth.common.backToSignIn')}
         </Link>
       </p>
     </div>

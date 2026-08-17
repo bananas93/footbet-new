@@ -14,37 +14,42 @@ import styles from './ForgotPassword.module.scss';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import { useEffect, useState } from 'react';
+import { useI18n } from 'i18n';
 
 const isRateLimitError = (message?: string) => {
   const text = (message || '').toLowerCase();
   return text.includes('email rate limit exceeded') || text.includes('rate limit');
 };
 
-const buildForgotPasswordErrorMessage = (message?: string, remainingMs: number = 0) => {
-  if (isRateLimitError(message)) {
-    return `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Спробуйте ще раз через ${formatRemainingTime(remainingMs)}.`;
-  }
-
-  return message || 'Помилка відправлення посилання для відновлення паролю';
-};
-
 interface FormValues {
   email: string;
 }
 
-const validationRules = {
-  email: (value: string) => {
-    if (!value) return 'Потрібно вказати email';
-    if (!/\S+@\S+\.\S+/.test(value)) return 'Email некоректний';
-    return '';
-  },
-};
-
 const ForgotPassword: React.FC = () => {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.auth.resetPasswordRequest);
   const [remainingMs, setRemainingMs] = useState<number>(getAuthEmailRemainingMs());
+
+  const validationRules = {
+    email: (value: string) => {
+      if (!value) return t('auth.common.emailRequired');
+      if (!/\S+@\S+\.\S+/.test(value)) return t('auth.common.emailInvalid');
+      return '';
+    },
+  };
+
+  const buildForgotPasswordErrorMessage = (message?: string, nextRemainingMs: number = 0) => {
+    if (isRateLimitError(message)) {
+      return t('auth.forgotPassword.rateLimitRetry', undefined, {
+        limit: AUTH_EMAIL_LIMIT_PER_HOUR,
+        time: formatRemainingTime(nextRemainingMs),
+      });
+    }
+
+    return message || t('auth.forgotPassword.error');
+  };
 
   useEffect(() => {
     if (!remainingMs) {
@@ -71,7 +76,10 @@ const ForgotPassword: React.FC = () => {
     if (currentRemainingMs > 0) {
       setRemainingMs(currentRemainingMs);
       notify.error(
-        `Ліміт Supabase: ${AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Зачекайте ${formatRemainingTime(currentRemainingMs)}.`,
+        t('auth.forgotPassword.rateLimitWait', undefined, {
+          limit: AUTH_EMAIL_LIMIT_PER_HOUR,
+          time: formatRemainingTime(currentRemainingMs),
+        }),
       );
       return;
     }
@@ -81,7 +89,7 @@ const ForgotPassword: React.FC = () => {
       registerAuthEmailAttempt();
       setRemainingMs(getAuthEmailRemainingMs());
       navigate(AuthRoutesEnum.SignIn);
-      notify.success('Лист для відновлення паролю відправлено на ваш email');
+      notify.success(t('auth.forgotPassword.success'));
     } catch (err: any) {
       if (isRateLimitError(err.message)) {
         registerAuthEmailAttempt();
@@ -98,40 +106,41 @@ const ForgotPassword: React.FC = () => {
   return (
     <div className={styles.auth}>
       <header className={styles.head}>
-        <span className={styles.eyebrow}>Відновлення</span>
-        <h1 className={styles.title}>Забули пароль?</h1>
-        <p className={styles.subtitle}>
-          Вкажіть email, який використовували при реєстрації. Ми надішлемо посилання для встановлення нового пароля.
-        </p>
+        <span className={styles.eyebrow}>{t('auth.forgotPassword.eyebrow')}</span>
+        <h1 className={styles.title}>{t('auth.forgotPassword.title')}</h1>
+        <p className={styles.subtitle}>{t('auth.forgotPassword.subtitle')}</p>
       </header>
 
       <div className={styles.form}>
         <TextInput
           name="email"
           type="email"
-          label="Email"
+          label={t('auth.common.emailLabel')}
           value={values.email}
           error={errors.email}
           onChange={(e) => handleChange('email', e.target.value)}
-          placeholder="Ваш email"
+          placeholder={t('auth.common.emailPlaceholder')}
         />
       </div>
 
       <p className={styles.note}>
-        Ліміт Supabase: {AUTH_EMAIL_LIMIT_PER_HOUR} листи/год. Доступно спроб: {attemptsLeft}.
+        {t('auth.common.supabaseLimitAttempts', undefined, {
+          limit: AUTH_EMAIL_LIMIT_PER_HOUR,
+          attempts: attemptsLeft,
+        })}
       </p>
 
       <button type="button" className={styles.submit} onClick={handleSubmit} disabled={isLoading || remainingMs > 0}>
         {isLoading
-          ? 'Надсилання...'
+          ? t('auth.forgotPassword.submitLoading')
           : remainingMs > 0
-            ? `Повторно через ${formatRemainingTime(remainingMs)}`
-            : 'Надіслати посилання'}
+            ? t('auth.common.repeatAfter', undefined, { time: formatRemainingTime(remainingMs) })
+            : t('auth.forgotPassword.submit')}
       </button>
 
       <p className={styles.footer}>
         <Link to={AuthRoutesEnum.SignIn} className={styles.footerLink}>
-          Назад до входу
+          {t('auth.common.backToSignIn')}
         </Link>
       </p>
     </div>

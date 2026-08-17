@@ -9,6 +9,7 @@ import useModal from 'hooks/useModal';
 import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import ShowPredicts from '../ShowPredicts/ShowPredicts';
 import styles from './MatchCard.module.scss';
+import { useI18n } from 'i18n';
 
 interface MatchCardProps {
   match: IMatch;
@@ -16,12 +17,12 @@ interface MatchCardProps {
 }
 
 const stageLabels: Record<string, string> = {
-  'Knockout Playoff': 'Раунд плей-оф',
-  'Round of 16': '1/8 фіналу',
-  Quarterfinals: '1/4 фіналу',
-  Semifinals: '1/2 фіналу',
-  Final: 'Фінал',
-  'Third Place Playoff': 'Матч за 3-тє місце',
+  'Knockout Playoff': 'helpers.matches.round16alt',
+  'Round of 16': 'helpers.matches.round8',
+  Quarterfinals: 'helpers.matches.round4',
+  Semifinals: 'helpers.matches.round2',
+  Final: 'helpers.matches.final',
+  'Third Place Playoff': 'helpers.matches.thirdPlace',
 };
 
 const getPointsTone = (points: number) => {
@@ -76,6 +77,7 @@ const ListIcon = () => (
 );
 
 const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const location = useLocation();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -91,12 +93,13 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
   const isLive = match.status === MatchStatus.IN_PROGRESS;
   const points = match?.predict?.points || 0;
   const hasPredict = homeScore !== '' && awayScore !== '';
-  const stageLabel = match.stage !== 'Group Stage' ? stageLabels[match.stage] || match.stage : '';
+  const stageLabel =
+    match.stage !== 'Group Stage' ? (stageLabels[match.stage] ? t(stageLabels[match.stage]) : match.stage) : '';
   const matchDetailsHref = `/tournament/${tournament.id}/match/${match.id}`;
 
   const savePredict = async (home: string, away: string) => {
     if (!isAuthenticated) {
-      notify.error('Увійдіть, щоб зробити прогноз');
+      notify.error(t('pages.matchCard.signInToPredict'));
       return;
     }
 
@@ -142,11 +145,11 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
     }
   };
 
-  const renderTeam = (team: IMatch['homeTeam'], side: 'home' | 'away') => (
+  const renderTeam = (team: IMatch['homeTeam']) => (
     <div className={styles.team}>
       <span className={styles.teamLogo}>
         <Link to={`/tournament/${tournament.id}/team/${team.id}`} className={styles.teamNameLink} title={team.name}>
-          <img src={resolveAssetUrl(team.logo)} alt={`${side} team logo`} />
+          <img src={resolveAssetUrl(team.logo)} alt={t('pages.matchCard.teamLogoAlt')} />
         </Link>
       </span>
       {team?.id ? (
@@ -167,12 +170,15 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
         <Link
           to={matchDetailsHref}
           className={styles.cardLink}
-          aria-label={`Відкрити деталі матчу ${match.homeTeam.name} - ${match.awayTeam.name}`}
+          aria-label={t('pages.matchCard.openMatchDetails', undefined, {
+            home: match.homeTeam.name,
+            away: match.awayTeam.name,
+          })}
         />
 
         <div className={cn(styles.toast, { [styles.toastShown]: toastShown })}>
           <CheckIcon />
-          Прогноз збережено
+          {t('pages.matchCard.saved')}
         </div>
 
         <header className={styles.head}>
@@ -180,8 +186,8 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
             {match.groupName && (
               <span className={styles.chip}>
                 {tournament.leagues > 1
-                  ? `Ліга ${getLeagueLabel(match.tournamentLeague)} · Група ${match.groupName}`
-                  : `Група ${match.groupName}`}
+                  ? `${t('pages.standings.league', undefined, { label: getLeagueLabel(match.tournamentLeague) })} · ${t('pages.matchCard.group', undefined, { name: match.groupName })}`
+                  : t('pages.matchCard.group', undefined, { name: match.groupName })}
               </span>
             )}
             {!!stageLabel && <span className={cn(styles.chip, styles.chipStage)}>{stageLabel}</span>}
@@ -190,7 +196,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
           {isLive ? (
             <span className={cn(styles.chip, styles.chipLive)}>
               <span className={styles.liveDot} />
-              Live
+              {t('pages.status.live')}
             </span>
           ) : isScheduled ? (
             <span className={styles.dateChip}>
@@ -198,19 +204,19 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
               <span className={styles.dateTime}>{normalizeMatchTime(match.matchDate)}</span>
             </span>
           ) : (
-            <span className={styles.chip}>Завершено</span>
+            <span className={styles.chip}>{t('pages.status.completed')}</span>
           )}
         </header>
 
         <div className={styles.body}>
-          {renderTeam(match.homeTeam, 'home')}
+          {renderTeam(match.homeTeam)}
 
           <div className={styles.center}>
             {isScheduled ? (
               <>
                 {isAuthenticated ? (
                   <>
-                    <span className={styles.centerLabel}>Ваш прогноз</span>
+                    <span className={styles.centerLabel}>{t('pages.matchCard.yourPrediction')}</span>
                     <div className={styles.inputs}>
                       <input
                         name="home"
@@ -221,7 +227,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                         value={homeScore}
                         onChange={handleChange}
                         className={styles.input}
-                        aria-label={`Прогноз для ${match.homeTeam.name}`}
+                        aria-label={t('pages.matchCard.predictionFor', undefined, { team: match.homeTeam.name })}
                       />
                       <span className={styles.inputsDivider}>:</span>
                       <input
@@ -233,17 +239,17 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                         value={awayScore}
                         onChange={handleChange}
                         className={styles.input}
-                        aria-label={`Прогноз для ${match.awayTeam.name}`}
+                        aria-label={t('pages.matchCard.predictionFor', undefined, { team: match.awayTeam.name })}
                       />
                     </div>
                   </>
                 ) : (
                   <>
-                    <span className={styles.centerLabel}>Прогнози доступні після входу</span>
+                    <span className={styles.centerLabel}>{t('pages.matchCard.predictionsAfterLogin')}</span>
                     <Link
                       to={`${AuthRoutesEnum.SignIn}?from=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
                       className={styles.predictsButton}>
-                      Увійти
+                      {t('layout.header.signIn')}
                     </Link>
                   </>
                 )}
@@ -257,26 +263,30 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, tournament }) => {
                 </div>
                 {isAuthenticated && (
                   <span className={styles.predictChip}>
-                    {hasPredict ? `Ваш прогноз ${homeScore}:${awayScore}` : 'Прогнозу не було'}
+                    {hasPredict
+                      ? t('pages.matchCard.yourPredictionValue', undefined, { home: homeScore, away: awayScore })
+                      : t('pages.matchCard.noPrediction')}
                   </span>
                 )}
               </>
             )}
           </div>
 
-          {renderTeam(match.awayTeam, 'away')}
+          {renderTeam(match.awayTeam)}
         </div>
 
         {!isScheduled && isAuthenticated && (
           <footer className={styles.foot}>
             <div className={styles.pointsWrap}>
               <span className={cn(styles.points, styles[getPointsTone(points)])}>{points}</span>
-              <span className={styles.pointsLabel}>{points === 1 ? 'очко' : 'очок'} за прогноз</span>
+              <span className={styles.pointsLabel}>
+                {t('pages.matchCard.pointsForPrediction', undefined, { points })}
+              </span>
             </div>
 
             <button type="button" className={styles.predictsButton} onClick={openModal}>
               <ListIcon />
-              Всі прогнози
+              {t('pages.matchCard.allPredictions')}
             </button>
           </footer>
         )}

@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { notify, readLocalCache, resolveAssetUrl, supabase, writeLocalCache } from 'helpers';
 import { useAppSelector } from 'store';
 import styles from './TeamDetails.module.scss';
+import { useI18n } from 'i18n';
 
 type Player = {
   id: number;
@@ -27,11 +28,11 @@ type TeamDetailsResponse = {
 
 const POSITION_ORDER = ['Goalkeeper', 'Defender', 'Midfielder', 'Attacker'];
 
-const POSITION_META: Record<string, { label: string; short: string; tone: string }> = {
-  Goalkeeper: { label: 'Воротарі', short: 'ВР', tone: 'toneGk' },
-  Defender: { label: 'Захисники', short: 'ЗХ', tone: 'toneDf' },
-  Midfielder: { label: 'Півзахисники', short: 'ПЗ', tone: 'toneMf' },
-  Attacker: { label: 'Нападники', short: 'НП', tone: 'toneFw' },
+const POSITION_META: Record<string, { key: string; short: string; tone: string }> = {
+  Goalkeeper: { key: 'gk', short: 'GK', tone: 'toneGk' },
+  Defender: { key: 'df', short: 'DF', tone: 'toneDf' },
+  Midfielder: { key: 'mf', short: 'MF', tone: 'toneMf' },
+  Attacker: { key: 'fw', short: 'FW', tone: 'toneFw' },
 };
 
 const FALLBACK_LOGO = '/logo192.png';
@@ -54,7 +55,10 @@ const normalizePlayers = (players: unknown): Player[] => {
     }));
 };
 
-const groupPlayersByPosition = (players: Player[]) => {
+const groupPlayersByPosition = (
+  players: Player[],
+  t: (key: string, fallback?: string, params?: Record<string, string | number>) => string,
+) => {
   const groups: Record<string, Player[]> = {};
 
   players.forEach((player) => {
@@ -71,7 +75,7 @@ const groupPlayersByPosition = (players: Player[]) => {
 
   const ordered = POSITION_ORDER.filter((position) => !!groups[position]).map((position) => ({
     position,
-    label: POSITION_META[position].label,
+    label: t(`pages.teamDetails.position.${POSITION_META[position].key}`),
     short: POSITION_META[position].short,
     tone: POSITION_META[position].tone,
     players: sortPlayers(groups[position]),
@@ -185,6 +189,7 @@ const formatNumber = (value: unknown) => {
 };
 
 const TeamDetails: React.FC = () => {
+  const { t } = useI18n();
   const { tournamentId, teamId } = useParams<{ tournamentId: string; teamId: string }>();
   const matchesByTournament = useAppSelector((state) => state.match.matches);
   const [data, setData] = useState<TeamDetailsResponse | null>(null);
@@ -215,7 +220,7 @@ const TeamDetails: React.FC = () => {
       if (!apiTeamId) {
         setData({
           hasExternalData: false,
-          message: 'Для цієї команди ще не заповнено api_team_id в базі даних.',
+          message: t('pages.teamDetails.apiTeamMissing'),
         });
         setIsLoading(false);
         return;
@@ -239,29 +244,29 @@ const TeamDetails: React.FC = () => {
         });
 
         if (error) {
-          throw new Error(error.message || 'Не вдалося отримати деталі команди');
+          throw new Error(error.message || t('pages.teamDetails.fetchError'));
         }
 
         const resolvedData = json as TeamDetailsResponse;
         setData(resolvedData);
         writeLocalCache(cacheKey, resolvedData, TEAM_LOCAL_CACHE_TTL_SECONDS);
       } catch (error: any) {
-        notify.error(error.message || 'Не вдалося отримати деталі команди');
+        notify.error(error.message || t('pages.teamDetails.fetchError'));
       } finally {
         setIsLoading(false);
       }
     };
 
     void fetchData();
-  }, [apiTeamId, teamId, tournamentId]);
+  }, [apiTeamId, t, teamId, tournamentId]);
 
   const details = data?.external?.details?.response?.[0];
   const squad = data?.external?.squad?.response?.[0];
   const statistics = data?.external?.statistics?.response;
   const players = useMemo(() => normalizePlayers(squad?.players), [squad]);
-  const playersByPosition = useMemo(() => groupPlayersByPosition(players), [players]);
+  const playersByPosition = useMemo(() => groupPlayersByPosition(players, t), [players, t]);
 
-  const teamName = details?.team?.name || localTeam?.name || 'Команда';
+  const teamName = details?.team?.name || localTeam?.name || t('pages.teamDetails.fallbackTeam');
   const teamLogo = details?.team?.logo || resolveAssetUrl(localTeam?.logo) || FALLBACK_LOGO;
   const venue = details?.venue;
 
@@ -276,19 +281,19 @@ const TeamDetails: React.FC = () => {
   const heroMetrics = useMemo<{ label: string; value: string; tone?: string }[]>(() => {
     if (hasFixtures) {
       return [
-        { label: 'Зіграно', value: formatNumber(played) },
-        { label: 'Перемоги', value: formatNumber(wins), tone: 'metricWin' },
-        { label: 'Нічиї', value: formatNumber(draws) },
-        { label: 'Поразки', value: formatNumber(loses), tone: 'metricLose' },
+        { label: t('pages.teamDetails.played'), value: formatNumber(played) },
+        { label: t('pages.teamDetails.wins'), value: formatNumber(wins), tone: 'metricWin' },
+        { label: t('pages.teamDetails.draws'), value: formatNumber(draws) },
+        { label: t('pages.teamDetails.losses'), value: formatNumber(loses), tone: 'metricLose' },
       ];
     }
 
     return [
-      { label: 'Засновано', value: details?.team?.founded ? String(details.team.founded) : '—' },
-      { label: 'Гравців', value: players.length ? String(players.length) : '—' },
-      { label: 'Місткість', value: venue?.capacity ? formatNumber(venue.capacity) : '—' },
+      { label: t('pages.teamDetails.founded'), value: details?.team?.founded ? String(details.team.founded) : '—' },
+      { label: t('pages.teamDetails.players'), value: players.length ? String(players.length) : '—' },
+      { label: t('pages.teamDetails.capacity'), value: venue?.capacity ? formatNumber(venue.capacity) : '—' },
     ];
-  }, [details, draws, hasFixtures, loses, played, players.length, venue, wins]);
+  }, [details, draws, hasFixtures, loses, played, players.length, t, venue, wins]);
 
   const formItems = useMemo(
     () =>
@@ -320,13 +325,13 @@ const TeamDetails: React.FC = () => {
     }
 
     return [
-      { label: 'Країна', value: details.team?.country || '—' },
-      { label: 'Засновано', value: details.team?.founded ? String(details.team.founded) : '—' },
-      { label: 'Стадіон', value: venue?.name || '—' },
-      { label: 'Місто', value: venue?.city || '—' },
-      { label: 'Місткість', value: venue?.capacity ? formatNumber(venue.capacity) : '—' },
+      { label: t('pages.teamDetails.country'), value: details.team?.country || '—' },
+      { label: t('pages.teamDetails.founded'), value: details.team?.founded ? String(details.team.founded) : '—' },
+      { label: t('pages.teamDetails.stadium'), value: venue?.name || '—' },
+      { label: t('pages.teamDetails.city'), value: venue?.city || '—' },
+      { label: t('pages.teamDetails.capacity'), value: venue?.capacity ? formatNumber(venue.capacity) : '—' },
     ];
-  }, [details, venue]);
+  }, [details, t, venue]);
 
   const leagueLabel = [statistics?.league?.name, statistics?.league?.season].filter(Boolean).join(' · ');
 
@@ -349,7 +354,7 @@ const TeamDetails: React.FC = () => {
       <div className={styles.topBar}>
         <Link to={`/tournament/${tournamentId}`} className={styles.backLink}>
           <ArrowLeftIcon />
-          До матчів
+          {t('pages.teamDetails.toMatches')}
         </Link>
 
         {!!leagueLabel && <span className={styles.chip}>{leagueLabel}</span>}
@@ -373,21 +378,29 @@ const TeamDetails: React.FC = () => {
             <div className={styles.heroText}>
               <span className={styles.heroEyebrow}>
                 <ShieldIcon />
-                Команда
+                {t('pages.teamDetails.hero')}
               </span>
 
               <h2 className={styles.heroTitle}>{teamName}</h2>
 
               <div className={styles.heroTags}>
                 {!!details?.team?.country && <span className={styles.heroTag}>{details.team.country}</span>}
-                {!!details?.team?.founded && <span className={styles.heroTag}>Засновано {details.team.founded}</span>}
+                {!!details?.team?.founded && (
+                  <span className={styles.heroTag}>
+                    {t('pages.teamDetails.founded')} {details.team.founded}
+                  </span>
+                )}
                 {!!venue?.name && <span className={styles.heroTag}>{venue.name}</span>}
-                {!!players.length && <span className={styles.heroTag}>{players.length} гравців</span>}
+                {!!players.length && (
+                  <span className={styles.heroTag}>
+                    {t('pages.teamDetails.playersCount', undefined, { count: players.length })}
+                  </span>
+                )}
               </div>
 
               {!!formItems.length && (
                 <div className={styles.heroForm}>
-                  <span className={styles.heroFormLabel}>Форма</span>
+                  <span className={styles.heroFormLabel}>{t('pages.teamDetails.form')}</span>
                   <div className={styles.form}>
                     {formItems.map((result, index) => (
                       <span
@@ -397,7 +410,13 @@ const TeamDetails: React.FC = () => {
                           [styles.drawn]: result === 'D',
                           [styles.lost]: result === 'L',
                         })}
-                        title={result === 'W' ? 'Перемога' : result === 'D' ? 'Нічия' : 'Поразка'}
+                        title={
+                          result === 'W'
+                            ? t('pages.teamDetails.formWin')
+                            : result === 'D'
+                              ? t('pages.teamDetails.formDraw')
+                              : t('pages.teamDetails.formLose')
+                        }
                       />
                     ))}
                   </div>
@@ -422,8 +441,8 @@ const TeamDetails: React.FC = () => {
           <span className={styles.emptyIcon}>
             <EmptyIcon />
           </span>
-          <h3 className={styles.emptyTitle}>Деталі поки недоступні</h3>
-          <p className={styles.empty}>{data?.message || 'Для цієї команди ще не привʼязано apiTeamId.'}</p>
+          <h3 className={styles.emptyTitle}>{t('pages.teamDetails.emptyTitle')}</h3>
+          <p className={styles.empty}>{data?.message || t('pages.teamDetails.emptyText')}</p>
         </div>
       )}
 
@@ -434,8 +453,8 @@ const TeamDetails: React.FC = () => {
               <InfoIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Інформація</h3>
-              <p className={styles.sectionMeta}>Клуб та домашня арена</p>
+              <h3 className={styles.sectionTitle}>{t('pages.teamDetails.infoTitle')}</h3>
+              <p className={styles.sectionMeta}>{t('pages.teamDetails.infoMeta')}</p>
             </div>
           </div>
 
@@ -457,43 +476,47 @@ const TeamDetails: React.FC = () => {
               <ChartIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Статистика</h3>
-              <p className={styles.sectionMeta}>{leagueLabel || 'Поточний сезон'}</p>
+              <h3 className={styles.sectionTitle}>{t('pages.teamDetails.statsTitle')}</h3>
+              <p className={styles.sectionMeta}>{leagueLabel || t('pages.teamDetails.currentSeason')}</p>
             </div>
-            {hasFixtures && <span className={styles.sectionCount}>{formatNumber(played)} матчів</span>}
+            {hasFixtures && (
+              <span className={styles.sectionCount}>
+                {t('pages.teamDetails.matchesCount', undefined, { count: formatNumber(played) })}
+              </span>
+            )}
           </div>
 
           <div className={styles.statsGrid}>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Зіграно</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.played')}</span>
               <span className={styles.statValue}>{formatNumber(played)}</span>
             </div>
             <div className={cn(styles.statItem, styles.statWin)}>
-              <span className={styles.statLabel}>Перемоги</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.wins')}</span>
               <span className={styles.statValue}>{formatNumber(wins)}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Нічиї</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.draws')}</span>
               <span className={styles.statValue}>{formatNumber(draws)}</span>
             </div>
             <div className={cn(styles.statItem, styles.statLose)}>
-              <span className={styles.statLabel}>Поразки</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.losses')}</span>
               <span className={styles.statValue}>{formatNumber(loses)}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Забито</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.goalsFor')}</span>
               <span className={styles.statValue}>{formatNumber(goalsFor)}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Пропущено</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.goalsAgainst')}</span>
               <span className={styles.statValue}>{formatNumber(goalsAgainst)}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>«Сухі» матчі</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.cleanSheets')}</span>
               <span className={styles.statValue}>{formatNumber(statistics?.clean_sheet?.total)}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Без голів</span>
+              <span className={styles.statLabel}>{t('pages.teamDetails.failedToScore')}</span>
               <span className={styles.statValue}>{formatNumber(statistics?.failed_to_score?.total)}</span>
             </div>
           </div>
@@ -518,15 +541,15 @@ const TeamDetails: React.FC = () => {
               <div className={styles.distributionLegend}>
                 <span className={styles.legendItem}>
                   <span className={cn(styles.legendDot, styles.distributionWin)} />
-                  Перемоги {distribution.wins}%
+                  {t('pages.teamDetails.distributionWins', undefined, { value: distribution.wins })}
                 </span>
                 <span className={styles.legendItem}>
                   <span className={cn(styles.legendDot, styles.distributionDraw)} />
-                  Нічиї {distribution.draws}%
+                  {t('pages.teamDetails.distributionDraws', undefined, { value: distribution.draws })}
                 </span>
                 <span className={styles.legendItem}>
                   <span className={cn(styles.legendDot, styles.distributionLose)} />
-                  Поразки {distribution.loses}%
+                  {t('pages.teamDetails.distributionLosses', undefined, { value: distribution.loses })}
                 </span>
               </div>
             </div>
@@ -541,8 +564,8 @@ const TeamDetails: React.FC = () => {
               <UsersIcon />
             </span>
             <div className={styles.sectionHeadText}>
-              <h3 className={styles.sectionTitle}>Склад</h3>
-              <p className={styles.sectionMeta}>Гравці за амплуа</p>
+              <h3 className={styles.sectionTitle}>{t('pages.teamDetails.squadTitle')}</h3>
+              <p className={styles.sectionMeta}>{t('pages.teamDetails.squadMeta')}</p>
             </div>
             <span className={styles.sectionCount}>{players.length}</span>
           </div>
@@ -576,7 +599,11 @@ const TeamDetails: React.FC = () => {
                         <p className={styles.playerName} title={player.name}>
                           {player.name}
                         </p>
-                        <p className={styles.playerMeta}>{player.age ? `${player.age} років` : 'Вік невідомий'}</p>
+                        <p className={styles.playerMeta}>
+                          {player.age
+                            ? t('pages.teamDetails.years', undefined, { value: player.age })
+                            : t('pages.teamDetails.unknownAge')}
+                        </p>
                       </div>
                     </article>
                   ))}

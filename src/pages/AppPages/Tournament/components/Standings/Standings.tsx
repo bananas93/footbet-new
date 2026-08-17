@@ -6,6 +6,7 @@ import { IMatch, IStandingsItem, MatchStatus } from 'interfaces';
 import { useMobile } from 'hooks';
 import { getLeagueLabel, resolveAssetUrl } from 'helpers';
 import styles from './Standings.module.scss';
+import { useI18n } from 'i18n';
 
 type Zone = 'playoff' | 'knockout' | 'promotion' | 'promotionPlayoff' | 'relegationPlayoff' | 'relegation' | null;
 
@@ -49,7 +50,8 @@ const toLeagueLabel = (value?: string | number | null) => {
   return String(value).trim().toUpperCase();
 };
 
-const normalizeGroupName = (value: string) => value.replace(/^(group|група|гр\.?)\s*/i, '').trim() || value.trim();
+const normalizeGroupName = (value: string) =>
+  value.replace(/^(group|\u0433\u0440\u0443\u043f\u0430|\u0433\u0440\.?)\s*/i, '').trim() || value.trim();
 
 const parseGroupKey = (key: string, items: IStandingsItem[]) => {
   const [first] = items;
@@ -94,82 +96,101 @@ const TableIcon = () => (
   </svg>
 );
 
-const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, items, isMobile, getZone, formLimit }) => (
-  <section className={styles.tableCard}>
-    <header className={styles.tableHead}>
-      {badge && <span className={styles.groupBadge}>{badge}</span>}
-      <div className={styles.tableHeadText}>
-        <h3 className={styles.tableTitle}>{title}</h3>
-        {meta && <p className={styles.tableMeta}>{meta}</p>}
-      </div>
-      <span className={styles.tableCount}>{items.length} команд</span>
-    </header>
+const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, items, isMobile, getZone, formLimit }) => {
+  const { t } = useI18n();
 
-    <div className={styles.tableInner}>
-      <div className={cn(styles.row, styles.headRow)}>
-        <div className={styles.colPos}>#</div>
-        <div className={styles.colTeam}>Команда</div>
-        <div className={styles.stats}>
-          <p className={styles.col}>{isMobile ? 'М' : 'Матчів'}</p>
-          <p className={cn(styles.col, styles.hideMobile)} title="Виграв">
-            В
-          </p>
-          <p className={cn(styles.col, styles.hideMobile)} title="Нічия">
-            Н
-          </p>
-          <p className={cn(styles.col, styles.hideMobile)} title="Поразка">
-            П
-          </p>
-          <p className={styles.col}>Голи</p>
-          <p className={cn(styles.col, styles.colForm)}>{isMobile ? 'Ф' : 'Форма'}</p>
-          <p className={cn(styles.col, styles.colPoints)}>{isMobile ? 'Очк.' : 'Очок'}</p>
+  const formTitleMap: Record<string, string> = {
+    won: t('pages.standings.wonTitle'),
+    drawn: t('pages.standings.drawTitle'),
+    lost: t('pages.standings.lostTitle'),
+  };
+
+  return (
+    <section className={styles.tableCard}>
+      <header className={styles.tableHead}>
+        {badge && <span className={styles.groupBadge}>{badge}</span>}
+        <div className={styles.tableHeadText}>
+          <h3 className={styles.tableTitle}>{title}</h3>
+          {meta && <p className={styles.tableMeta}>{meta}</p>}
         </div>
-      </div>
+        <span className={styles.tableCount}>{t('pages.standings.teams', undefined, { count: items.length })}</span>
+      </header>
 
-      {items.map((item, index) => {
-        const zone = getZone(index);
-        const form = typeof formLimit === 'number' ? item.form.slice(formLimit) : item.form;
-
-        return (
-          <div className={cn(styles.row, zone ? styles[zone] : '', { [styles.zoneRow]: !!zone })} key={item.id}>
-            <div className={styles.colPos}>
-              <span className={cn(styles.position, { [styles.positionZone]: !!zone })}>{index + 1}</span>
-            </div>
-            <div className={styles.colTeam}>
-              <span className={styles.teamLogo}>
-                <img src={resolveAssetUrl(item.logo)} alt={item.team} />
-              </span>
-              <p className={styles.teamName} title={item.team}>
-                {item.team}
-              </p>
-            </div>
-            <div className={styles.stats}>
-              <p className={styles.col}>{item.played}</p>
-              <p className={cn(styles.col, styles.hideMobile, styles.statWon)}>{item.won}</p>
-              <p className={cn(styles.col, styles.hideMobile)}>{item.drawn}</p>
-              <p className={cn(styles.col, styles.hideMobile, styles.statLost)}>{item.lost}</p>
-              <p className={styles.col}>
-                <span className={styles.goals}>{`${item.goalsScored}:${item.goalsAgainst}`}</span>
-              </p>
-              <div className={cn(styles.col, styles.colForm)}>
-                <div className={styles.form}>
-                  {form.map((result, formIndex) => (
-                    <span key={formIndex} className={cn(styles.formItem, styles[result])} title={result} />
-                  ))}
-                </div>
-              </div>
-              <p className={cn(styles.col, styles.colPoints)}>
-                <span className={styles.points}>{item.points}</span>
-              </p>
-            </div>
+      <div className={styles.tableInner}>
+        <div className={cn(styles.row, styles.headRow)}>
+          <div className={styles.colPos}>#</div>
+          <div className={styles.colTeam}>{t('pages.standings.team')}</div>
+          <div className={styles.stats}>
+            <p className={styles.col}>{isMobile ? t('pages.standings.matchesShort') : t('pages.standings.matches')}</p>
+            <p className={cn(styles.col, styles.hideMobile)} title={t('pages.standings.wonTitle')}>
+              {t('pages.standings.won')}
+            </p>
+            <p className={cn(styles.col, styles.hideMobile)} title={t('pages.standings.drawTitle')}>
+              {t('pages.standings.draw')}
+            </p>
+            <p className={cn(styles.col, styles.hideMobile)} title={t('pages.standings.lostTitle')}>
+              {t('pages.standings.lost')}
+            </p>
+            <p className={styles.col}>{t('pages.standings.goals')}</p>
+            <p className={cn(styles.col, styles.colForm)}>
+              {isMobile ? t('pages.standings.formShort') : t('pages.standings.form')}
+            </p>
+            <p className={cn(styles.col, styles.colPoints)}>
+              {isMobile ? t('pages.standings.pointsShort') : t('pages.standings.points')}
+            </p>
           </div>
-        );
-      })}
-    </div>
-  </section>
-);
+        </div>
+
+        {items.map((item, index) => {
+          const zone = getZone(index);
+          const form = typeof formLimit === 'number' ? item.form.slice(formLimit) : item.form;
+
+          return (
+            <div className={cn(styles.row, zone ? styles[zone] : '', { [styles.zoneRow]: !!zone })} key={item.id}>
+              <div className={styles.colPos}>
+                <span className={cn(styles.position, { [styles.positionZone]: !!zone })}>{index + 1}</span>
+              </div>
+              <div className={styles.colTeam}>
+                <span className={styles.teamLogo}>
+                  <img src={resolveAssetUrl(item.logo)} alt={item.team} />
+                </span>
+                <p className={styles.teamName} title={item.team}>
+                  {item.team}
+                </p>
+              </div>
+              <div className={styles.stats}>
+                <p className={styles.col}>{item.played}</p>
+                <p className={cn(styles.col, styles.hideMobile, styles.statWon)}>{item.won}</p>
+                <p className={cn(styles.col, styles.hideMobile)}>{item.drawn}</p>
+                <p className={cn(styles.col, styles.hideMobile, styles.statLost)}>{item.lost}</p>
+                <p className={styles.col}>
+                  <span className={styles.goals}>{`${item.goalsScored}:${item.goalsAgainst}`}</span>
+                </p>
+                <div className={cn(styles.col, styles.colForm)}>
+                  <div className={styles.form}>
+                    {form.map((result, formIndex) => (
+                      <span
+                        key={formIndex}
+                        className={cn(styles.formItem, styles[result])}
+                        title={formTitleMap[result] || result}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <p className={cn(styles.col, styles.colPoints)}>
+                  <span className={styles.points}>{item.points}</span>
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
 
 const Standings: React.FC = () => {
+  const { t } = useI18n();
   const { tournament } = useTournament();
   const isMobile = useMobile();
   const [activeLeague, setActiveLeague] = useState<string | null>(null);
@@ -186,7 +207,7 @@ const Standings: React.FC = () => {
 
     const getSectionMeta = (match: IMatch) => {
       const leagueLabel = tournament.leagues > 1 ? getLeagueLabel(Number(match.tournamentLeague) || 1) : '';
-      const groupLabel = (match.groupName || '').trim() || 'Загальна';
+      const groupLabel = (match.groupName || '').trim() || t('pages.standings.overallGroup');
       return {
         sectionKey: `${leagueLabel}::${groupLabel}`,
         leagueLabel,
@@ -328,7 +349,7 @@ const Standings: React.FC = () => {
     });
 
     return result;
-  }, [matchesByTournament, tournament.id, tournament.leagues]);
+  }, [matchesByTournament, t, tournament.id, tournament.leagues]);
 
   const hasLiveMatches = useMemo(() => {
     const matches = matchesByTournament[tournament.id] || [];
@@ -379,7 +400,7 @@ const Standings: React.FC = () => {
       });
   }, [groups]);
 
-  // Кількість ліг приходить з бекенду, розмітка будується з даних турнірної таблиці
+  // League count comes from backend, UI groups are built from standings data.
   const isMultiLeague = tournament.leagues > 1 && leagues.length > 1 && leagues.every((section) => !!section.label);
   const topLeagueKey = isMultiLeague ? leagues[0].key : null;
   const visibleLeagues = activeLeague ? leagues.filter((section) => section.key === activeLeague) : leagues;
@@ -505,22 +526,22 @@ const Standings: React.FC = () => {
           {hasDirectZone && (
             <span className={cn(styles.legendItem, styles.playoff)}>
               <span className={styles.legendDot} />
-              Champions League
+              {t('pages.standings.legend.championsLeague')}
             </span>
           )}
           {hasPlayoffZone && (
             <span className={cn(styles.legendItem, styles.knockout)}>
               <span className={styles.legendDot} />
-              Europe League
+              {t('pages.standings.legend.europaLeague')}
             </span>
           )}
           {hasRelegationZone && (
             <span className={cn(styles.legendItem, styles.relegation)}>
               <span className={styles.legendDot} />
-              Останні {relegationSlots}: виліт
+              {t('pages.standings.legend.lastRelegation', undefined, { count: relegationSlots })}
             </span>
           )}
-          <span className={styles.legendHint}>Зони виходу діють для цієї ліги</span>
+          <span className={styles.legendHint}>{t('pages.standings.legend.qualificationHint')}</span>
         </div>
       );
     }
@@ -536,31 +557,37 @@ const Standings: React.FC = () => {
           <>
             <span className={cn(styles.legendItem, styles.playoff)}>
               <span className={styles.legendDot} />
-              1-2 місце: плей-оф
+              {t('pages.standings.legend.nations.topPlayoff')}
             </span>
             <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-              <span className={styles.legendDot} />3 місце: стикові матчі
+              <span className={styles.legendDot} />
+              {t('pages.standings.legend.nations.topRelegationPlayoff')}
             </span>
             <span className={cn(styles.legendItem, styles.relegation)}>
-              <span className={styles.legendDot} />4 місце: пониження
+              <span className={styles.legendDot} />
+              {t('pages.standings.legend.nations.topRelegation')}
             </span>
           </>
         ) : (
           <>
             <span className={cn(styles.legendItem, styles.promotion)}>
-              <span className={styles.legendDot} />1 місце: підвищення
+              <span className={styles.legendDot} />
+              {t('pages.standings.legend.nations.lowerPromotion')}
             </span>
             <span className={cn(styles.legendItem, styles.promotionPlayoff)}>
-              <span className={styles.legendDot} />2 місце: стики на підвищення
+              <span className={styles.legendDot} />
+              {t('pages.standings.legend.nations.lowerPromotionPlayoff')}
             </span>
             {!isBottomLeague && (
               <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-                <span className={styles.legendDot} />3 місце: стики на пониження
+                <span className={styles.legendDot} />
+                {t('pages.standings.legend.nations.lowerRelegationPlayoff')}
               </span>
             )}
             {!isBottomLeague && (
               <span className={cn(styles.legendItem, styles.relegation)}>
-                <span className={styles.legendDot} />4 місце: пониження
+                <span className={styles.legendDot} />
+                {t('pages.standings.legend.nations.lowerRelegation')}
               </span>
             )}
           </>
@@ -572,8 +599,12 @@ const Standings: React.FC = () => {
   const renderGroupTable = (entry: GroupEntry, section?: LeagueSection) => {
     const isSingleTable = tournament.groupNumber === 1;
     const inLeague = !!section?.label;
-    const title = isSingleTable ? 'Турнірна таблиця' : `Група ${entry.group}`;
-    const meta = inLeague ? `${tournament.name} • Ліга ${section?.label}` : tournament.name;
+    const title = isSingleTable
+      ? t('pages.standings.title')
+      : t('pages.standings.group', undefined, { group: entry.group });
+    const meta = inLeague
+      ? `${tournament.name} • ${t('pages.standings.league', undefined, { label: section?.label || '' })}`
+      : tournament.name;
 
     return (
       <StandingsTable
@@ -597,13 +628,11 @@ const Standings: React.FC = () => {
           <div className={styles.heroText}>
             <span className={styles.heroEyebrow}>
               <TableIcon />
-              Турнірна таблиця
+              {t('pages.standings.title')}
             </span>
             <h2 className={styles.heroTitle}>{tournament.name}</h2>
             <p className={styles.heroSubtitle}>
-              {isMultiLeague
-                ? 'Ліги, позиції команд, форма останніх матчів та зони виходу далі'
-                : 'Позиції команд, форма останніх матчів та зони виходу далі'}
+              {isMultiLeague ? t('pages.standings.subtitleMulti') : t('pages.standings.subtitleSingle')}
             </p>
           </div>
 
@@ -612,27 +641,27 @@ const Standings: React.FC = () => {
               {isMultiLeague && (
                 <div className={styles.heroMetric}>
                   <span className={styles.heroMetricValue}>{overview.leagues}</span>
-                  <span className={styles.heroMetricLabel}>Ліг</span>
+                  <span className={styles.heroMetricLabel}>{t('pages.standings.metrics.leagues')}</span>
                 </div>
               )}
               {tournament.groupNumber > 1 && (
                 <div className={styles.heroMetric}>
                   <span className={styles.heroMetricValue}>{overview.groups}</span>
-                  <span className={styles.heroMetricLabel}>Груп</span>
+                  <span className={styles.heroMetricLabel}>{t('pages.standings.metrics.groups')}</span>
                 </div>
               )}
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.teams}</span>
-                <span className={styles.heroMetricLabel}>Команд</span>
+                <span className={styles.heroMetricLabel}>{t('pages.standings.metrics.teams')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.matches}</span>
-                <span className={styles.heroMetricLabel}>Матчів</span>
+                <span className={styles.heroMetricLabel}>{t('pages.standings.metrics.matches')}</span>
               </div>
               {!isMultiLeague && (
                 <div className={styles.heroMetric}>
                   <span className={styles.heroMetricValue}>{overview.goals}</span>
-                  <span className={styles.heroMetricLabel}>Голів</span>
+                  <span className={styles.heroMetricLabel}>{t('pages.standings.metrics.goals')}</span>
                 </div>
               )}
             </div>
@@ -646,7 +675,7 @@ const Standings: React.FC = () => {
             type="button"
             className={cn(styles.leagueTab, { [styles.leagueTabActive]: !activeLeague })}
             onClick={() => setActiveLeague(null)}>
-            Всі ліги
+            {t('pages.standings.allLeagues')}
           </button>
           {leagues.map((section, index) => (
             <button
@@ -657,7 +686,7 @@ const Standings: React.FC = () => {
               })}
               onClick={() => setActiveLeague(section.key)}>
               <span className={styles.leagueTabDot} />
-              Ліга {section.label}
+              {t('pages.standings.league', undefined, { label: section.label })}
             </button>
           ))}
         </div>
@@ -671,17 +700,19 @@ const Standings: React.FC = () => {
               <>
                 <span className={cn(styles.legendItem, styles.playoff)}>
                   <span className={styles.legendDot} />
-                  Ліга A: 1-2 місце вихід у плей-оф
+                  {t('pages.standings.legend.nations.singleTop')}
                 </span>
                 <span className={cn(styles.legendItem, styles.relegationPlayoff)}>
-                  <span className={styles.legendDot} />3 місце: стикові матчі
+                  <span className={styles.legendDot} />
+                  {t('pages.standings.legend.nations.singleRelegationPlayoff')}
                 </span>
                 <span className={cn(styles.legendItem, styles.relegation)}>
-                  <span className={styles.legendDot} />4 місце: пониження в лігу нижче
+                  <span className={styles.legendDot} />
+                  {t('pages.standings.legend.nations.singleRelegation')}
                 </span>
                 <span className={cn(styles.legendItem, styles.promotion)}>
                   <span className={styles.legendDot} />
-                  Нижчі ліги: 1 місце підвищення, 2 місце стики на підвищення
+                  {t('pages.standings.legend.nations.singleLower')}
                 </span>
               </>
             ) : (
@@ -689,29 +720,31 @@ const Standings: React.FC = () => {
                 {hasDirectZone && (
                   <span className={cn(styles.legendItem, styles.playoff)}>
                     <span className={styles.legendDot} />
-                    Champions League
+                    {t('pages.standings.legend.championsLeague')}
                   </span>
                 )}
                 {hasPlayoffZone && (
                   <span className={cn(styles.legendItem, styles.knockout)}>
                     <span className={styles.legendDot} />
-                    Europe League
+                    {t('pages.standings.legend.europaLeague')}
                   </span>
                 )}
                 {hasRelegationZone && (
                   <span className={cn(styles.legendItem, styles.relegation)}>
                     <span className={styles.legendDot} />
-                    Останні {relegationSlots}: виліт
+                    {t('pages.standings.legend.lastRelegation', undefined, { count: relegationSlots })}
                   </span>
                 )}
               </>
             )}
             <span className={styles.legendHint}>
               {isNationsLeague
-                ? 'Формат Nations League: підвищення/пониження між лігами A/B/C/D'
+                ? t('pages.standings.legend.nations.formatHint')
                 : isMultiLeague
-                  ? `Зони виходу — лише Ліга ${leagues[0].label}`
-                  : 'Форма: останні матчі, зліва найдавніший'}
+                  ? t('pages.standings.legend.onlyTopLeague', undefined, {
+                      league: t('pages.standings.league', undefined, { label: leagues[0].label }),
+                    })
+                  : t('pages.standings.legend.formHint')}
             </span>
           </div>
         )}
@@ -721,8 +754,8 @@ const Standings: React.FC = () => {
           <span className={styles.emptyIcon}>
             <TableIcon />
           </span>
-          <h3 className={styles.emptyTitle}>Таблиця ще не сформована</h3>
-          <p className={styles.empty}>Додайте матчі в календар, і таблиця команд зʼявиться автоматично.</p>
+          <h3 className={styles.emptyTitle}>{t('pages.standings.emptyTitle')}</h3>
+          <p className={styles.empty}>{t('pages.standings.emptyText')}</p>
         </section>
       )}
 
@@ -738,16 +771,22 @@ const Standings: React.FC = () => {
                 <header className={styles.leagueHead}>
                   <span className={styles.leagueBadge}>{section.label}</span>
                   <div className={styles.leagueHeadText}>
-                    <h3 className={styles.leagueTitle}>Ліга {section.label}</h3>
+                    <h3 className={styles.leagueTitle}>
+                      {t('pages.standings.league', undefined, { label: section.label })}
+                    </h3>
                     <p className={styles.leagueMeta}>
-                      {section.groups.length > 1 ? `${section.groups.length} груп • ` : ''}
-                      {section.teams} команд
+                      {section.groups.length > 1
+                        ? `${t('pages.standings.groupsCount', undefined, { count: section.groups.length })} • `
+                        : ''}
+                      {t('pages.standings.teams', undefined, { count: section.teams })}
                     </p>
                   </div>
                   {section.key === topLeagueKey &&
                     (isNationsLeague || hasDirectZone || hasPlayoffZone || hasRelegationZone) && (
                       <span className={styles.leagueTag}>
-                        {isNationsLeague ? 'Плей-оф / стики' : 'Вихід у плей-оф'}
+                        {isNationsLeague
+                          ? t('pages.standings.leagueTagNations')
+                          : t('pages.standings.leagueTagPlayoff')}
                       </span>
                     )}
                 </header>
@@ -774,7 +813,13 @@ const Standings: React.FC = () => {
           {thirdPlaceSections.map((section) => (
             <StandingsTable
               key={section.key || 'third'}
-              title={section.label ? `3-тє місце · Ліга ${section.label}` : 'Команди які зайняли 3-тє місце'}
+              title={
+                section.label
+                  ? t('pages.standings.thirdPlaceTitleLeague', undefined, {
+                      league: t('pages.standings.league', undefined, { label: section.label }),
+                    })
+                  : t('pages.standings.thirdPlaceTitle')
+              }
               meta={tournament.name}
               badge={section.label || undefined}
               items={section.groups[0].items}

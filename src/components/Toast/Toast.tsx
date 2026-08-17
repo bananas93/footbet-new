@@ -1,5 +1,6 @@
 import React from 'react';
 import { IconProps, ToastContainer, ToastPosition, cssTransition } from 'react-toastify';
+import { translate } from 'i18n';
 
 const glyphProps = {
   viewBox: '0 0 24 24',
@@ -55,7 +56,11 @@ const renderIcon = ({ type }: IconProps) => {
 };
 
 const CloseButton = ({ closeToast }: { closeToast: (e: React.MouseEvent<HTMLElement>) => void }) => (
-  <button type="button" className="footbet-toast__close" onClick={closeToast} aria-label="Закрити сповіщення">
+  <button
+    type="button"
+    className="footbet-toast__close"
+    onClick={closeToast}
+    aria-label={translate('components.toast.close')}>
     <svg viewBox="0 0 24 24" aria-hidden fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round">
       <path d="M6.8 6.8 17.2 17.2" />
       <path d="M17.2 6.8 6.8 17.2" />

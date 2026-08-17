@@ -7,19 +7,13 @@ import { getUserInitials, resolveAssetUrl } from 'helpers';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getMatchPredicts } from 'store/slices/predict';
 import styles from './ShowPredicts.module.scss';
+import { useI18n } from 'i18n';
 
 interface Props {
   match: IMatch;
   isOpen: boolean;
   onClose: () => void;
 }
-
-const statusLabels: Record<string, string> = {
-  [MatchStatus.SCHEDULED]: 'Заплановано',
-  [MatchStatus.IN_PROGRESS]: 'Live',
-  [MatchStatus.FINISHED]: 'Завершено',
-  [MatchStatus.POSTPONED]: 'Перенесено',
-};
 
 const getPointsTone = (points: number) => {
   if (points >= 6) {
@@ -42,10 +36,18 @@ const getPointsTone = (points: number) => {
 };
 
 const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { isLoading, data } = useAppSelector((state) => state.predict.getMatchPredictsRequest);
   const user = useAppSelector((state) => state.user.user);
-  const title = `Прогнози ${match.homeTeam.name} vs ${match.awayTeam.name}`;
+  const title = t('pages.showPredicts.title', undefined, { home: match.homeTeam.name, away: match.awayTeam.name });
+
+  const statusLabels: Record<string, string> = {
+    [MatchStatus.SCHEDULED]: t('pages.status.scheduled'),
+    [MatchStatus.IN_PROGRESS]: t('pages.status.live'),
+    [MatchStatus.FINISHED]: t('pages.status.completed'),
+    [MatchStatus.POSTPONED]: t('pages.status.postponed'),
+  };
 
   const isScheduled = match.status === MatchStatus.SCHEDULED;
   const isLive = match.status === MatchStatus.IN_PROGRESS;
@@ -70,7 +72,11 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
   const renderTeam = (team: IMatch['homeTeam']) => (
     <div className={styles.team}>
       <span className={styles.teamLogo}>
-        {team.logo ? <img src={resolveAssetUrl(team.logo)} alt={team.name} /> : <span>{getUserInitials(team.name)}</span>}
+        {team.logo ? (
+          <img src={resolveAssetUrl(team.logo)} alt={team.name} />
+        ) : (
+          <span>{getUserInitials(team.name)}</span>
+        )}
       </span>
       <span className={styles.teamName} title={team.name}>
         {team.name}
@@ -95,7 +101,7 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
 
           <div className={styles.score}>
             {isScheduled ? (
-              <span className={styles.scoreVs}>vs</span>
+              <span className={styles.scoreVs}>{t('pages.matchDetails.vs')}</span>
             ) : (
               <>
                 <span className={styles.scoreValue}>{match.homeScore}</span>
@@ -111,17 +117,23 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
 
       {!isLoading && !!summary.total && (
         <div className={styles.chips}>
-          <span className={styles.chip}>Прогнозів: {summary.total}</span>
-          {!isScheduled && <span className={styles.chip}>Точних: {summary.exact}</span>}
-          {!isScheduled && <span className={styles.chip}>Максимум: {summary.best} очк.</span>}
+          <span className={styles.chip}>{t('pages.showPredicts.chipTotal', undefined, { count: summary.total })}</span>
+          {!isScheduled && (
+            <span className={styles.chip}>
+              {t('pages.showPredicts.chipExact', undefined, { count: summary.exact })}
+            </span>
+          )}
+          {!isScheduled && (
+            <span className={styles.chip}>{t('pages.showPredicts.chipBest', undefined, { value: summary.best })}</span>
+          )}
         </div>
       )}
 
       <div className={styles.tableWrap}>
         <div className={cn(styles.row, styles.headRow)}>
-          <div className={cn(styles.col, styles.colName)}>Гравець</div>
-          <div className={styles.col}>Прогноз</div>
-          <div className={cn(styles.col, styles.colPoints)}>Очки</div>
+          <div className={cn(styles.col, styles.colName)}>{t('pages.showPredicts.table.player')}</div>
+          <div className={styles.col}>{t('pages.showPredicts.table.prediction')}</div>
+          <div className={cn(styles.col, styles.colPoints)}>{t('pages.showPredicts.table.points')}</div>
         </div>
 
         {isLoading && (
@@ -142,7 +154,10 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
                 <div className={cn(styles.col, styles.colName)}>
                   <span className={styles.avatar}>
                     {item.user?.avatar ? (
-                      <img src={resolveAssetUrl(item.user.avatar)} alt={item.user?.name || 'User avatar'} />
+                      <img
+                        src={resolveAssetUrl(item.user.avatar)}
+                        alt={item.user?.name || t('pages.showPredicts.userAvatar')}
+                      />
                     ) : (
                       getUserInitials(item.user?.name)
                     )}
@@ -152,12 +167,12 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
                       to={`/profile/${item.user.id}?tournamentId=${match.tournamentId}`}
                       className={styles.userLink}
                       title={item.user.name}>
-                      {item.user.name || 'Unknown user'}
+                      {item.user.name || t('pages.showPredicts.unknownUser')}
                     </Link>
                   ) : (
-                    <span className={styles.userName}>{item.user?.name || 'Unknown user'}</span>
+                    <span className={styles.userName}>{item.user?.name || t('pages.showPredicts.unknownUser')}</span>
                   )}
-                  {isMe && <span className={styles.meChip}>Ви</span>}
+                  {isMe && <span className={styles.meChip}>{t('pages.showPredicts.me')}</span>}
                 </div>
                 <div className={styles.col}>
                   <span className={styles.predict}>
@@ -173,8 +188,8 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
 
         {!isLoading && !data?.length && (
           <div className={styles.empty}>
-            <p className={styles.emptyTitle}>Прогнозів немає</p>
-            <p className={styles.emptyText}>Ніхто ще не зробив прогноз на цей матч.</p>
+            <p className={styles.emptyTitle}>{t('pages.showPredicts.emptyTitle')}</p>
+            <p className={styles.emptyText}>{t('pages.showPredicts.emptyText')}</p>
           </div>
         )}
       </div>

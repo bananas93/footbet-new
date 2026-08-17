@@ -6,6 +6,7 @@ import { RoutesEnum } from 'routes/AppRoutes';
 import Header from './Header/Header';
 import { getUserProfile } from 'store/slices/user';
 import styles from './Layout.module.scss';
+import { useI18n } from 'i18n';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ const BallIcon = ({ className }: { className?: string }) => (
 );
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
 
@@ -63,19 +65,19 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </span>
               <div className={styles.footerBrandText}>
                 <p className={styles.footerTitle}>Footbet</p>
-                <p className={styles.footerSubtitle}>Твій простір для прогнозів та турнірної аналітики</p>
+                <p className={styles.footerSubtitle}>{t('layout.footer.subtitle')}</p>
               </div>
             </div>
 
-            <nav className={styles.footerNav} aria-label="Футер">
+            <nav className={styles.footerNav} aria-label={t('layout.footer.navLabel')}>
               <Link to={RoutesEnum.Home} className={styles.footerLink}>
-                Головна
+                {t('layout.footer.home')}
               </Link>
               <Link to={RoutesEnum.Rules} className={styles.footerLink}>
-                Правила
+                {t('layout.footer.rules')}
               </Link>
               <Link to={RoutesEnum.ProjectSupport} className={styles.footerLink}>
-                Допомога проєкту
+                {t('layout.footer.support')}
               </Link>
             </nav>
           </div>
@@ -84,7 +86,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <div className={styles.footerMeta}>
             <p className={styles.footerCopy}>Footbet.pp.ua &copy; {currentYear}</p>
-            <p className={styles.footerNote}>Створено для фанів футболу</p>
+            <p className={styles.footerNote}>{t('layout.footer.note')}</p>
           </div>
         </div>
       </footer>

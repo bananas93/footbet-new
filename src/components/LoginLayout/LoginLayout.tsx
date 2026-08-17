@@ -1,4 +1,5 @@
 import styles from './LoginLayout.module.scss';
+import { useI18n } from 'i18n';
 
 interface LoginLayoutProps {
   children: React.ReactNode;
@@ -45,25 +46,27 @@ const TrophyIcon = () => (
   </svg>
 );
 
-const features = [
-  {
-    icon: <ChartIcon />,
-    title: 'Live-таблиця',
-    text: 'Бали й позиції оновлюються після кожного матчу.',
-  },
-  {
-    icon: <UsersIcon />,
-    title: 'Приватні кімнати',
-    text: 'Створюй турнір і змагайся з друзями та колегами.',
-  },
-  {
-    icon: <TrophyIcon />,
-    title: 'Досягнення',
-    text: 'Серії точних прогнозів, бонуси й нагороди сезону.',
-  },
-];
-
 const LoginLayout: React.FC<LoginLayoutProps> = ({ children }) => {
+  const { t } = useI18n();
+
+  const features = [
+    {
+      icon: <ChartIcon />,
+      title: t('layout.login.featureLiveTitle'),
+      text: t('layout.login.featureLiveText'),
+    },
+    {
+      icon: <UsersIcon />,
+      title: t('layout.login.featureRoomsTitle'),
+      text: t('layout.login.featureRoomsText'),
+    },
+    {
+      icon: <TrophyIcon />,
+      title: t('layout.login.featureAwardsTitle'),
+      text: t('layout.login.featureAwardsText'),
+    },
+  ];
+
   return (
     <div className={styles.page}>
       <div className={styles.shell}>
@@ -76,16 +79,14 @@ const LoginLayout: React.FC<LoginLayoutProps> = ({ children }) => {
               </span>
               <span className={styles.brandText}>
                 <span className={styles.brandName}>Footbet</span>
-                <span className={styles.brandTagline}>Турнір прогнозів</span>
+                <span className={styles.brandTagline}>{t('layout.login.tagline')}</span>
               </span>
             </div>
 
             <div className={styles.intro}>
-              <span className={styles.eyebrow}>Прогнози на футбол</span>
-              <p className={styles.introTitle}>Вгадуй результати, збирай бали, вигравай у друзів</p>
-              <p className={styles.introSubtitle}>
-                Один акаунт для всіх турнірів: матчі, таблиці, кімнати та статистика в одному місці.
-              </p>
+              <span className={styles.eyebrow}>{t('layout.login.eyebrow')}</span>
+              <p className={styles.introTitle}>{t('layout.login.title')}</p>
+              <p className={styles.introSubtitle}>{t('layout.login.subtitle')}</p>
             </div>
 
             <ul className={styles.features}>

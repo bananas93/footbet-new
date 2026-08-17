@@ -128,7 +128,6 @@ $line: rgba(20, 21, 58, 0.1);
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  margin-left: auto;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   font-size: 0.8125rem;
@@ -154,6 +153,55 @@ $line: rgba(20, 21, 58, 0.1);
   }
 }
 
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: auto;
+}
+
+.langSwitcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.18rem;
+  border: 1px solid $line;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.72);
+}
+
+.langButton {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #4a5672;
+  padding: 0.28rem 0.52rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    color: $ink;
+    background-color: rgba(20, 21, 58, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(47, 108, 255, 0.4);
+    outline-offset: 2px;
+  }
+}
+
+.langButtonActive {
+  color: #fff;
+  background: linear-gradient(135deg, #1b1b4a 0%, #33338a 100%);
+  box-shadow: 0 6px 14px -11px rgba(27, 27, 74, 0.9);
+}
+
 /* ---------- user ---------- */
 
 .user {
@@ -161,7 +209,6 @@ $line: rgba(20, 21, 58, 0.1);
   align-items: center;
   gap: 0.55rem;
   flex: 0 0 auto;
-  margin-left: auto;
   padding: 0.3rem 0.85rem 0.3rem 0.3rem;
   border-radius: 999px;
   border: 1px solid $line;
@@ -263,6 +310,15 @@ $line: rgba(20, 21, 58, 0.1);
     padding: 0.25rem 0.75rem 0.25rem 0.25rem;
   }
 
+  .actions {
+    gap: 0.4rem;
+  }
+
+  .langButton {
+    padding: 0.26rem 0.46rem;
+    font-size: 0.62rem;
+  }
+
   .signInButton {
     padding: 0.45rem 0.85rem;
   }
@@ -292,5 +348,13 @@ $line: rgba(20, 21, 58, 0.1);
 
   .signInButton {
     padding: 0.45rem 0.8rem;
+  }
+
+  .actions {
+    gap: 0.3rem;
+  }
+
+  .langSwitcher {
+    padding: 0.14rem;
   }
 }

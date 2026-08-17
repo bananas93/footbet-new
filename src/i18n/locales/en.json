@@ -1,0 +1,807 @@
+{
+  "app": {
+    "defaultTitle": "Prediction Tournament | Footbet",
+    "routes": {
+      "home": "Home | Footbet",
+      "rules": "Rules | Footbet",
+      "projectSupport": "Project Support | Footbet",
+      "user": "Profile | Footbet",
+      "signin": "Sign In | Footbet",
+      "signup": "Sign Up | Footbet",
+      "forgotPassword": "Password Recovery | Footbet",
+      "checkCode": "Verification Code | Footbet",
+      "setPassword": "New Password | Footbet",
+      "tournament": "Tournament | Footbet",
+      "profile": "User Profile | Footbet"
+    },
+    "boot": {
+      "loading": "Loading tournaments and refreshing your session..."
+    }
+  },
+  "auth": {
+    "common": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Email is invalid",
+      "passwordRequired": "Password is required",
+      "passwordMin": "Password must contain at least 8 characters",
+      "passwordConfirmRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Your email",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Your password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Confirm password",
+      "supabaseLimit": "Supabase limit: {{limit}} emails/hour.",
+      "supabaseLimitAttempts": "Supabase limit: {{limit}} emails/hour. Attempts left: {{attempts}}.",
+      "repeatAfter": "Retry in {{time}}",
+      "backToSignIn": "Back to sign in"
+    },
+    "signIn": {
+      "eyebrow": "Sign In",
+      "title": "Welcome to Footbet",
+      "subtitle": "Sign in to make predictions and track the tournament table.",
+      "googleInProgress": "Redirecting to Google...",
+      "googleButton": "Sign in with Google",
+      "or": "or",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "submitLoading": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signUpLink": "Sign up",
+      "invalidCredentials": "Incorrect email or password",
+      "loginError": "Sign-in error",
+      "googleLoginError": "Could not sign in with Google"
+    },
+    "signUp": {
+      "nameRequired": "Name is required",
+      "eyebrow": "Sign Up",
+      "title": "Create an account",
+      "subtitle": "A few fields and you are in the prediction tournament with friends.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Your name",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "Your phone number",
+      "submit": "Sign up",
+      "submitLoading": "Signing up...",
+      "alreadyRegistered": "Already registered?",
+      "signInLink": "Sign in",
+      "success": "You have successfully signed up",
+      "error": "Sign-up error",
+      "rateLimitWait": "Supabase limit: {{limit}} emails/hour. Please wait {{time}}.",
+      "rateLimitRetry": "Supabase limit: {{limit}} emails/hour. Try again in {{time}}."
+    },
+    "forgotPassword": {
+      "eyebrow": "Recovery",
+      "title": "Forgot your password?",
+      "subtitle": "Enter the email you used to register. We will send you a link to set a new password.",
+      "submit": "Send link",
+      "submitLoading": "Sending...",
+      "success": "Password recovery email has been sent",
+      "error": "Failed to send password recovery link",
+      "rateLimitWait": "Supabase limit: {{limit}} emails/hour. Please wait {{time}}.",
+      "rateLimitRetry": "Supabase limit: {{limit}} emails/hour. Try again in {{time}}."
+    },
+    "checkCode": {
+      "eyebrow": "Verification",
+      "title": "Enter the code from email",
+      "subtitle": "We sent a verification code to"
+    },
+    "setPassword": {
+      "eyebrow": "New password",
+      "title": "Set a new password",
+      "subtitle": "Enter your new password twice to confirm the change.",
+      "note": "Password must contain at least 8 characters.",
+      "submit": "Change password",
+      "submitLoading": "Loading...",
+      "success": "Password changed successfully",
+      "backToSignIn": "Return to sign in"
+    }
+  },
+  "otp": {
+    "resend": "Send again",
+    "continue": "Continue",
+    "continueLoading": "Verifying..."
+  },
+  "errors": {
+    "auth": {
+      "signInFailed": "Could not sign in",
+      "signUpFailed": "Could not register user",
+      "codeRequired": "Verification code is required"
+    },
+    "user": {
+      "notAuthorized": "User is not authenticated",
+      "googlePasswordDisabled": "Password change is not available for Google accounts. Use Google security settings."
+    }
+  },
+  "helpers": {
+    "time": {
+      "minSec": "{{minutes}} min {{seconds}} sec",
+      "sec": "{{seconds}} sec"
+    },
+    "matches": {
+      "round16": "Round of 32",
+      "round16alt": "Round of 32",
+      "round8": "Round of 16",
+      "round4": "Quarterfinal",
+      "round2": "Semifinal",
+      "thirdPlace": "Third-place match",
+      "final": "Final"
+    }
+  },
+  "guard": {
+    "requireAuth": {
+      "title": "Feature is available after sign-in",
+      "subtitle": "Tournaments and matches are public, but this section is available only for authenticated users.",
+      "button": "Sign in"
+    },
+    "admin": {
+      "title": "Access denied",
+      "subtitle": "Your account does not have the admin role in the profiles table.",
+      "backHome": "Back to home"
+    }
+  },
+  "layout": {
+    "footer": {
+      "subtitle": "Your space for predictions and tournament analytics",
+      "navLabel": "Footer",
+      "home": "Home",
+      "rules": "Rules",
+      "support": "Project support",
+      "note": "Built for football fans"
+    },
+    "header": {
+      "home": "Home",
+      "rules": "Rules",
+      "admin": "Admin",
+      "profile": "Profile",
+      "signIn": "Sign in",
+      "language": "Language",
+      "langUa": "UA",
+      "langEn": "EN"
+    },
+    "login": {
+      "featureLiveTitle": "Live table",
+      "featureLiveText": "Points and positions update after each match.",
+      "featureRoomsTitle": "Private rooms",
+      "featureRoomsText": "Create a league and compete with friends and colleagues.",
+      "featureAwardsTitle": "Achievements",
+      "featureAwardsText": "Exact-score streaks, bonuses, and season awards.",
+      "tagline": "Prediction tournament",
+      "eyebrow": "Football predictions",
+      "title": "Predict results, collect points, beat your friends",
+      "subtitle": "One account for all tournaments: matches, tables, rooms, and stats in one place."
+    }
+  },
+  "components": {
+    "installBanner": {
+      "title": "Install Footbet on your phone",
+      "text": "Get quick access from Home Screen and use it like an app.",
+      "iosNote": "On iPhone: Share -> Add to Home Screen.",
+      "later": "Later",
+      "installing": "Installing...",
+      "install": "Install"
+    },
+    "cookie": {
+      "ariaLabel": "Cookie settings",
+      "text": "We use cookies for sign-in, session persistence, and improving site performance. You can accept all cookies or keep only necessary ones.",
+      "necessary": "Necessary only",
+      "acceptAll": "Accept all"
+    },
+    "projectSupportPopup": {
+      "title": "Support Footbet",
+      "text1": "For stable operation and development, Footbet needs around EUR 200 per year.",
+      "text2": "If possible, please support the project. Thank you for your trust and help.",
+      "cta": "Support via Monobank",
+      "bankLink": "Jar link:"
+    },
+    "toast": {
+      "close": "Close notification"
+    }
+  },
+  "pages": {
+    "home": {
+      "title": "Prediction tournaments",
+      "subtitle": "Choose a tournament, predict matches, and compete with friends in public and private leagues",
+      "metricTotal": "Tournaments",
+      "metricLive": "Active",
+      "metricScheduled": "Scheduled",
+      "metricCompleted": "Completed",
+      "sectionTitle": "All tournaments",
+      "sectionMeta": "{{count}} available",
+      "emptyTitle": "No tournaments yet",
+      "emptyText": "As soon as a new tournament appears, you will see it here.",
+      "typeNational": "National",
+      "typeClub": "Club",
+      "groups": "Groups: {{count}}",
+      "playoff": "Playoff: {{count}}",
+      "cta": "Open tournament"
+    },
+    "rules": {
+      "eyebrow": "Guide",
+      "title": "Rules",
+      "subtitle": "How points are awarded for predictions and how ranking positions are determined",
+      "scoreTitle": "Scoring",
+      "scoreMeta": "{{count}} options",
+      "note": "The result is determined at the end of regular/extra time (90 or 120 minutes). Matches decided by penalties are counted as draws.",
+      "tiebreakTitle": "When points are equal",
+      "tiebreakMeta": "Tie-break order",
+      "scoring": {
+        "base": { "unit": "points", "label": "Basic result", "title": "Predicted match winner" },
+        "difference": { "unit": "points", "label": "Exact margin", "title": "Predicted winner and goal difference" },
+        "perfect": { "unit": "points", "label": "Perfect prediction", "title": "Predicted exact score" },
+        "max": { "unit": "points", "label": "Max per match", "title": "Predicted exact score in a 5+ goals match" }
+      },
+      "tiebreak": {
+        "one": "Number of exact-score predictions",
+        "two": "Number of predicted outcomes",
+        "three": "Number of predicted score margins",
+        "four": "Number of predicted 5+ goal matches",
+        "five": "Lower number of predictions"
+      }
+    },
+    "profile": {
+      "predictionHome": "Home win",
+      "predictionAway": "Away win",
+      "predictionDraw": "Draw",
+      "allTournaments": "All tournaments",
+      "selectedTournament": "Selected tournament",
+      "invalidLinkTitle": "Invalid link",
+      "invalidLinkText": "Could not determine the player. Please try again.",
+      "notAvailableTitle": "Profile unavailable",
+      "notAvailableText": "Could not load player profile. Please try later.",
+      "metricPoints": "Points",
+      "metricPredictions": "Predictions",
+      "metricExact": "Exact scores",
+      "metricAccuracy": "Accuracy",
+      "back": "Back",
+      "playerProfile": "Player profile",
+      "subtitleAll": "Player prediction stats across all tournaments",
+      "subtitleSelected": "Player prediction stats in selected tournament",
+      "subtitleNoPredictionsAll": "The player has not made any predictions yet",
+      "subtitleNoPredictionsSelected": "The player has not made predictions in this tournament yet",
+      "filterLabel": "Select tournament",
+      "emptyPredictionsTitle": "No predictions yet",
+      "emptyPredictionsAll": "Stats will appear after the first played match with a prediction.",
+      "emptyPredictionsSelected": "There are no predictions yet for tournament \"{{name}}\".",
+      "efficiencyTitle": "Prediction efficiency",
+      "efficiencyMeta": "{{count}} predictions",
+      "from": "of",
+      "matchesPercent": "{{count}}% matches",
+      "streaksTitle": "Streaks",
+      "streaksMeta": "Longest consecutive runs",
+      "winsTitle": "Predicted winners",
+      "winsMeta": "Distribution between home and away teams",
+      "winsHome": "Home wins",
+      "winsAway": "Away wins",
+      "mostCommonPrediction": "Most frequent prediction",
+      "favoriteScoresTitle": "Favorite scores",
+      "favoriteScoresMeta": "Most frequent player combinations",
+      "mostCommonCorrect": "Most frequent exact score",
+      "mostPopularPredicted": "Most popular predicted score",
+      "exactAccuracy": "Exact score accuracy",
+      "favoriteTeamsTitle": "Favorite teams",
+      "favoriteTeamsMeta": "Most points earned",
+      "accuracyCards": {
+        "score": { "label": "Perfect prediction", "title": "Exact score" },
+        "result": { "label": "Basic result", "title": "Predicted winner" },
+        "difference": { "label": "Exact margin", "title": "Predicted goal difference" },
+        "fivePlus": { "label": "Max per match", "title": "Exact score in 5+ goals match" }
+      },
+      "streakCards": {
+        "scoreRow": { "title": "Exact scores in a row", "meta": "Longest streak" },
+        "resultRow": { "title": "Correct outcomes in a row", "meta": "Longest streak" },
+        "losing": { "title": "No-point matches in a row", "meta": "Worst streak" }
+      }
+    },
+    "projectSupport": {
+      "eyebrow": "Support",
+      "title": "Project support",
+      "subtitleLine1": "For Footbet to run reliably and keep growing, the project needs around",
+      "subtitleLine2": "EUR 200 per year.",
+      "cardTitle": "Financial support",
+      "cardSubtitle": "If you can, please help support the project.",
+      "amountLabel": "Estimated annual need",
+      "amountValue": "EUR 200",
+      "cta": "Support via Monobank",
+      "jarLinkLabel": "Jar link:",
+      "thanksTitle": "Community thanks",
+      "thanks": {
+        "one": "Thank you to everyone who supports Footbet's growth.",
+        "two": "Every donation helps cover the domain, infrastructure, and development of new features.",
+        "three": "Even a small amount is a real contribution to project stability."
+      }
+    },
+    "leagues": {
+      "title": "Overall league",
+      "subtitle": "Ranking of all tournament predictors by total points",
+      "metrics": {
+        "players": "Players",
+        "predictions": "Predictions",
+        "exactScores": "Exact scores",
+        "leaderPoints": "Leader points"
+      },
+      "podium": {
+        "champion": "League champion",
+        "second": "Second place",
+        "third": "Third place"
+      },
+      "pointsShort": "pts",
+      "tableTitle": "League table",
+      "shownOf": "Showing {{shown}} of {{total}}",
+      "overall": "total {{total}}",
+      "searchPlaceholder": "Search by name",
+      "clearSearch": "Clear search",
+      "showAll": "Show all",
+      "onlyActive": "Active only",
+      "me": "You",
+      "emptyFilteredTitle": "No users found",
+      "emptyTitle": "No table data yet",
+      "emptyFilteredText": "Try changing the query or resetting filters.",
+      "emptyText": "Ranking will appear after the first predictions in the tournament.",
+      "showMore": "Show {{count}} more",
+      "table": {
+        "player": "Player",
+        "matchesShort": "M",
+        "matches": "Matches",
+        "exactShort": "Ex",
+        "exact": "Exact",
+        "result": "Result",
+        "differences": "Differences",
+        "fivePlus": "5+ goals",
+        "pointsShort": "Pts",
+        "points": "Points"
+      }
+    },
+    "achievements": {
+      "title": "Hall of achievements",
+      "subtitle": "Tournament records, personal awards, and the race for first place",
+      "mainAward": "Main award",
+      "categoriesTitle": "Tournament nominations",
+      "categoriesCount": "{{count}} categories",
+      "playerAchievements": "Player achievements",
+      "myAchievements": "My achievements",
+      "backToMine": "Back to mine",
+      "myEmpty": "Sign in or open a player's achievements from the table.",
+      "userNotFound": "User not found in the tournament table.",
+      "notInTableYet": "You are not in this tournament table yet. Make a few predictions to enter the ranking.",
+      "rankHint": "You are ahead of {{percent}}% of tournament participants by points.",
+      "points": "Points",
+      "gapFromLeader": "Gap to leader: {{points}} pts",
+      "youAreLeader": "You are leading the tournament",
+      "ofTotal": "of {{total}}",
+      "matchesCount": "{{count}} matches",
+      "efficiencyValue": "{{value}} pts/match",
+      "noData": "No data",
+      "emptyTitle": "Awards have not been decided yet",
+      "emptyText": "There is no data to calculate achievements yet.",
+      "badges": {
+        "leader": "Leader",
+        "top3": "Top-3",
+        "top10": "Top-10",
+        "participant": "In play"
+      },
+      "metrics": {
+        "players": "Players",
+        "predictions": "Predictions",
+        "exactScores": "Exact scores",
+        "awards": "Awards"
+      },
+      "spotlight": {
+        "firstContender": "First trophy contender",
+        "leaderGap": "Gap from 2nd place: {{gap}} pts",
+        "tightRace": "Tight race for first place"
+      },
+      "stats": {
+        "exactScores": "Exact scores",
+        "results": "Results",
+        "differences": "Differences",
+        "efficiency": "Efficiency"
+      },
+      "cards": {
+        "points": { "title": "Tournament leader", "description": "Most points in the overall table", "unit": "pts" },
+        "exact": { "title": "Score sniper", "description": "Most exact score predictions", "unit": "exact" },
+        "outcomes": { "title": "Outcome master", "description": "Most correct outcomes", "unit": "outc" },
+        "differences": {
+          "title": "Difference expert",
+          "description": "Most correct goal differences",
+          "unit": "diff"
+        },
+        "goals": { "title": "Risk analyst", "description": "Most 5+ goal matches", "unit": "match" },
+        "consistency": {
+          "title": "Consistent player",
+          "description": "Most matches covered with predictions",
+          "unit": "match"
+        },
+        "efficiency": {
+          "title": "Round efficiency",
+          "description": "Highest average points per match",
+          "unit": "pts/match"
+        }
+      }
+    },
+    "matches": {
+      "title": "Tournament matches",
+      "subtitleMulti": "Leagues, round calendar, match results, and your predictions",
+      "subtitleSingle": "Round calendar, match results, and your predictions",
+      "round": "Round {{index}}",
+      "playoff": "Playoff",
+      "matchesCount": "{{count}} matches",
+      "chipCompleted": "Completed {{count}}",
+      "chipScheduled": "Scheduled {{count}}",
+      "onlyLive": "Live only",
+      "showLive": "Show live",
+      "emptyTitle": "No matches yet",
+      "emptyText": "Tournament calendar will appear soon.",
+      "emptyRoundLive": "No live matches",
+      "emptyRound": "No matches in this round yet",
+      "emptyRoundLeague": "No matches in this round for {{league}}",
+      "emptyRoundLiveText": "Turn off the Live filter to see all round matches.",
+      "emptyRoundLeagueText": "Select another league or round.",
+      "emptyRoundText": "Schedule will appear soon.",
+      "metrics": {
+        "leagues": "Leagues",
+        "rounds": "Rounds",
+        "matches": "Matches"
+      }
+    },
+    "showPredicts": {
+      "title": "Predictions {{home}} vs {{away}}",
+      "userAvatar": "User avatar",
+      "unknownUser": "Unknown user",
+      "me": "You",
+      "emptyTitle": "No predictions",
+      "emptyText": "No one has made a prediction for this match yet.",
+      "chipTotal": "Predictions: {{count}}",
+      "chipExact": "Exact: {{count}}",
+      "chipBest": "Best: {{value}} pts",
+      "table": {
+        "player": "Player",
+        "prediction": "Prediction",
+        "points": "Points"
+      }
+    },
+    "rooms": {
+      "title": "Private rooms",
+      "subtitle": "Closed leagues for friends: custom table, invite code, and password",
+      "joinByCode": "Join by code",
+      "createRoom": "Create room",
+      "create": "Create",
+      "join": "Join",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "leave": "Leave",
+      "exit": "Exit",
+      "copyCode": "Copy room code",
+      "code": "Code",
+      "codeLabel": "Room code",
+      "codePlaceholder": "Paste room code",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Password",
+      "roomNameLabel": "Room name",
+      "roomNamePlaceholder": "Room name",
+      "roomPasswordLabel": "Room password",
+      "myRooms": "My rooms",
+      "ownerBadge": "Owner",
+      "owner": "Owner: {{name}}",
+      "me": "You",
+      "placeholderTitle": "No room selected",
+      "placeholderHasRooms": "Select a room from the list to view its table.",
+      "placeholderNoRooms": "Create a room or join by code to start a private league.",
+      "closedTitle": "Tournament completed",
+      "closedText": "For completed tournaments, creating new rooms and joining by code are unavailable.",
+      "emptyRoomTitle": "No data in this room yet",
+      "emptyRoomText": "The table will appear after participants make their first predictions.",
+      "sideEmptyTitle": "You don't have any rooms yet",
+      "sideEmptyText": "Create your own or join by code.",
+      "modalCreateTitle": "New private room",
+      "modalCreateHint": "Your friends will need the password together with the room code.",
+      "modalJoinTitle": "Join room",
+      "modalJoinHint": "Enter the room code sent by the owner and the password.",
+      "participantsCount": "{{count}} participants",
+      "metrics": {
+        "rooms": "Rooms: {{count}}",
+        "participants": "Participants: {{count}}"
+      },
+      "table": {
+        "player": "Player",
+        "matches": "Matches",
+        "exact": "Exact",
+        "result": "Result",
+        "difference": "Difference",
+        "fivePlus": "5+ goals",
+        "points": "Points"
+      },
+      "notifications": {
+        "privateCreated": "Private room created",
+        "joined": "You joined the room",
+        "left": "You left the room",
+        "deleted": "Room deleted",
+        "codeCopied": "Room code copied"
+      },
+      "errors": {
+        "nameRequired": "Enter a room name",
+        "passwordRequired": "Room password is required",
+        "closedForCompletedTournament": "Tournament is completed. Creating and joining rooms are unavailable.",
+        "createFailed": "Failed to create room",
+        "codeRequired": "Enter room code",
+        "invalidCodeOrPassword": "Invalid room code or password",
+        "leaveFailed": "Failed to leave room",
+        "deleteFailed": "Failed to delete room",
+        "copyCodeFailed": "Failed to copy room code"
+      }
+    },
+    "matchCard": {
+      "signInToPredict": "Sign in to make a prediction",
+      "openMatchDetails": "Open match details {{home}} - {{away}}",
+      "saved": "Prediction saved",
+      "teamLogoAlt": "Team logo",
+      "group": "Group {{name}}",
+      "yourPrediction": "Your prediction",
+      "predictionFor": "Prediction for {{team}}",
+      "predictionsAfterLogin": "Predictions are available after sign in",
+      "yourPredictionValue": "Your prediction {{home}}:{{away}}",
+      "noPrediction": "No prediction",
+      "pointsForPrediction": "{{points}} points for prediction",
+      "allPredictions": "All predictions"
+    },
+    "matchDetails": {
+      "errors": {
+        "fetchFailed": "Failed to fetch match details"
+      },
+      "homeTeamFallback": "Home",
+      "awayTeamFallback": "Away",
+      "backToMatches": "Back to matches",
+      "updatedAt": "Updated {{time}}",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "vs": "VS",
+      "halftimeScore": "1st half {{home}}:{{away}}",
+      "penaltyScore": "Penalties {{home}}:{{away}}",
+      "referee": "Referee: {{name}}",
+      "emptyTitle": "Detailed statistics unavailable",
+      "statsTitle": "Statistics",
+      "versus": "{{home}} vs {{away}}",
+      "timelineTitle": "Match timeline",
+      "timelineMeta": "Goals, cards, and substitutions",
+      "lineupsTitle": "Lineups",
+      "lineupsMeta": "Starting eleven and substitutes",
+      "coach": "Coach: {{name}}",
+      "startingLineup": "Starting lineup",
+      "substitutes": "Substitutes",
+      "positions": {
+        "goalkeeper": "GK",
+        "defender": "DF",
+        "midfielder": "MF",
+        "forward": "FW"
+      },
+      "event": {
+        "goal": "Goal",
+        "ownGoal": "Own goal",
+        "penaltyGoal": "Penalty goal",
+        "missedPenalty": "Missed penalty",
+        "card": "Card",
+        "yellowCard": "Yellow card",
+        "secondYellowCard": "Second yellow card",
+        "redCard": "Red card",
+        "substitution": "Substitution",
+        "varWithDetail": "VAR · {{detail}}"
+      },
+      "stats": {
+        "ballPossession": "Ball possession",
+        "totalShots": "Total shots",
+        "shotsOnGoal": "Shots on goal",
+        "shotsOffGoal": "Shots off goal",
+        "blockedShots": "Blocked shots",
+        "shotsInsideBox": "Shots inside box",
+        "shotsOutsideBox": "Shots outside box",
+        "cornerKicks": "Corner kicks",
+        "offsides": "Offsides",
+        "fouls": "Fouls",
+        "yellowCards": "Yellow cards",
+        "redCards": "Red cards",
+        "goalkeeperSaves": "Goalkeeper saves",
+        "totalPasses": "Total passes",
+        "passesAccurate": "Accurate passes",
+        "passesPercent": "Pass accuracy",
+        "expectedGoals": "xG",
+        "goalsPrevented": "Goals prevented"
+      }
+    },
+    "user": {
+      "profileSaved": "Profile saved",
+      "passwordChanged": "Password changed",
+      "deleteConfirm1": "Delete account permanently? This action cannot be undone.",
+      "deleteConfirm2": "Confirm again: profile, predictions, and room memberships will be deleted.",
+      "accountDeleted": "Account deleted",
+      "pushEnabled": "Push notifications enabled",
+      "pushPermissionMissing": "Notification permission not granted",
+      "pushEnableError": "Failed to enable push notifications",
+      "pushDisabled": "Push notifications disabled",
+      "pushDisableError": "Failed to disable push notifications",
+      "hero": "My account",
+      "googleLogin": "Google sign-in",
+      "logout": "Log out",
+      "nav": {
+        "profileTitle": "Profile details",
+        "profileMeta": "Name, nickname, contacts",
+        "authMethod": "Sign-in method",
+        "changePassword": "Change password",
+        "googleConnected": "Google connected",
+        "accountSecurity": "Account security",
+        "privacyTitle": "Privacy",
+        "privacyMeta": "How we handle data",
+        "settingsTitle": "Settings",
+        "settingsMeta": "Push and account management"
+      },
+      "profile": {
+        "title": "Profile details",
+        "meta": "Nickname is visible to other players in tables and rooms",
+        "emailHint": "Email is used for sign-in and cannot be changed",
+        "name": "Name",
+        "nickname": "Nickname",
+        "nicknameHint": "If empty, we show your name in tables",
+        "phone": "Phone",
+        "avatar": "Avatar",
+        "fileSelected": "Selected file: {{name}}",
+        "avatarGoogle": "You can upload your own avatar even with Google sign-in",
+        "avatarFormats": "Supported: PNG, JPG, WEBP, SVG",
+        "unsaved": "You have unsaved changes",
+        "saved": "All changes are saved",
+        "saving": "Saving...",
+        "save": "Save changes"
+      },
+      "security": {
+        "googleTitle": "Sign in with Google",
+        "passwordTitle": "Change password",
+        "googleMeta": "This account uses Google authentication, so local Footbet password is not used.",
+        "passwordMeta": "At least 8 characters, preferably with digits and mixed case letters",
+        "googleHint": "To change password, use Google security settings. After changing it in Google, the new password will apply for Footbet Google sign-in as well.",
+        "emailLabel": "Account email: {{email}}",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmNewPassword": "Confirm new password",
+        "sessionHint": "Session stays active after password change",
+        "changing": "Changing...",
+        "change": "Change password"
+      },
+      "privacy": {
+        "title": "Privacy Policy",
+        "updated": "Updated 07.06.2024",
+        "html": "<p>This Privacy Policy describes how footbet.pp.ua collects, uses, and protects personal data.</p><h3>1. Information collection</h3><p>We may collect name, email, login credentials, and activity data.</p><h3>2. Information usage</h3><p>Data is used for registration, access to features, prediction processing, and service improvement.</p><h3>3. Data protection</h3><p>We apply technical and organizational safeguards to protect personal data.</p><h3>4. User rights</h3><p>You can request access, correction, or deletion of your data according to applicable law.</p><h3>5. Cookies</h3><p>Cookies are used for session persistence, settings, and analytics.</p><h3>6. Contact</h3><p>For privacy questions contact: <a href=\"mailto:amerovdavid@gmail.com\">amerovdavid@gmail.com</a>.</p>"
+      },
+      "settings": {
+        "title": "Settings",
+        "meta": "Manage push notifications and account preferences",
+        "pushTitle": "Push notifications",
+        "pushText": "Receive instant browser alerts about important match and tournament updates.",
+        "status": "Status:",
+        "statusInsecure": "Unavailable (HTTPS required)",
+        "statusUnsupported": "Not supported by this browser",
+        "statusEnabled": "Enabled",
+        "statusDenied": "Disabled in browser settings",
+        "statusDisabled": "Disabled",
+        "applying": "Applying...",
+        "enablePush": "Enable push",
+        "disablePush": "Disable push",
+        "dangerTitle": "Delete account",
+        "dangerText": "Deleting your account permanently removes personal data, predictions, and room memberships.",
+        "deleting": "Deleting account...",
+        "delete": "Delete account"
+      }
+    },
+    "teamDetails": {
+      "position": { "gk": "Goalkeepers", "df": "Defenders", "mf": "Midfielders", "fw": "Forwards" },
+      "apiTeamMissing": "api_team_id is not filled for this team yet.",
+      "fetchError": "Failed to fetch team details",
+      "fallbackTeam": "Team",
+      "played": "Played",
+      "wins": "Wins",
+      "draws": "Draws",
+      "losses": "Losses",
+      "founded": "Founded",
+      "players": "Players",
+      "capacity": "Capacity",
+      "country": "Country",
+      "stadium": "Stadium",
+      "city": "City",
+      "toMatches": "Back to matches",
+      "hero": "Team",
+      "playersCount": "{{count}} players",
+      "form": "Form",
+      "formWin": "Win",
+      "formDraw": "Draw",
+      "formLose": "Loss",
+      "emptyTitle": "Details are unavailable",
+      "emptyText": "apiTeamId is not linked for this team yet.",
+      "infoTitle": "Info",
+      "infoMeta": "Club and home arena",
+      "statsTitle": "Statistics",
+      "currentSeason": "Current season",
+      "matchesCount": "{{count}} matches",
+      "goalsFor": "Goals for",
+      "goalsAgainst": "Goals against",
+      "cleanSheets": "Clean sheets",
+      "failedToScore": "Failed to score",
+      "distributionWins": "Wins {{value}}%",
+      "distributionDraws": "Draws {{value}}%",
+      "distributionLosses": "Losses {{value}}%",
+      "squadTitle": "Squad",
+      "squadMeta": "Players by position",
+      "unknownAge": "Unknown age",
+      "years": "{{value}} years"
+    },
+    "standings": {
+      "teams": "{{count}} teams",
+      "groupsCount": "{{count}} groups",
+      "team": "Team",
+      "matchesShort": "M",
+      "matches": "Matches",
+      "won": "W",
+      "wonTitle": "Won",
+      "draw": "D",
+      "drawTitle": "Draw",
+      "lost": "L",
+      "lostTitle": "Lost",
+      "goals": "Goals",
+      "formShort": "F",
+      "form": "Form",
+      "pointsShort": "Pts",
+      "points": "Points",
+      "overallGroup": "Overall",
+      "allLeagues": "All leagues",
+      "league": "League {{label}}",
+      "group": "Group {{group}}",
+      "emptyTitle": "Standings are not formed yet",
+      "emptyText": "Add matches to the calendar and standings will appear automatically.",
+      "title": "Standings",
+      "subtitleMulti": "Leagues, team positions, latest form, and qualification zones",
+      "subtitleSingle": "Team positions, latest form, and qualification zones",
+      "metrics": { "leagues": "Leagues", "groups": "Groups", "teams": "Teams", "matches": "Matches", "goals": "Goals" },
+      "leagueTagNations": "Playoff / deciders",
+      "leagueTagPlayoff": "Playoff qualification",
+      "thirdPlaceTitleLeague": "3rd place · {{league}}",
+      "thirdPlaceTitle": "Teams that finished 3rd",
+      "legend": {
+        "championsLeague": "Champions League",
+        "europaLeague": "Europa League",
+        "lastRelegation": "Last {{count}}: relegation",
+        "qualificationHint": "Qualification zones apply to this league",
+        "onlyTopLeague": "Qualification zones apply only to {{league}}",
+        "formHint": "Form: latest matches, oldest on the left",
+        "nations": {
+          "formatHint": "Nations League format: promotion/relegation between leagues A/B/C/D",
+          "topPlayoff": "1-2 place: playoff",
+          "topRelegationPlayoff": "3 place: relegation playoff",
+          "topRelegation": "4 place: relegation",
+          "lowerPromotion": "1 place: promotion",
+          "lowerPromotionPlayoff": "2 place: promotion playoff",
+          "lowerRelegationPlayoff": "3 place: relegation playoff",
+          "lowerRelegation": "4 place: relegation",
+          "singleTop": "League A: 1-2 place to playoff",
+          "singleRelegationPlayoff": "3 place: relegation playoff",
+          "singleRelegation": "4 place: relegation to a lower league",
+          "singleLower": "Lower leagues: 1 place promotion, 2 place promotion playoff"
+        }
+      }
+    },
+    "tournament": {
+      "matchUpdated": "Match updated",
+      "navPredictions": "Predictions",
+      "navStandings": "Standings",
+      "navLeague": "Overall league",
+      "navRooms": "Rooms",
+      "navAchievements": "Achievements",
+      "typeNational": "National",
+      "typeClub": "Club",
+      "groups": "Groups: {{count}}",
+      "playoff": "Playoff: {{count}}"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "live": "Live",
+      "completed": "Completed",
+      "postponed": "Postponed"
+    }
+  }
+}

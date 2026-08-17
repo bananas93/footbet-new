@@ -15,6 +15,7 @@ import {
 } from 'store/slices/room';
 import { useTournament } from '../../Tournament';
 import styles from './Rooms.module.scss';
+import { useI18n } from 'i18n';
 
 const medalTones = ['gold', 'silver', 'bronze'];
 
@@ -79,6 +80,7 @@ const UsersIcon = ({ className }: { className?: string }) => (
 );
 
 const Rooms: React.FC = () => {
+  const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { tournament } = useTournament();
   const user = useAppSelector((state) => state.user.user);
@@ -95,6 +97,7 @@ const Rooms: React.FC = () => {
   const joinRoomModal = useModal<void>();
 
   const selectedRoom = rooms.find((room) => room.id === selectedRoomId);
+  const isTournamentCompleted = tournament.status === 'completed';
   const isSelectedRoomCreator = !!selectedRoom && user?.id === selectedRoom.creator.id;
   const selectedRoomKey = selectedRoomId ? `${tournament.id}:${selectedRoomId}` : '';
   const leaderboard = selectedRoomId ? roomTable[selectedRoomKey] || [] : [];
@@ -106,10 +109,7 @@ const Rooms: React.FC = () => {
       .sort((a, b) => b.id - a.id);
   }, [rooms, user]);
 
-  const totalParticipants = useMemo(
-    () => myRooms.reduce((acc, room) => acc + room.participants.length, 0),
-    [myRooms],
-  );
+  const totalParticipants = useMemo(() => myRooms.reduce((acc, room) => acc + room.participants.length, 0), [myRooms]);
 
   useEffect(() => {
     dispatch(getRooms());
@@ -129,13 +129,18 @@ const Rooms: React.FC = () => {
   }, [rooms, selectedRoomId]);
 
   const handleCreateRoom = async () => {
+    if (isTournamentCompleted) {
+      notify.error(t('pages.rooms.errors.closedForCompletedTournament'));
+      return;
+    }
+
     if (!roomName.trim()) {
-      notify.error('Вкажіть назву кімнати');
+      notify.error(t('pages.rooms.errors.nameRequired'));
       return;
     }
 
     if (!roomPassword.trim()) {
-      notify.error('Для кімнати потрібен пароль');
+      notify.error(t('pages.rooms.errors.passwordRequired'));
       return;
     }
 
@@ -154,17 +159,22 @@ const Rooms: React.FC = () => {
       if (result?.roomId) {
         setSelectedRoomId(result.roomId);
       }
-      notify.success('Приватну кімнату створено');
+      notify.success(t('pages.rooms.notifications.privateCreated'));
     } catch (error: any) {
-      notify.error(error.message || 'Не вдалося створити кімнату');
+      notify.error(error.message || t('pages.rooms.errors.createFailed'));
     }
   };
 
   const handleJoinByInvite = async () => {
+    if (isTournamentCompleted) {
+      notify.error(t('pages.rooms.errors.closedForCompletedTournament'));
+      return;
+    }
+
     const normalizedInviteCode = inviteCode.trim();
 
     if (!normalizedInviteCode) {
-      notify.error('Вкажіть код кімнати');
+      notify.error(t('pages.rooms.errors.codeRequired'));
       return;
     }
 
@@ -184,9 +194,9 @@ const Rooms: React.FC = () => {
         setSelectedRoomId(result.roomId);
       }
 
-      notify.success('Ви приєдналися до кімнати');
+      notify.success(t('pages.rooms.notifications.joined'));
     } catch (error: any) {
-      notify.error(error.message || 'Невірний код кімнати або пароль');
+      notify.error(error.message || t('pages.rooms.errors.invalidCodeOrPassword'));
     }
   };
 
@@ -196,9 +206,9 @@ const Rooms: React.FC = () => {
       if (selectedRoomId === roomId) {
         setSelectedRoomId(null);
       }
-      notify.success('Ви покинули кімнату');
+      notify.success(t('pages.rooms.notifications.left'));
     } catch (error: any) {
-      notify.error(error.message || 'Не вдалося покинути кімнату');
+      notify.error(error.message || t('pages.rooms.errors.leaveFailed'));
     }
   };
 
@@ -208,9 +218,9 @@ const Rooms: React.FC = () => {
       if (selectedRoomId === roomId) {
         setSelectedRoomId(null);
       }
-      notify.success('Кімнату видалено');
+      notify.success(t('pages.rooms.notifications.deleted'));
     } catch (error: any) {
-      notify.error(error.message || 'Не вдалося видалити кімнату');
+      notify.error(error.message || t('pages.rooms.errors.deleteFailed'));
     }
   };
 
@@ -219,9 +229,9 @@ const Rooms: React.FC = () => {
 
     try {
       await navigator.clipboard.writeText(code);
-      notify.success('Код кімнати скопійовано');
+      notify.success(t('pages.rooms.notifications.codeCopied'));
     } catch {
-      notify.error('Не вдалося скопіювати код кімнати');
+      notify.error(t('pages.rooms.errors.copyCodeFailed'));
     }
   };
 
@@ -233,37 +243,40 @@ const Rooms: React.FC = () => {
           <div className={styles.heroText}>
             <span className={styles.heroEyebrow}>
               <ShieldIcon className={styles.heroEyebrowIcon} />
-              Приватні кімнати
+              {t('pages.rooms.title')}
             </span>
             <h2 className={styles.heroTitle}>{tournament.name}</h2>
-            <p className={styles.heroSubtitle}>Закриті ліги для друзів: власна таблиця, код запрошення та пароль</p>
+            <p className={styles.heroSubtitle}>{t('pages.rooms.subtitle')}</p>
 
             <div className={styles.heroChips}>
               <span className={styles.heroChip}>
                 <ShieldIcon className={styles.heroChipIcon} />
-                Кімнат: {myRooms.length}
+                {t('pages.rooms.metrics.rooms', undefined, { count: myRooms.length })}
               </span>
               <span className={styles.heroChip}>
                 <UsersIcon className={styles.heroChipIcon} />
-                Учасників: {totalParticipants}
+                {t('pages.rooms.metrics.participants', undefined, { count: totalParticipants })}
               </span>
-              {!!selectedRoom && <span className={cn(styles.heroChip, styles.heroChipActive)}>{selectedRoom.name}</span>}
+              {!!selectedRoom && (
+                <span className={cn(styles.heroChip, styles.heroChipActive)}>{selectedRoom.name}</span>
+              )}
             </div>
           </div>
 
-          <div className={styles.heroActions}>
-            <button type="button" className={styles.heroGhostButton} onClick={() => joinRoomModal.openModal()}>
-              <KeyIcon className={styles.buttonIcon} />
-              Приєднатися за кодом
-            </button>
-            <button type="button" className={styles.heroPrimaryButton} onClick={() => createRoomModal.openModal()}>
-              <PlusIcon className={styles.buttonIcon} />
-              Створити кімнату
-            </button>
-          </div>
+          {!isTournamentCompleted && (
+            <div className={styles.heroActions}>
+              <button type="button" className={styles.heroGhostButton} onClick={() => joinRoomModal.openModal()}>
+                <KeyIcon className={styles.buttonIcon} />
+                {t('pages.rooms.joinByCode')}
+              </button>
+              <button type="button" className={styles.heroPrimaryButton} onClick={() => createRoomModal.openModal()}>
+                <PlusIcon className={styles.buttonIcon} />
+                {t('pages.rooms.createRoom')}
+              </button>
+            </div>
+          )}
         </div>
       </section>
-
       <div className={styles.layout}>
         <section className={styles.mainSection}>
           {!selectedRoom && (
@@ -271,11 +284,9 @@ const Rooms: React.FC = () => {
               <span className={styles.placeholderIcon}>
                 <ShieldIcon />
               </span>
-              <h3 className={styles.placeholderTitle}>Кімнату не обрано</h3>
+              <h3 className={styles.placeholderTitle}>{t('pages.rooms.placeholderTitle')}</h3>
               <p className={styles.muted}>
-                {myRooms.length
-                  ? 'Оберіть кімнату зі списку, щоб побачити її таблицю.'
-                  : 'Створіть кімнату або приєднайтеся за кодом, щоб почати закриту лігу.'}
+                {myRooms.length ? t('pages.rooms.placeholderHasRooms') : t('pages.rooms.placeholderNoRooms')}
               </p>
             </div>
           )}
@@ -294,9 +305,9 @@ const Rooms: React.FC = () => {
                   <h3 className={styles.panelTitle}>{selectedRoom.name}</h3>
                   <p className={styles.panelMeta}>
                     <UsersIcon className={styles.metaIcon} />
-                    {selectedRoom.participants.length} учасників
+                    {t('pages.rooms.participantsCount', undefined, { count: selectedRoom.participants.length })}
                     <span className={styles.metaDivider} />
-                    Власник: {selectedRoom.creator.name}
+                    {t('pages.rooms.owner', undefined, { name: selectedRoom.creator.name })}
                   </p>
                 </div>
 
@@ -306,8 +317,8 @@ const Rooms: React.FC = () => {
                       type="button"
                       className={styles.codePill}
                       onClick={() => copyInviteCode(selectedRoom.inviteCode)}
-                      title="Скопіювати код кімнати">
-                      <span className={styles.codeLabel}>Код</span>
+                      title={t('pages.rooms.copyCode')}>
+                      <span className={styles.codeLabel}>{t('pages.rooms.code')}</span>
                       <span className={styles.codeValue}>{selectedRoom.inviteCode}</span>
                       <CopyIcon className={styles.buttonIcon} />
                     </button>
@@ -319,7 +330,7 @@ const Rooms: React.FC = () => {
                       className={cn(styles.pill, styles.pillDanger)}
                       onClick={() => handleDeleteRoom(selectedRoom.id)}>
                       <TrashIcon className={styles.buttonIcon} />
-                      Видалити
+                      {t('pages.rooms.delete')}
                     </button>
                   ) : (
                     <button
@@ -327,7 +338,7 @@ const Rooms: React.FC = () => {
                       className={cn(styles.pill, styles.pillDanger)}
                       onClick={() => handleLeaveRoom(selectedRoom.id)}>
                       <ExitIcon className={styles.buttonIcon} />
-                      Покинути
+                      {t('pages.rooms.leave')}
                     </button>
                   )}
                 </div>
@@ -345,13 +356,13 @@ const Rooms: React.FC = () => {
                 <div className={styles.tableWrap}>
                   <div className={cn(styles.row, styles.headRow)}>
                     <div className={cn(styles.col, styles.colRank)}>#</div>
-                    <div className={cn(styles.col, styles.colName)}>Гравець</div>
-                    <div className={styles.col}>Матчів</div>
-                    <div className={styles.col}>Точні</div>
-                    <div className={cn(styles.col, styles.colWide)}>Результат</div>
-                    <div className={cn(styles.col, styles.colWide)}>Різниці</div>
-                    <div className={cn(styles.col, styles.colWide)}>5+ голів</div>
-                    <div className={cn(styles.col, styles.colPoints)}>Очки</div>
+                    <div className={cn(styles.col, styles.colName)}>{t('pages.rooms.table.player')}</div>
+                    <div className={styles.col}>{t('pages.rooms.table.matches')}</div>
+                    <div className={styles.col}>{t('pages.rooms.table.exact')}</div>
+                    <div className={cn(styles.col, styles.colWide)}>{t('pages.rooms.table.result')}</div>
+                    <div className={cn(styles.col, styles.colWide)}>{t('pages.rooms.table.difference')}</div>
+                    <div className={cn(styles.col, styles.colWide)}>{t('pages.rooms.table.fivePlus')}</div>
+                    <div className={cn(styles.col, styles.colPoints)}>{t('pages.rooms.table.points')}</div>
                   </div>
 
                   {leaderboard.map((item, index) => {
@@ -372,7 +383,11 @@ const Rooms: React.FC = () => {
                         </div>
                         <div className={cn(styles.col, styles.colName)}>
                           <span className={styles.rowAvatar}>
-                            {item.avatar ? <img src={resolveAssetUrl(item.avatar)} alt={item.name} /> : getUserInitials(item.name)}
+                            {item.avatar ? (
+                              <img src={resolveAssetUrl(item.avatar)} alt={item.name} />
+                            ) : (
+                              getUserInitials(item.name)
+                            )}
                           </span>
                           <Link
                             to={`/profile/${item.id}?tournamentId=${tournament.id}`}
@@ -380,7 +395,7 @@ const Rooms: React.FC = () => {
                             title={item.name}>
                             {item.name}
                           </Link>
-                          {isMe && <span className={styles.meChip}>Ви</span>}
+                          {isMe && <span className={styles.meChip}>{t('pages.rooms.me')}</span>}
                         </div>
                         <div className={styles.col}>{item.totalMatches}</div>
                         <div className={styles.col}>{item.correctScore}</div>
@@ -401,8 +416,8 @@ const Rooms: React.FC = () => {
                   <span className={styles.placeholderIcon}>
                     <UsersIcon />
                   </span>
-                  <p className={styles.placeholderTitle}>У цій кімнаті поки немає даних</p>
-                  <p className={styles.muted}>Таблиця з’явиться після перших прогнозів учасників.</p>
+                  <p className={styles.placeholderTitle}>{t('pages.rooms.emptyRoomTitle')}</p>
+                  <p className={styles.muted}>{t('pages.rooms.emptyRoomText')}</p>
                 </div>
               )}
             </div>
@@ -412,7 +427,7 @@ const Rooms: React.FC = () => {
         <aside className={styles.sideSection}>
           <div className={styles.panel}>
             <div className={styles.sideHead}>
-              <h3 className={styles.sideTitle}>Мої кімнати</h3>
+              <h3 className={styles.sideTitle}>{t('pages.rooms.myRooms')}</h3>
               <span className={styles.sideCount}>{myRooms.length}</span>
             </div>
 
@@ -441,9 +456,11 @@ const Rooms: React.FC = () => {
                           <p className={styles.roomName} title={room.name}>
                             {room.name}
                           </p>
-                          {isCreator && <span className={styles.ownerChip}>Власник</span>}
+                          {isCreator && <span className={styles.ownerChip}>{t('pages.rooms.ownerBadge')}</span>}
                         </div>
-                        <p className={styles.roomMeta}>Учасників: {room.participants.length}</p>
+                        <p className={styles.roomMeta}>
+                          {t('pages.rooms.metrics.participants', undefined, { count: room.participants.length })}
+                        </p>
                       </div>
                     </div>
 
@@ -457,7 +474,7 @@ const Rooms: React.FC = () => {
                             copyInviteCode(room.inviteCode);
                           }}>
                           <CopyIcon className={styles.buttonIcon} />
-                          Код
+                          {t('pages.rooms.code')}
                         </button>
                       )}
                       {isCreator ? (
@@ -469,7 +486,7 @@ const Rooms: React.FC = () => {
                             handleDeleteRoom(room.id);
                           }}>
                           <TrashIcon className={styles.buttonIcon} />
-                          Видалити
+                          {t('pages.rooms.delete')}
                         </button>
                       ) : (
                         <button
@@ -480,7 +497,7 @@ const Rooms: React.FC = () => {
                             handleLeaveRoom(room.id);
                           }}>
                           <ExitIcon className={styles.buttonIcon} />
-                          Вийти
+                          {t('pages.rooms.exit')}
                         </button>
                       )}
                     </div>
@@ -490,8 +507,8 @@ const Rooms: React.FC = () => {
 
               {!myRooms.length && (
                 <div className={styles.sideEmpty}>
-                  <p className={styles.sideEmptyTitle}>У вас поки немає кімнат</p>
-                  <p className={styles.muted}>Створіть свою або приєднайтеся за кодом.</p>
+                  <p className={styles.sideEmptyTitle}>{t('pages.rooms.sideEmptyTitle')}</p>
+                  <p className={styles.muted}>{t('pages.rooms.sideEmptyText')}</p>
                 </div>
               )}
             </div>
@@ -499,59 +516,62 @@ const Rooms: React.FC = () => {
         </aside>
       </div>
 
-      {createRoomModal.isOpen && (
-        <Modal isOpen={createRoomModal.isOpen} onClose={createRoomModal.closeModal} title="Нова приватна кімната">
+      {!isTournamentCompleted && createRoomModal.isOpen && (
+        <Modal
+          isOpen={createRoomModal.isOpen}
+          onClose={createRoomModal.closeModal}
+          title={t('pages.rooms.modalCreateTitle')}>
           <div className={styles.modalForm}>
-            <p className={styles.modalHint}>Пароль знадобиться друзям разом з кодом кімнати.</p>
+            <p className={styles.modalHint}>{t('pages.rooms.modalCreateHint')}</p>
             <TextInput
               name="roomName"
-              label="Назва кімнати"
+              label={t('pages.rooms.roomNameLabel')}
               value={roomName}
               onChange={(e) => setRoomName(e.target.value)}
-              placeholder="Назва кімнати"
+              placeholder={t('pages.rooms.roomNamePlaceholder')}
             />
             <TextInput
               name="roomPassword"
-              label="Пароль кімнати"
+              label={t('pages.rooms.roomPasswordLabel')}
               type="password"
               value={roomPassword}
               onChange={(e) => setRoomPassword(e.target.value)}
-              placeholder="Пароль"
+              placeholder={t('pages.rooms.passwordPlaceholder')}
             />
             <div className={styles.modalActions}>
               <Button variant="secondary" onClick={createRoomModal.closeModal}>
-                Скасувати
+                {t('pages.rooms.cancel')}
               </Button>
-              <Button onClick={handleCreateRoom}>Створити</Button>
+              <Button onClick={handleCreateRoom}>{t('pages.rooms.create')}</Button>
             </div>
           </div>
         </Modal>
       )}
 
-      {joinRoomModal.isOpen && (
-        <Modal isOpen={joinRoomModal.isOpen} onClose={joinRoomModal.closeModal} title="Вхід у кімнату">
+      {!isTournamentCompleted && joinRoomModal.isOpen && (
+        <Modal isOpen={joinRoomModal.isOpen} onClose={joinRoomModal.closeModal} title={t('pages.rooms.modalJoinTitle')}>
           <div className={styles.modalForm}>
-            <p className={styles.modalHint}>Введіть код кімнати, який надіслав власник, та пароль.</p>
+            <p className={styles.modalHint}>{t('pages.rooms.modalJoinHint')}</p>
             <TextInput
               name="inviteCode"
-              label="Код кімнати"
+              label={t('pages.rooms.codeLabel')}
               value={inviteCode}
               onChange={(e) => setInviteCode(e.target.value)}
-              placeholder="Вставте код кімнати"
+              placeholder={t('pages.rooms.codePlaceholder')}
             />
             <TextInput
               name="invitePassword"
-              label="Пароль"
+              label={t('pages.rooms.passwordLabel')}
               type="password"
               value={invitePassword}
               onChange={(e) => setInvitePassword(e.target.value)}
-              placeholder="Пароль"
+              placeholder={t('pages.rooms.passwordPlaceholder')}
             />
             <div className={styles.modalActions}>
               <Button variant="secondary" onClick={joinRoomModal.closeModal}>
-                Скасувати
+                {t('pages.rooms.cancel')}
               </Button>
-              <Button onClick={handleJoinByInvite}>Приєднатися</Button>
+              <Button onClick={handleJoinByInvite}>{t('pages.rooms.join')}</Button>
             </div>
           </div>
         </Modal>

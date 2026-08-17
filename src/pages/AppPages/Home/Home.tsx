@@ -5,12 +5,7 @@ import { useAppSelector } from 'store';
 import { resolveAssetUrl } from 'helpers';
 import { TournamentStatus } from 'interfaces';
 import styles from './Home.module.scss';
-
-const statusLabels: Record<TournamentStatus, string> = {
-  scheduled: 'Заплановано',
-  live: 'Live',
-  completed: 'Завершено',
-};
+import { useI18n } from 'i18n';
 
 const iconProps = {
   viewBox: '0 0 24 24',
@@ -40,8 +35,15 @@ const ArrowIcon = ({ className }: { className?: string }) => (
 );
 
 const Home: React.FC = () => {
+  const { t } = useI18n();
   const { isLoading } = useAppSelector((state) => state.tournament.getTournamentsRequest);
   const { tournaments } = useAppSelector((state) => state.tournament);
+
+  const statusLabels: Record<TournamentStatus, string> = {
+    scheduled: t('pages.status.scheduled'),
+    live: t('pages.status.live'),
+    completed: t('pages.status.completed'),
+  };
 
   const overview = useMemo(() => {
     return {
@@ -62,29 +64,27 @@ const Home: React.FC = () => {
               <TrophyIcon className={styles.heroEyebrowIcon} />
               Footbet
             </span>
-            <h1 className={styles.heroTitle}>Турніри прогнозистів</h1>
-            <p className={styles.heroSubtitle}>
-              Обирайте турнір, прогнозуйте матчі та змагайтеся з друзями у загальній лізі й приватних кімнатах
-            </p>
+            <h1 className={styles.heroTitle}>{t('pages.home.title')}</h1>
+            <p className={styles.heroSubtitle}>{t('pages.home.subtitle')}</p>
           </div>
 
           {!isLoading && !!overview.total && (
             <div className={styles.heroMetrics}>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.total}</span>
-                <span className={styles.heroMetricLabel}>Турнірів</span>
+                <span className={styles.heroMetricLabel}>{t('pages.home.metricTotal')}</span>
               </div>
               <div className={cn(styles.heroMetric, { [styles.heroMetricLive]: overview.live > 0 })}>
                 <span className={styles.heroMetricValue}>{overview.live}</span>
-                <span className={styles.heroMetricLabel}>Активних</span>
+                <span className={styles.heroMetricLabel}>{t('pages.home.metricLive')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.scheduled}</span>
-                <span className={styles.heroMetricLabel}>Заплановано</span>
+                <span className={styles.heroMetricLabel}>{t('pages.home.metricScheduled')}</span>
               </div>
               <div className={styles.heroMetric}>
                 <span className={styles.heroMetricValue}>{overview.completed}</span>
-                <span className={styles.heroMetricLabel}>Завершено</span>
+                <span className={styles.heroMetricLabel}>{t('pages.home.metricCompleted')}</span>
               </div>
             </div>
           )}
@@ -93,8 +93,10 @@ const Home: React.FC = () => {
 
       {!isLoading && !!tournaments.length && (
         <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>Усі турніри</h2>
-          <span className={styles.sectionMeta}>{tournaments.length} доступно</span>
+          <h2 className={styles.sectionTitle}>{t('pages.home.sectionTitle')}</h2>
+          <span className={styles.sectionMeta}>
+            {t('pages.home.sectionMeta', undefined, { count: tournaments.length })}
+          </span>
         </div>
       )}
 
@@ -118,8 +120,8 @@ const Home: React.FC = () => {
           <span className={styles.emptyIcon}>
             <TrophyIcon />
           </span>
-          <h3 className={styles.emptyTitle}>Турнірів поки немає</h3>
-          <p className={styles.empty}>Щойно з’явиться новий турнір, він буде тут.</p>
+          <h3 className={styles.emptyTitle}>{t('pages.home.emptyTitle')}</h3>
+          <p className={styles.empty}>{t('pages.home.emptyText')}</p>
         </section>
       )}
 
@@ -146,13 +148,23 @@ const Home: React.FC = () => {
               <h3 className={styles.cardTitle}>{tournament.name}</h3>
 
               <div className={styles.chips}>
-                <span className={styles.chip}>{tournament.type === 'national' ? 'Національний' : 'Клубний'}</span>
-                {tournament.groupNumber > 1 && <span className={styles.chip}>Груп: {tournament.groupNumber}</span>}
-                {tournament.knockoutRound > 0 && <span className={styles.chip}>Плей-оф: {tournament.knockoutRound}</span>}
+                <span className={styles.chip}>
+                  {tournament.type === 'national' ? t('pages.home.typeNational') : t('pages.home.typeClub')}
+                </span>
+                {tournament.groupNumber > 1 && (
+                  <span className={styles.chip}>
+                    {t('pages.home.groups', undefined, { count: tournament.groupNumber })}
+                  </span>
+                )}
+                {tournament.knockoutRound > 0 && (
+                  <span className={styles.chip}>
+                    {t('pages.home.playoff', undefined, { count: tournament.knockoutRound })}
+                  </span>
+                )}
               </div>
 
               <span className={styles.cardCta}>
-                Перейти до турніру
+                {t('pages.home.cta')}
                 <ArrowIcon className={styles.cardCtaIcon} />
               </span>
             </Link>

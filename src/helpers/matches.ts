@@ -1,9 +1,23 @@
 import { IGames } from 'interfaces';
+import { translate } from 'i18n';
 
 export const normalizeKnockoutRoundName = (knockoutRounds: number, thirdPlaceMatch: boolean) => {
-  let knockoutRoundNames = ['/16 фіналу', '1/8 фіналу', '1/4 фіналу', '1/2 фіналу', 'Фінал'];
+  let knockoutRoundNames = [
+    translate('helpers.matches.round16'),
+    translate('helpers.matches.round8'),
+    translate('helpers.matches.round4'),
+    translate('helpers.matches.round2'),
+    translate('helpers.matches.final'),
+  ];
   if (thirdPlaceMatch) {
-    knockoutRoundNames = ['1/16 фіналу', '1/8 фіналу', '1/4 фіналу', '1/2 фіналу', 'Матч за 3-тє місце', 'Фінал'];
+    knockoutRoundNames = [
+      translate('helpers.matches.round16alt'),
+      translate('helpers.matches.round8'),
+      translate('helpers.matches.round4'),
+      translate('helpers.matches.round2'),
+      translate('helpers.matches.thirdPlace'),
+      translate('helpers.matches.final'),
+    ];
   }
   return knockoutRoundNames.slice(-knockoutRounds);
 };
