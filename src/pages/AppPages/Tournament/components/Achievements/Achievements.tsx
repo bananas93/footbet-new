@@ -155,7 +155,7 @@ const getRankBadge = (
 
 const getRankedWinners = (
   entries: Array<{ id: string; name: string; avatar?: string; value: number }>,
-  minValue: number = Number.NEGATIVE_INFINITY,
+  minValue: number = 0,
 ) => {
   const eligible = entries.filter((item) => item.value > minValue);
   if (!eligible.length) {
@@ -252,7 +252,10 @@ const Achievements = () => {
     return [
       {
         key: 'points',
-        title: t('pages.achievements.cards.points.title'),
+        title:
+          tournament.status === 'completed'
+            ? t('pages.achievements.cards.points.titleCompleted')
+            : t('pages.achievements.cards.points.title'),
         description: t('pages.achievements.cards.points.description'),
         value: `${points.value}`,
         unit: t('pages.achievements.cards.points.unit'),
@@ -321,7 +324,7 @@ const Achievements = () => {
         winners: efficiency.winners,
       },
     ];
-  }, [t, table]);
+  }, [t, table, tournament.status]);
 
   const overview = useMemo(() => {
     return {
@@ -363,7 +366,12 @@ const Achievements = () => {
     const myRow = targetUserRow;
     const leader = table[0];
 
-    const rankByMetric = (getter: (row: (typeof table)[number]) => number) => {
+    const rankByMetric = (getter: (row: (typeof table)[number]) => number): number | null => {
+      const maxValue = Math.max(...table.map((row) => getter(row)));
+      if (maxValue <= 0) {
+        return null;
+      }
+
       const myValue = getter(myRow);
       const higher = table.filter((row) => getter(row) > myValue).length;
       return higher + 1;
@@ -608,28 +616,28 @@ const Achievements = () => {
                 <div className={styles.myStats}>
                   <div className={styles.myStat}>
                     <p className={styles.myLabel}>{t('pages.achievements.stats.exactScores')}</p>
-                    <p className={styles.myValue}>#{mySummary.exactRank}</p>
-                    <RankBadgeView rank={mySummary.exactRank} />
+                    <p className={styles.myValue}>{mySummary.exactRank ? `#${mySummary.exactRank}` : '—'}</p>
+                    {mySummary.exactRank && <RankBadgeView rank={mySummary.exactRank} />}
                   </div>
                   <div className={styles.myStat}>
                     <p className={styles.myLabel}>{t('pages.achievements.stats.results')}</p>
-                    <p className={styles.myValue}>#{mySummary.outcomeRank}</p>
-                    <RankBadgeView rank={mySummary.outcomeRank} />
+                    <p className={styles.myValue}>{mySummary.outcomeRank ? `#${mySummary.outcomeRank}` : '—'}</p>
+                    {mySummary.outcomeRank && <RankBadgeView rank={mySummary.outcomeRank} />}
                   </div>
                   <div className={styles.myStat}>
                     <p className={styles.myLabel}>{t('pages.achievements.stats.differences')}</p>
-                    <p className={styles.myValue}>#{mySummary.differenceRank}</p>
-                    <RankBadgeView rank={mySummary.differenceRank} />
+                    <p className={styles.myValue}>{mySummary.differenceRank ? `#${mySummary.differenceRank}` : '—'}</p>
+                    {mySummary.differenceRank && <RankBadgeView rank={mySummary.differenceRank} />}
                   </div>
                   <div className={styles.myStat}>
                     <p className={styles.myLabel}>{t('pages.achievements.stats.efficiency')}</p>
-                    <p className={styles.myValue}>#{mySummary.efficiencyRank}</p>
+                    <p className={styles.myValue}>{mySummary.efficiencyRank ? `#${mySummary.efficiencyRank}` : '—'}</p>
                     <p className={styles.myHint}>
                       {t('pages.achievements.efficiencyValue', undefined, {
                         value: mySummary.efficiencyValue.toFixed(2),
                       })}
                     </p>
-                    <RankBadgeView rank={mySummary.efficiencyRank} />
+                    {mySummary.efficiencyRank && <RankBadgeView rank={mySummary.efficiencyRank} />}
                   </div>
                 </div>
               </>

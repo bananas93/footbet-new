@@ -399,7 +399,12 @@
         "efficiency": "Efficiency"
       },
       "cards": {
-        "points": { "title": "Tournament leader", "description": "Most points in the overall table", "unit": "pts" },
+        "points": {
+          "title": "Tournament leader",
+          "titleCompleted": "Tournament winner",
+          "description": "Most points in the overall table",
+          "unit": "pts"
+        },
         "exact": { "title": "Score sniper", "description": "Most exact score predictions", "unit": "exact" },
         "outcomes": { "title": "Outcome master", "description": "Most correct outcomes", "unit": "outc" },
         "differences": {

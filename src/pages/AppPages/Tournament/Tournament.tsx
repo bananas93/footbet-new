@@ -118,7 +118,7 @@ const Tournament: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [getStandings, tournamentId]);
+  }, [getStandings, t, tournamentId]);
 
   const navItems = useMemo(() => {
     if (!tournament) {

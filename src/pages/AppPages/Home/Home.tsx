@@ -34,6 +34,12 @@ const ArrowIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const STATUS_ORDER: Record<TournamentStatus, number> = {
+  completed: 0,
+  live: 1,
+  scheduled: 2,
+};
+
 const Home: React.FC = () => {
   const { t } = useI18n();
   const { isLoading } = useAppSelector((state) => state.tournament.getTournamentsRequest);
@@ -52,6 +58,17 @@ const Home: React.FC = () => {
       scheduled: tournaments.filter((item) => item.status === 'scheduled').length,
       completed: tournaments.filter((item) => item.status === 'completed').length,
     };
+  }, [tournaments]);
+
+  const sortedTournaments = useMemo(() => {
+    return [...tournaments].sort((a, b) => {
+      const byStatus = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+      if (byStatus !== 0) {
+        return byStatus;
+      }
+
+      return a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' });
+    });
   }, [tournaments]);
 
   return (
@@ -127,7 +144,7 @@ const Home: React.FC = () => {
 
       {!isLoading && !!tournaments.length && (
         <div className={styles.grid}>
-          {tournaments.map((tournament, index) => (
+          {sortedTournaments.map((tournament, index) => (
             <Link
               to={`/tournament/${tournament.id}`}
               className={cn(styles.card, styles[tournament.status])}
