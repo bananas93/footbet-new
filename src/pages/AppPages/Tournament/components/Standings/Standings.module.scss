@@ -546,6 +546,20 @@ $radius: 1.25rem;
   text-overflow: ellipsis;
 }
 
+.teamLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .teamName {
+    color: #2748b8;
+    text-decoration: underline;
+  }
+}
+
 .stats {
   display: flex;
   align-items: center;

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
 import { Link, useParams } from 'react-router-dom';
-import { notify, readLocalCache, resolveAssetUrl, supabase, writeLocalCache } from 'helpers';
+import { normalizeMatchTime, notify, readLocalCache, resolveAssetUrl, supabase, writeLocalCache } from 'helpers';
 import { useAppSelector } from 'store';
+import { MatchStatus } from 'interfaces';
 import styles from './TeamDetails.module.scss';
 import { useI18n } from 'i18n';
 
@@ -26,6 +27,31 @@ type TeamDetailsResponse = {
   };
 };
 
+type UpcomingMatch = {
+  id: number;
+  tournamentId: number;
+  tournamentName: string;
+  tournamentLogo?: string;
+  matchDate: string;
+  status: MatchStatus;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeTeamId: number;
+  awayTeamId: number;
+  homeTeamName: string;
+  awayTeamName: string;
+  homeTeamLogo?: string;
+  awayTeamLogo?: string;
+};
+
+type MatchStatusFilter = 'all' | MatchStatus;
+
+type MatchGroup = {
+  key: string;
+  label: string;
+  items: UpcomingMatch[];
+};
+
 const POSITION_ORDER = ['Goalkeeper', 'Defender', 'Midfielder', 'Attacker'];
 
 const POSITION_META: Record<string, { key: string; short: string; tone: string }> = {
@@ -35,8 +61,17 @@ const POSITION_META: Record<string, { key: string; short: string; tone: string }
   Attacker: { key: 'fw', short: 'FW', tone: 'toneFw' },
 };
 
-const FALLBACK_LOGO = '/logo192.png';
+const FALLBACK_LOGO = '/web-app-manifest-192x192.png';
 const TEAM_LOCAL_CACHE_TTL_SECONDS = 10 * 60;
+const EMPTY_SCORE = '-';
+
+const handleLogoError = (event: React.SyntheticEvent<HTMLImageElement>) => {
+  if (event.currentTarget.src.endsWith(FALLBACK_LOGO)) {
+    return;
+  }
+
+  event.currentTarget.src = FALLBACK_LOGO;
+};
 
 const normalizePlayers = (players: unknown): Player[] => {
   if (!Array.isArray(players)) {
@@ -93,6 +128,35 @@ const groupPlayersByPosition = (
     }));
 
   return [...ordered, ...rest];
+};
+
+const formatRowDate = (date: string) =>
+  new Date(date).toLocaleDateString('uk-UA', { weekday: 'short', day: 'numeric', month: 'short' });
+
+const formatMonthLabel = (date: string) => {
+  const label = new Date(date).toLocaleDateString('uk-UA', { month: 'long', year: 'numeric' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+};
+
+const groupMatchesByMonth = (items: UpcomingMatch[]): MatchGroup[] => {
+  const groups = new Map<string, MatchGroup>();
+
+  items.forEach((match) => {
+    const date = new Date(match.matchDate);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        label: formatMonthLabel(match.matchDate),
+        items: [],
+      });
+    }
+
+    groups.get(key)?.items.push(match);
+  });
+
+  return Array.from(groups.values());
 };
 
 const ShieldIcon = () => (
@@ -169,17 +233,18 @@ const UsersIcon = () => (
   </svg>
 );
 
-const EmptyIcon = () => (
+const CalendarIcon = () => (
   <svg
     viewBox="0 0 24 24"
     aria-hidden="true"
+    className={styles.sectionIconSvg}
     fill="none"
     stroke="currentColor"
-    strokeWidth={1.6}
+    strokeWidth={1.7}
     strokeLinecap="round"
     strokeLinejoin="round">
-    <circle cx="12" cy="12" r="9" />
-    <path d="M9.2 9.6a2.8 2.8 0 015.4.9c0 1.9-2.6 2.2-2.6 3.9M12 17.4v.2" />
+    <rect x="3.5" y="5.2" width="17" height="15" rx="2.5" />
+    <path d="M8 3.2v4M16 3.2v4M3.5 10h17" />
   </svg>
 );
 
@@ -193,6 +258,8 @@ const TeamDetails: React.FC = () => {
   const { tournamentId, teamId } = useParams<{ tournamentId: string; teamId: string }>();
   const matchesByTournament = useAppSelector((state) => state.match.matches);
   const [data, setData] = useState<TeamDetailsResponse | null>(null);
+  const [upcomingMatches, setUpcomingMatches] = useState<UpcomingMatch[]>([]);
+  const [statusFilter, setStatusFilter] = useState<MatchStatusFilter>('all');
   const [isLoading, setIsLoading] = useState(true);
 
   const localTeam = useMemo(() => {
@@ -210,6 +277,66 @@ const TeamDetails: React.FC = () => {
   }, [matchesByTournament, teamId, tournamentId]);
 
   const apiTeamId = localTeam?.apiTeamId;
+
+  useEffect(() => {
+    const fetchUpcomingMatches = async () => {
+      if (!teamId) {
+        setUpcomingMatches([]);
+        return;
+      }
+
+      try {
+        const teamNumericId = Number(teamId);
+
+        const { data: matchesRaw, error } = await supabase
+          .from('matches')
+          .select(
+            `
+            id,
+            status,
+            home_score,
+            away_score,
+            match_date,
+            tournament_id,
+            home_team_id,
+            away_team_id,
+            homeTeam:teams!matches_home_team_id_fkey(id, name, logo),
+            awayTeam:teams!matches_away_team_id_fkey(id, name, logo),
+            tournament:tournaments!matches_tournament_id_fkey(id, name, logo)
+          `,
+          )
+          .or(`home_team_id.eq.${teamNumericId},away_team_id.eq.${teamNumericId}`)
+          .order('match_date', { ascending: true });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        const nextMatches = (matchesRaw || []).map((item: any) => ({
+          id: item.id,
+          tournamentId: item.tournament_id,
+          tournamentName: item.tournament?.name || t('pages.teamDetails.fallbackTournament'),
+          tournamentLogo: item.tournament?.logo || '',
+          matchDate: item.match_date,
+          status: item.status,
+          homeScore: item.home_score,
+          awayScore: item.away_score,
+          homeTeamId: item.home_team_id,
+          awayTeamId: item.away_team_id,
+          homeTeamName: item.homeTeam?.name || t('pages.matchDetails.homeTeamFallback'),
+          awayTeamName: item.awayTeam?.name || t('pages.matchDetails.awayTeamFallback'),
+          homeTeamLogo: item.homeTeam?.logo || '',
+          awayTeamLogo: item.awayTeam?.logo || '',
+        })) as UpcomingMatch[];
+
+        setUpcomingMatches(nextMatches);
+      } catch (error: any) {
+        notify.error(error.message || t('pages.teamDetails.fetchError'));
+      }
+    };
+
+    void fetchUpcomingMatches();
+  }, [t, teamId]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -335,6 +462,74 @@ const TeamDetails: React.FC = () => {
 
   const leagueLabel = [statistics?.league?.name, statistics?.league?.season].filter(Boolean).join(' · ');
 
+  const filteredMatches = useMemo(() => {
+    if (statusFilter === 'all') {
+      return upcomingMatches;
+    }
+
+    return upcomingMatches.filter((match) => match.status === statusFilter);
+  }, [statusFilter, upcomingMatches]);
+
+  const matchGroups = useMemo(() => groupMatchesByMonth(filteredMatches), [filteredMatches]);
+
+  const statusCounts = useMemo(() => {
+    const counts = upcomingMatches.reduce<Record<string, number>>((acc, match) => {
+      acc[match.status] = (acc[match.status] || 0) + 1;
+      return acc;
+    }, {});
+
+    return { ...counts, all: upcomingMatches.length } as Record<MatchStatusFilter, number>;
+  }, [upcomingMatches]);
+
+  const statusFilters = useMemo(
+    () =>
+      (
+        [
+          { key: 'all' as MatchStatusFilter, label: t('pages.teamDetails.filterAllStatuses') },
+          { key: MatchStatus.SCHEDULED, label: t('pages.status.scheduled') },
+          { key: MatchStatus.IN_PROGRESS, label: t('pages.status.live') },
+          { key: MatchStatus.FINISHED, label: t('pages.status.completed') },
+          { key: MatchStatus.POSTPONED, label: t('pages.status.postponed') },
+        ] as Array<{ key: MatchStatusFilter; label: string }>
+      )
+        .map((filter) => ({ ...filter, count: statusCounts[filter.key] || 0 }))
+        .filter((filter) => filter.key === 'all' || filter.count > 0),
+    [statusCounts, t],
+  );
+
+  const renderRowTeam = (name: string, logo: string | undefined, isCurrent: boolean, isHomeSide: boolean) => {
+    const logoNode = (
+      <span className={styles.rowTeamLogo}>
+        <img src={resolveAssetUrl(logo) || FALLBACK_LOGO} alt="" loading="lazy" onError={handleLogoError} />
+      </span>
+    );
+
+    const nameNode = (
+      <span className={styles.rowTeamName} title={name}>
+        {name}
+      </span>
+    );
+
+    return (
+      <div
+        className={cn(styles.rowTeam, isHomeSide ? styles.rowTeamHome : styles.rowTeamAway, {
+          [styles.rowTeamCurrent]: isCurrent,
+        })}>
+        {isHomeSide ? (
+          <>
+            {nameNode}
+            {logoNode}
+          </>
+        ) : (
+          <>
+            {logoNode}
+            {nameNode}
+          </>
+        )}
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -366,13 +561,7 @@ const TeamDetails: React.FC = () => {
         <div className={styles.heroContent}>
           <div className={styles.heroIdentity}>
             <div className={styles.heroLogo}>
-              <img
-                src={teamLogo}
-                alt={teamName}
-                onError={(event) => {
-                  event.currentTarget.src = FALLBACK_LOGO;
-                }}
-              />
+              <img src={teamLogo} alt={teamName} onError={handleLogoError} />
             </div>
 
             <div className={styles.heroText}>
@@ -435,16 +624,6 @@ const TeamDetails: React.FC = () => {
           </div>
         </div>
       </header>
-
-      {!data?.hasExternalData && (
-        <div className={styles.emptyCard}>
-          <span className={styles.emptyIcon}>
-            <EmptyIcon />
-          </span>
-          <h3 className={styles.emptyTitle}>{t('pages.teamDetails.emptyTitle')}</h3>
-          <p className={styles.empty}>{data?.message || t('pages.teamDetails.emptyText')}</p>
-        </div>
-      )}
 
       {!!details && (
         <section className={styles.card}>
@@ -557,6 +736,148 @@ const TeamDetails: React.FC = () => {
         </section>
       )}
 
+      <section className={styles.card}>
+        <div className={styles.sectionHead}>
+          <span className={styles.sectionIcon}>
+            <CalendarIcon />
+          </span>
+          <div className={styles.sectionHeadText}>
+            <h3 className={styles.sectionTitle}>{t('pages.teamDetails.nextMatchesTitle')}</h3>
+            <p className={styles.sectionMeta}>{t('pages.teamDetails.nextMatchesMeta')}</p>
+          </div>
+          <span className={styles.sectionCount}>{filteredMatches.length}</span>
+        </div>
+
+        <div className={styles.filterBar}>
+          {statusFilters.map((filter) => (
+            <button
+              key={filter.key}
+              type="button"
+              className={cn(styles.filterTab, { [styles.filterTabActive]: statusFilter === filter.key })}
+              onClick={() => setStatusFilter(filter.key)}>
+              {filter.key === MatchStatus.IN_PROGRESS && <span className={styles.liveDot} />}
+              <span className={styles.filterLabel}>{filter.label}</span>
+              <span className={styles.filterCount}>{filter.count}</span>
+            </button>
+          ))}
+        </div>
+
+        {!!matchGroups.length && (
+          <div className={styles.matchGroups}>
+            {matchGroups.map((group) => (
+              <div className={styles.matchGroup} key={group.key}>
+                <div className={styles.matchGroupHead}>
+                  <span className={styles.matchGroupLabel}>{group.label}</span>
+                  <span className={styles.matchGroupCount}>{group.items.length}</span>
+                </div>
+
+                <div className={styles.matchRows}>
+                  {group.items.map((match) => {
+                    const isHome = match.homeTeamId === Number(teamId);
+                    const isLive = match.status === MatchStatus.IN_PROGRESS;
+                    const isScheduled = match.status === MatchStatus.SCHEDULED;
+                    const isPostponed = match.status === MatchStatus.POSTPONED;
+                    const isPlayed = isLive || match.status === MatchStatus.FINISHED;
+                    const hasScore =
+                      isPlayed &&
+                      match.homeScore !== null &&
+                      match.awayScore !== null &&
+                      Number.isFinite(Number(match.homeScore)) &&
+                      Number.isFinite(Number(match.awayScore));
+                    const teamGoals = hasScore ? (isHome ? Number(match.homeScore) : Number(match.awayScore)) : null;
+                    const opponentGoals = hasScore
+                      ? isHome
+                        ? Number(match.awayScore)
+                        : Number(match.homeScore)
+                      : null;
+                    const outcome =
+                      match.status === MatchStatus.FINISHED && teamGoals !== null && opponentGoals !== null
+                        ? teamGoals > opponentGoals
+                          ? 'win'
+                          : teamGoals < opponentGoals
+                            ? 'lose'
+                            : 'draw'
+                        : null;
+
+                    return (
+                      <Link
+                        key={match.id}
+                        to={`/tournament/${match.tournamentId}/match/${match.id}`}
+                        className={cn(styles.matchRow, {
+                          [styles.matchRowLive]: isLive,
+                          [styles.matchRowScheduled]: isScheduled,
+                          [styles.matchRowPostponed]: isPostponed,
+                          [styles.matchRowFinished]: match.status === MatchStatus.FINISHED,
+                          [styles.matchRowWin]: outcome === 'win',
+                          [styles.matchRowDraw]: outcome === 'draw',
+                          [styles.matchRowLose]: outcome === 'lose',
+                        })}
+                        aria-label={t('pages.matchCard.openMatchDetails', undefined, {
+                          home: match.homeTeamName,
+                          away: match.awayTeamName,
+                        })}>
+                        <div className={styles.rowDate}>
+                          <span className={styles.rowDateDay}>{formatRowDate(match.matchDate)}</span>
+
+                          {isLive ? (
+                            <span className={styles.rowLive}>
+                              <span className={styles.liveDot} />
+                              {t('pages.status.live')}
+                            </span>
+                          ) : isPostponed ? (
+                            <span className={styles.rowPostponed}>{t('pages.status.postponed')}</span>
+                          ) : (
+                            <span className={styles.rowDateTime}>{normalizeMatchTime(match.matchDate)}</span>
+                          )}
+                        </div>
+
+                        <span className={styles.rowTournament} title={match.tournamentName}>
+                          <img
+                            src={resolveAssetUrl(match.tournamentLogo) || FALLBACK_LOGO}
+                            alt={match.tournamentName}
+                            loading="lazy"
+                            onError={handleLogoError}
+                          />
+                        </span>
+
+                        <div className={styles.rowMatchup}>
+                          {renderRowTeam(match.homeTeamName, match.homeTeamLogo, isHome, true)}
+
+                          <span
+                            className={cn(styles.rowScore, {
+                              [styles.rowScoreLive]: isLive,
+                              [styles.rowScorePending]: !hasScore,
+                              [styles.rowScoreWin]: outcome === 'win',
+                              [styles.rowScoreDraw]: outcome === 'draw',
+                              [styles.rowScoreLose]: outcome === 'lose',
+                            })}>
+                            <span className={styles.rowScoreValue}>{hasScore ? match.homeScore : EMPTY_SCORE}</span>
+                            <span className={styles.rowScoreDash}>:</span>
+                            <span className={styles.rowScoreValue}>{hasScore ? match.awayScore : EMPTY_SCORE}</span>
+                          </span>
+
+                          {renderRowTeam(match.awayTeamName, match.awayTeamLogo, !isHome, false)}
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!matchGroups.length && (
+          <div className={styles.emptyBlock}>
+            <span className={styles.emptyIcon}>
+              <CalendarIcon />
+            </span>
+            <p className={styles.emptyTitle}>{t('pages.teamDetails.nextMatchesEmptyTitle')}</p>
+            <p className={styles.empty}>{t('pages.teamDetails.nextMatchesEmpty')}</p>
+          </div>
+        )}
+      </section>
+
       {players.length > 0 && (
         <section className={styles.card}>
           <div className={styles.sectionHead}>
@@ -588,9 +909,7 @@ const TeamDetails: React.FC = () => {
                           alt={player.name}
                           className={styles.playerPhoto}
                           loading="lazy"
-                          onError={(event) => {
-                            event.currentTarget.src = FALLBACK_LOGO;
-                          }}
+                          onError={handleLogoError}
                         />
                         {!!player.number && <span className={styles.playerNumber}>{player.number}</span>}
                       </span>

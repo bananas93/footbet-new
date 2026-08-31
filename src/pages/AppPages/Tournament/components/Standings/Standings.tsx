@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import cn from 'classnames';
+import { Link } from 'react-router-dom';
 import { useAppSelector } from 'store';
 import { useTournament } from '../../Tournament';
 import { IMatch, IStandingsItem, MatchStatus } from 'interfaces';
@@ -24,6 +25,7 @@ type LeagueSection = {
 };
 
 type StandingsTableProps = {
+  tournamentId: number;
   title: string;
   meta?: string;
   badge?: string;
@@ -96,7 +98,16 @@ const TableIcon = () => (
   </svg>
 );
 
-const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, items, isMobile, getZone, formLimit }) => {
+const StandingsTable: React.FC<StandingsTableProps> = ({
+  tournamentId,
+  title,
+  meta,
+  badge,
+  items,
+  isMobile,
+  getZone,
+  formLimit,
+}) => {
   const { t } = useI18n();
 
   const formTitleMap: Record<string, string> = {
@@ -144,6 +155,8 @@ const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, ite
         {items.map((item, index) => {
           const zone = getZone(index);
           const form = typeof formLimit === 'number' ? item.form.slice(formLimit) : item.form;
+          const teamId = Number(item.id);
+          const teamHref = Number.isFinite(teamId) ? `/tournament/${tournamentId}/team/${teamId}` : '';
 
           return (
             <div className={cn(styles.row, zone ? styles[zone] : '', { [styles.zoneRow]: !!zone })} key={item.id}>
@@ -151,12 +164,23 @@ const StandingsTable: React.FC<StandingsTableProps> = ({ title, meta, badge, ite
                 <span className={cn(styles.position, { [styles.positionZone]: !!zone })}>{index + 1}</span>
               </div>
               <div className={styles.colTeam}>
-                <span className={styles.teamLogo}>
-                  <img src={resolveAssetUrl(item.logo)} alt={item.team} />
-                </span>
-                <p className={styles.teamName} title={item.team}>
-                  {item.team}
-                </p>
+                {teamHref ? (
+                  <Link to={teamHref} className={styles.teamLink} title={item.team}>
+                    <span className={styles.teamLogo}>
+                      <img src={resolveAssetUrl(item.logo)} alt={item.team} />
+                    </span>
+                    <p className={styles.teamName}>{item.team}</p>
+                  </Link>
+                ) : (
+                  <>
+                    <span className={styles.teamLogo}>
+                      <img src={resolveAssetUrl(item.logo)} alt={item.team} />
+                    </span>
+                    <p className={styles.teamName} title={item.team}>
+                      {item.team}
+                    </p>
+                  </>
+                )}
               </div>
               <div className={styles.stats}>
                 <p className={styles.col}>{item.played}</p>
@@ -624,6 +648,7 @@ const Standings: React.FC = () => {
 
     return (
       <StandingsTable
+        tournamentId={tournament.id}
         key={entry.key}
         title={title}
         meta={meta}
@@ -828,6 +853,7 @@ const Standings: React.FC = () => {
         <div className={cn(styles.groups, { [styles.one]: thirdPlaceSections.length === 1 })}>
           {thirdPlaceSections.map((section) => (
             <StandingsTable
+              tournamentId={tournament.id}
               key={section.key || 'third'}
               title={
                 section.label

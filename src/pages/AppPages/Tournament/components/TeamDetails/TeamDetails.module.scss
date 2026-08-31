@@ -4,6 +4,7 @@ $line: #e9edf6;
 $radius: 1.25rem;
 $win: #12794a;
 $lose: #b23524;
+$live: #e0342b;
 
 .page {
   padding: 2rem;
@@ -458,6 +459,482 @@ $lose: #b23524;
   margin-top: 0.65rem;
 }
 
+/* ---------- matches filter ---------- */
+
+.filterBar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: fit-content;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  padding: 0.35rem;
+  border-radius: 999px;
+  background-color: #f7f9fd;
+  border: 1px solid $line;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.filterTab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background-color: transparent;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #55607d;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+
+  &:hover {
+    background-color: #fff;
+    color: $ink;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(47, 108, 255, 0.4);
+    outline-offset: 2px;
+  }
+}
+
+.filterTabActive {
+  color: #fff;
+  background: linear-gradient(135deg, #1b1b4a 0%, #33338a 100%);
+  box-shadow: 0 10px 20px -12px rgba(27, 27, 74, 0.7);
+
+  &:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #23235c 0%, #3b3b9c 100%);
+  }
+}
+
+.filterLabel {
+  line-height: 1.2;
+}
+
+.filterCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: $muted;
+  background-color: #eef2f9;
+  font-variant-numeric: tabular-nums;
+}
+
+.filterTabActive .filterCount {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- matches ---------- */
+
+.matchGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.matchGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.matchGroupHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    border-top: 1px solid $line;
+  }
+}
+
+.matchGroupLabel {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #55607d;
+}
+
+.matchGroupCount {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: $muted;
+  background-color: #eef2f9;
+  font-variant-numeric: tabular-nums;
+}
+
+.matchRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.matchRow {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr) 1.75rem;
+  grid-template-areas: 'date matchup tournament';
+  align-items: center;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+  border-radius: 1rem;
+  background-color: #fff;
+  border: 1px solid $line;
+  text-decoration: none;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: linear-gradient(180deg, #33338a 0%, #14153a 100%);
+    opacity: 0.45;
+  }
+
+  &:hover {
+    border-color: #d3ddfb;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px -20px rgba(20, 21, 58, 0.5);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(47, 108, 255, 0.4);
+    outline-offset: 2px;
+  }
+}
+
+.matchRowLive {
+  border-color: rgba(224, 52, 43, 0.4);
+  background: linear-gradient(90deg, rgba(255, 86, 66, 0.13) 0%, rgba(255, 86, 66, 0) 45%), #fff;
+  box-shadow: 0 0 0 3px rgba(224, 52, 43, 0.07);
+
+  &::before {
+    background: linear-gradient(180deg, #ff8479 0%, #c2251d 100%);
+    opacity: 1;
+  }
+}
+
+.matchRowScheduled::before {
+  background: linear-gradient(180deg, #f4c752 0%, #a3730c 100%);
+  opacity: 0.85;
+}
+
+.matchRowPostponed::before {
+  background: linear-gradient(180deg, #b6bdcc 0%, #8a93a8 100%);
+  opacity: 0.85;
+}
+
+.matchRowFinished::before {
+  background: linear-gradient(180deg, #a8b6cd 0%, #5c6880 100%);
+  opacity: 0.75;
+}
+
+.matchRowWin {
+  border-color: #cbeadb;
+  background: linear-gradient(90deg, rgba(52, 194, 124, 0.12) 0%, rgba(52, 194, 124, 0) 45%), #fff;
+
+  &::before {
+    background: linear-gradient(180deg, #34c27c 0%, #12794a 100%);
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: #a9dcc3;
+    box-shadow: 0 14px 26px -20px rgba(18, 121, 74, 0.5);
+  }
+}
+
+.matchRowDraw {
+  border-color: #dbe1ee;
+  background: linear-gradient(90deg, rgba(107, 117, 144, 0.1) 0%, rgba(107, 117, 144, 0) 45%), #fff;
+
+  &::before {
+    background: linear-gradient(180deg, #b6bdcc 0%, #6b7590 100%);
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: #c8d1e4;
+  }
+}
+
+.matchRowLose {
+  border-color: #ebd6d2;
+  background: linear-gradient(90deg, rgba(140, 46, 32, 0.09) 0%, rgba(140, 46, 32, 0) 45%), #fff;
+
+  &::before {
+    background: linear-gradient(180deg, #e46a54 0%, #b23524 100%);
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: #e9bab4;
+    box-shadow: 0 14px 26px -20px rgba(178, 53, 36, 0.5);
+  }
+}
+
+/* date */
+
+.rowDate {
+  grid-area: date;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.rowDateDay {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: $ink;
+  white-space: nowrap;
+}
+
+.rowDateTime {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $muted;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowLive {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  align-self: flex-start;
+  padding: 0.1rem 0.45rem 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $live;
+  background-color: rgba(224, 52, 43, 0.1);
+  border: 1px solid rgba(224, 52, 43, 0.3);
+  white-space: nowrap;
+}
+
+.rowPostponed {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #8a6100;
+  white-space: nowrap;
+}
+
+.liveDot {
+  flex: 0 0 auto;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background-color: $live;
+  animation: pulse 1.8s ease-out infinite;
+}
+
+.filterTabActive .liveDot {
+  background-color: #fff;
+}
+
+/* tournament */
+
+.rowTournament {
+  grid-area: tournament;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.55rem;
+  background-color: #f7f9fd;
+  border: 1px solid $line;
+
+  img {
+    max-width: 1.2rem;
+    max-height: 1.2rem;
+    object-fit: contain;
+  }
+}
+
+/* matchup */
+
+.rowMatchup {
+  grid-area: matchup;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.rowTeam {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.rowTeamHome {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.rowTeamAway {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.rowTeamLogo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(160deg, #ffffff 0%, #f4f6fb 100%);
+  border: 1px solid $line;
+
+  img {
+    max-width: 1.5rem;
+    max-height: 1.5rem;
+    object-fit: contain;
+  }
+}
+
+.rowTeamName {
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #55607d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowTeamCurrent {
+  .rowTeamName {
+    font-weight: 700;
+    color: $ink;
+  }
+
+  .rowTeamLogo {
+    border-color: #cdd8f6;
+    box-shadow: 0 0 0 3px rgba(51, 51, 138, 0.07);
+  }
+}
+
+/* score */
+
+.rowScore {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+  min-width: 4.25rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.7rem;
+  background-color: #f4f6fb;
+  border: 1px solid $line;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: $ink;
+  font-variant-numeric: tabular-nums;
+}
+
+.rowScoreValue {
+  line-height: 1.1;
+}
+
+.rowScoreDash {
+  font-size: 0.9375rem;
+  color: #aeb7ca;
+}
+
+.rowScoreWin {
+  color: $win;
+  background-color: #edfbf3;
+  border-color: #c6e9d6;
+
+  .rowScoreDash {
+    color: rgba(18, 121, 74, 0.45);
+  }
+}
+
+.rowScoreDraw {
+  color: #46506e;
+  background-color: #eef2f9;
+  border-color: #d6dcef;
+}
+
+.rowScoreLose {
+  color: $lose;
+  background-color: #fff0f0;
+  border-color: #f2cdcd;
+
+  .rowScoreDash {
+    color: rgba(178, 53, 36, 0.45);
+  }
+}
+
+.rowScoreLive {
+  color: $live;
+  background-color: rgba(224, 52, 43, 0.08);
+  border-color: rgba(224, 52, 43, 0.25);
+
+  .rowScoreDash {
+    color: rgba(224, 52, 43, 0.45);
+  }
+}
+
+.rowScorePending {
+  color: #98a2ba;
+  background-color: transparent;
+  border-style: dashed;
+  border-color: #dde4f2;
+
+  .rowScoreDash {
+    color: #c3cbdd;
+  }
+}
+
 .legendItem {
   display: inline-flex;
   align-items: center;
@@ -660,6 +1137,18 @@ $lose: #b23524;
   box-shadow: 0 1px 8px 2px rgba(34, 34, 38, 0.05);
 }
 
+.emptyBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  padding: 2.5rem 1.5rem;
+  border-radius: 1.1rem;
+  background: linear-gradient(180deg, #f8fafd 0%, rgba(255, 255, 255, 0) 100%), #fff;
+  border: 1px dashed #dde4f2;
+}
+
 .emptyIcon {
   display: grid;
   place-items: center;
@@ -726,11 +1215,27 @@ $lose: #b23524;
   }
 }
 
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 52, 43, 0.55);
+  }
+
+  70% {
+    box-shadow: 0 0 0 0.35rem rgba(224, 52, 43, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(224, 52, 43, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .skeletonBlock {
+  .skeletonBlock,
+  .liveDot {
     animation: none;
   }
 
+  .matchRow:hover,
   .playerCard:hover {
     transform: none;
   }
@@ -802,6 +1307,54 @@ $lose: #b23524;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .filterBar {
+    margin-bottom: 0.85rem;
+  }
+
+  .filterTab {
+    padding: 0.4rem 0.7rem;
+    font-size: 0.75rem;
+  }
+
+  .matchRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'date tournament'
+      'matchup matchup';
+    gap: 0.6rem;
+    padding: 0.75rem 0.75rem 0.75rem 0.95rem;
+  }
+
+  .rowDate {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .rowMatchup {
+    gap: 0.5rem;
+    padding: 0.15rem 0;
+  }
+
+  .rowTeamLogo {
+    width: 1.9rem;
+    height: 1.9rem;
+
+    img {
+      max-width: 1.35rem;
+      max-height: 1.35rem;
+    }
+  }
+
+  .rowTeamName {
+    font-size: 0.8125rem;
+  }
+
+  .rowScore {
+    min-width: 3.75rem;
+    font-size: 1.0625rem;
+  }
+
   .statValue {
     font-size: 1.15rem;
   }
@@ -820,6 +1373,47 @@ $lose: #b23524;
 }
 
 @media screen and (max-width: 30em) {
+  .matchRow {
+    gap: 0.5rem;
+  }
+
+  .rowMatchup {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+
+  .rowTeamName {
+    font-size: 0.75rem;
+    white-space: normal;
+    line-height: 1.25;
+  }
+
+  .rowTeam {
+    gap: 0.3rem;
+    text-align: center;
+  }
+
+  .rowTeamHome,
+  .rowTeamAway {
+    justify-content: flex-start;
+    text-align: center;
+  }
+
+  /* logo above the name on both sides, whatever the DOM order is */
+  .rowTeamHome {
+    flex-direction: column-reverse;
+  }
+
+  .rowTeamAway {
+    flex-direction: column;
+  }
+
+  .rowScore {
+    min-width: 3.4rem;
+    padding: 0.25rem 0.45rem;
+    font-size: 1rem;
+  }
+
   .playersGrid {
     grid-template-columns: minmax(0, 1fr);
   }
