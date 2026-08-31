@@ -34,21 +34,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { t } = useI18n();
   const dispatch = useAppDispatch();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const tournaments = useAppSelector((state) => state.tournament.tournaments);
 
   const currentYear = new Date().getFullYear();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const requests: Promise<unknown>[] = [dispatch(getTournaments()).unwrap()];
+    if (!tournaments.length) {
+      dispatch(getTournaments());
+    }
+  }, [dispatch, tournaments.length]);
 
-      if (isAuthenticated) {
-        requests.push(dispatch(getUserProfile(false)).unwrap());
-      }
+  useEffect(() => {
+    if (!isAuthenticated) {
+      return;
+    }
 
-      await Promise.all(requests);
-    };
-
-    fetchData();
+    dispatch(getUserProfile(false));
   }, [dispatch, isAuthenticated]);
 
   return (
