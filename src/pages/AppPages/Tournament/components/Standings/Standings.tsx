@@ -416,10 +416,26 @@ const Standings: React.FC = () => {
 
   const directSlots = Number(tournament.championsSlots || tournament.directNextRound || 0);
   const playoffSlots = Number(tournament.europaSlots || tournament.playoffRound || 0);
-  const relegationSlots = Number(tournament.relegationSlots || 0);
+  const isChampionsLeagueLeaguePhase =
+    !isNationsLeague &&
+    tournament.groupNumber === 1 &&
+    tournament.leagues <= 1 &&
+    directSlots === 8 &&
+    playoffSlots === 16;
+  const relegationSlots = isChampionsLeagueLeaguePhase ? 0 : Number(tournament.relegationSlots || 0);
   const hasDirectZone = directSlots > 0;
   const hasPlayoffZone = playoffSlots > 0;
   const hasRelegationZone = relegationSlots > 0;
+
+  const directZoneLabel = isChampionsLeagueLeaguePhase
+    ? t('pages.standings.legend.roundOf16')
+    : t('pages.standings.legend.championsLeague');
+  const playoffZoneLabel = isChampionsLeagueLeaguePhase
+    ? t('pages.standings.legend.knockoutPlayoff')
+    : t('pages.standings.legend.europaLeague');
+  const relegationZoneLabel = isChampionsLeagueLeaguePhase
+    ? t('pages.standings.legend.eliminated')
+    : t('pages.standings.legend.lastRelegation', undefined, { count: relegationSlots });
 
   const thirdPlaceSections = useMemo<LeagueSection[]>(() => {
     if (!thirdPlace.length) {
@@ -526,19 +542,19 @@ const Standings: React.FC = () => {
           {hasDirectZone && (
             <span className={cn(styles.legendItem, styles.playoff)}>
               <span className={styles.legendDot} />
-              {t('pages.standings.legend.championsLeague')}
+              {directZoneLabel}
             </span>
           )}
           {hasPlayoffZone && (
             <span className={cn(styles.legendItem, styles.knockout)}>
               <span className={styles.legendDot} />
-              {t('pages.standings.legend.europaLeague')}
+              {playoffZoneLabel}
             </span>
           )}
           {hasRelegationZone && (
             <span className={cn(styles.legendItem, styles.relegation)}>
               <span className={styles.legendDot} />
-              {t('pages.standings.legend.lastRelegation', undefined, { count: relegationSlots })}
+              {relegationZoneLabel}
             </span>
           )}
           <span className={styles.legendHint}>{t('pages.standings.legend.qualificationHint')}</span>
@@ -720,19 +736,19 @@ const Standings: React.FC = () => {
                 {hasDirectZone && (
                   <span className={cn(styles.legendItem, styles.playoff)}>
                     <span className={styles.legendDot} />
-                    {t('pages.standings.legend.championsLeague')}
+                    {directZoneLabel}
                   </span>
                 )}
                 {hasPlayoffZone && (
                   <span className={cn(styles.legendItem, styles.knockout)}>
                     <span className={styles.legendDot} />
-                    {t('pages.standings.legend.europaLeague')}
+                    {playoffZoneLabel}
                   </span>
                 )}
                 {hasRelegationZone && (
                   <span className={cn(styles.legendItem, styles.relegation)}>
                     <span className={styles.legendDot} />
-                    {t('pages.standings.legend.lastRelegation', undefined, { count: relegationSlots })}
+                    {relegationZoneLabel}
                   </span>
                 )}
               </>

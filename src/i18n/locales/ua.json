@@ -778,6 +778,9 @@
       "legend": {
         "championsLeague": "Ліга чемпіонів",
         "europaLeague": "Ліга Європи",
+        "roundOf16": "Плей-оф",
+        "knockoutPlayoff": "Кваліфікація плей-оф",
+        "eliminated": "25-36 місце: вилітають",
         "lastRelegation": "Виліт",
         "qualificationHint": "Зони виходу діють для цієї ліги",
         "onlyTopLeague": "Зони виходу — лише {{league}}",

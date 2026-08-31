@@ -774,6 +774,9 @@
       "legend": {
         "championsLeague": "Champions League",
         "europaLeague": "Europa League",
+        "roundOf16": "Playoff",
+        "knockoutPlayoff": "Qualification playoff",
+        "eliminated": "25-36 place: eliminated",
         "lastRelegation": "Relegation",
         "qualificationHint": "Qualification zones apply to this league",
         "onlyTopLeague": "Qualification zones apply only to {{league}}",
