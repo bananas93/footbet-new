@@ -774,7 +774,7 @@
       "legend": {
         "championsLeague": "Champions League",
         "europaLeague": "Europa League",
-        "lastRelegation": "Last {{count}}: relegation",
+        "lastRelegation": "Relegation",
         "qualificationHint": "Qualification zones apply to this league",
         "onlyTopLeague": "Qualification zones apply only to {{league}}",
         "formHint": "Form: latest matches, oldest on the left",

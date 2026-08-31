@@ -778,7 +778,7 @@
       "legend": {
         "championsLeague": "Ліга чемпіонів",
         "europaLeague": "Ліга Європи",
-        "lastRelegation": "Останні {{count}}: виліт",
+        "lastRelegation": "Виліт",
         "qualificationHint": "Зони виходу діють для цієї ліги",
         "onlyTopLeague": "Зони виходу — лише {{league}}",
         "formHint": "Форма: останні матчі, зліва найдавніший",
