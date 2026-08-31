@@ -133,23 +133,29 @@ const Matches: React.FC = () => {
   }, [matches, rounds.length, leagues.length, isMultiLeague, activeLeague]);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (matches.length > 0) {
-        const today = new Date().setHours(0, 0, 0, 0);
-        const activeIndex = matches.findIndex((match, index) => {
-          const matchStartDate = new Date(match.startDate).setHours(0, 0, 0, 0);
-          const nextMatchStartDate =
-            index < matches.length - 1
-              ? new Date(matches[index + 1].startDate).setHours(0, 0, 0, 0)
-              : new Date(match.endDate).setHours(0, 0, 0, 0);
+    if (!matches.length) {
+      return;
+    }
 
-          return today >= matchStartDate && today < nextMatchStartDate;
-        });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        setActiveTab(activeIndex !== -1 ? activeIndex : 0);
+    const activeIndex = matches.findIndex((round) => {
+      if (!round.startDate) {
+        return false;
       }
-    }, 0);
-  }, []);
+
+      const roundStart = new Date(round.startDate);
+      roundStart.setHours(0, 0, 0, 0);
+
+      const roundEnd = new Date(round.endDate || round.startDate);
+      roundEnd.setHours(23, 59, 59, 999);
+
+      return today >= roundStart && today <= roundEnd;
+    });
+
+    setActiveTab(activeIndex !== -1 ? activeIndex : 0);
+  }, [matches]);
 
   const renderHero = () => (
     <section className={styles.hero}>
