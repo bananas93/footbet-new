@@ -4,10 +4,68 @@ const isLocalhost = Boolean(
   window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/),
 );
 
-const SW_RESET_VERSION = '2026-08-15-auth-routing';
-const SW_RESET_STORAGE_KEY = 'sw:reset-version';
+const SW_DEPLOY_STORAGE_KEY = 'sw:deploy-revision';
 
 const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
+const assetManifestUrl = `${process.env.PUBLIC_URL}/asset-manifest.json`;
+
+type AssetManifest = {
+  files?: Record<string, string>;
+};
+
+const getDeployRevision = async (): Promise<string | null> => {
+  try {
+    const response = await fetch(assetManifestUrl, { cache: 'no-store' });
+    if (!response.ok) {
+      return null;
+    }
+
+    const manifest = (await response.json()) as AssetManifest;
+    const files = manifest.files || {};
+
+    const mainJs = files['main.js'] || '';
+    const mainCss = files['main.css'] || '';
+    const runtimeJs = files['runtime-main.js'] || '';
+
+    if (!mainJs && !mainCss && !runtimeJs) {
+      return null;
+    }
+
+    return [mainJs, mainCss, runtimeJs].join('|');
+  } catch {
+    return null;
+  }
+};
+
+const shouldResetCachesForDeploy = async (): Promise<boolean> => {
+  const currentRevision = await getDeployRevision();
+  if (!currentRevision) {
+    return false;
+  }
+
+  const previousRevision = localStorage.getItem(SW_DEPLOY_STORAGE_KEY);
+  if (!previousRevision) {
+    localStorage.setItem(SW_DEPLOY_STORAGE_KEY, currentRevision);
+    return false;
+  }
+
+  if (previousRevision === currentRevision) {
+    return false;
+  }
+
+  localStorage.setItem(SW_DEPLOY_STORAGE_KEY, currentRevision);
+  return true;
+};
+
+const resetServiceWorkerAndCaches = async () => {
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.map((registration) => registration.unregister()));
+
+  if ('caches' in window) {
+    const keys = await caches.keys();
+    await Promise.all(keys.map((key) => caches.delete(key)));
+  }
+};
 
 const registerValidSW = async () => {
   try {
@@ -41,31 +99,23 @@ export const registerServiceWorker = () => {
   }
 
   window.addEventListener('load', () => {
-    const shouldReset = localStorage.getItem(SW_RESET_STORAGE_KEY) !== SW_RESET_VERSION;
-    if (shouldReset) {
-      const reset = async () => {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map((registration) => registration.unregister()));
-
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key) => caches.delete(key)));
-        }
-
-        localStorage.setItem(SW_RESET_STORAGE_KEY, SW_RESET_VERSION);
+    const runRegistration = async () => {
+      const shouldReset = await shouldResetCachesForDeploy();
+      if (shouldReset) {
+        await resetServiceWorkerAndCaches();
         window.location.reload();
-      };
+        return;
+      }
 
-      void reset();
-      return;
-    }
+      if (isLocalhost) {
+        await checkValidServiceWorker();
+        return;
+      }
 
-    if (isLocalhost) {
-      void checkValidServiceWorker();
-      return;
-    }
+      await registerValidSW();
+    };
 
-    void registerValidSW();
+    void runRegistration();
   });
 };
 
