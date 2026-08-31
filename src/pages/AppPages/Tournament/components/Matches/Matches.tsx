@@ -56,6 +56,34 @@ const CalendarIcon = () => (
 const countByStatus = (matches: IMatch[], status: MatchStatus) =>
   matches.filter((match) => match.status === status).length;
 
+type MatchDayGroup = {
+  key: string;
+  label: string;
+  items: IMatch[];
+};
+
+const groupMatchesByDay = (items: IMatch[]): MatchDayGroup[] => {
+  const groups = new Map<string, MatchDayGroup>();
+
+  items.forEach((match) => {
+    const day = new Date(match.matchDate);
+    day.setHours(0, 0, 0, 0);
+
+    const key = day.toISOString();
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
+        label: normalizeMatchDate(match.matchDate),
+        items: [],
+      });
+    }
+
+    groups.get(key)?.items.push(match);
+  });
+
+  return Array.from(groups.values());
+};
+
 const Matches: React.FC = () => {
   const { t } = useI18n();
   const dispatch = useAppDispatch();
@@ -217,13 +245,26 @@ const Matches: React.FC = () => {
     );
   }
 
-  const renderMatchesGrid = (items: IMatch[]) => (
-    <div className={styles.matches}>
-      {items.map((match) => (
-        <MatchCard key={match.id} match={match} tournament={tournament} />
-      ))}
-    </div>
-  );
+  const renderMatchesGrid = (items: IMatch[]) => {
+    const dayGroups = groupMatchesByDay(items);
+
+    return (
+      <div className={styles.matchesByDay}>
+        {dayGroups.map((group) => (
+          <section className={styles.matchDayGroup} key={group.key}>
+            <div className={styles.matchDayDivider}>
+              <span className={styles.matchDayLabel}>{group.label}</span>
+            </div>
+            <div className={styles.matches}>
+              {group.items.map((match) => (
+                <MatchCard key={match.id} match={match} tournament={tournament} />
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    );
+  };
 
   const renderLeagueBlocks = (items: IMatch[]) => (
     <div className={styles.leagueBlocks}>
