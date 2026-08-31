@@ -175,6 +175,49 @@ $radius: 1.25rem;
 
 /* ---------- cards ---------- */
 
+.statusSections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.statusSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.statusDivider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 50% 0 auto;
+    border-top: 1px solid $line;
+    z-index: 0;
+  }
+}
+
+.statusLabel {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background-color: #fff;
+  border: 1px solid var(--tone-border, $line);
+  color: var(--tone, #55607d);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(21rem, 1fr));

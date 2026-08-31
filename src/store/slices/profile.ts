@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
-import { IHttpRequestResult, IStatistics, IUser } from 'interfaces';
+import { IHttpRequestResult, IStatistics, IUser, MatchStatus } from 'interfaces';
 
 interface IProfileResponse {
   user: IUser;
@@ -17,6 +17,7 @@ type ProfilePredictionRow = {
   fivePlusGoals: number;
   homeTeamName: string;
   awayTeamName: string;
+  matchStatus: MatchStatus | null;
 };
 
 const getEmptyStatistics = (): IStatistics => ({
@@ -184,6 +185,7 @@ export const getProfile = createAsyncThunk(
         correct_difference,
         five_plus_goals,
         match:matches!predictions_match_id_fkey(
+          status,
           home_team:teams!matches_home_team_id_fkey(name),
           away_team:teams!matches_away_team_id_fkey(name)
         )
@@ -211,7 +213,12 @@ export const getProfile = createAsyncThunk(
       fivePlusGoals: item.five_plus_goals,
       homeTeamName: item.match?.home_team?.name || '',
       awayTeamName: item.match?.away_team?.name || '',
+      matchStatus: item.match?.status || null,
     }));
+
+    const finishedOrLivePredicts = normalizedPredicts.filter(
+      (item) => item.matchStatus === MatchStatus.IN_PROGRESS || item.matchStatus === MatchStatus.FINISHED,
+    );
 
     return {
       user: {
@@ -223,7 +230,7 @@ export const getProfile = createAsyncThunk(
         avatar: profile.avatar || '',
         role: profile.role,
       },
-      statistics: calculateStats(normalizedPredicts),
+      statistics: calculateStats(finishedOrLivePredicts),
     } as IProfileResponse;
   },
 );

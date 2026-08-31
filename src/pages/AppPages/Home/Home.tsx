@@ -35,10 +35,12 @@ const ArrowIcon = ({ className }: { className?: string }) => (
 );
 
 const STATUS_ORDER: Record<TournamentStatus, number> = {
-  completed: 0,
-  live: 1,
-  scheduled: 2,
+  live: 0,
+  scheduled: 1,
+  completed: 2,
 };
+
+const STATUS_SECTIONS: TournamentStatus[] = ['live', 'scheduled', 'completed'];
 
 const Home: React.FC = () => {
   const { t } = useI18n();
@@ -70,6 +72,15 @@ const Home: React.FC = () => {
       return a.name.localeCompare(b.name, 'uk', { sensitivity: 'base' });
     });
   }, [tournaments]);
+
+  const tournamentsByStatus = useMemo(
+    () =>
+      STATUS_SECTIONS.map((status) => ({
+        status,
+        items: sortedTournaments.filter((item) => item.status === status),
+      })).filter((section) => section.items.length > 0),
+    [sortedTournaments],
+  );
 
   return (
     <div className={styles.page}>
@@ -143,48 +154,60 @@ const Home: React.FC = () => {
       )}
 
       {!isLoading && !!tournaments.length && (
-        <div className={styles.grid}>
-          {sortedTournaments.map((tournament, index) => (
-            <Link
-              to={`/tournament/${tournament.id}`}
-              className={cn(styles.card, styles[tournament.status])}
-              key={tournament.id}
-              style={{ '--i': index } as React.CSSProperties}>
-              <div className={styles.cardGlow} aria-hidden />
-
-              <div className={styles.cardTop}>
-                <span className={styles.cardLogo}>
-                  <img src={resolveAssetUrl(tournament.logo)} alt={tournament.name} />
-                </span>
-                <span className={styles.statusBadge}>
-                  <span className={styles.statusDot} />
-                  {statusLabels[tournament.status]}
+        <div className={styles.statusSections}>
+          {tournamentsByStatus.map((section) => (
+            <section className={styles.statusSection} key={section.status}>
+              <div className={styles.statusDivider}>
+                <span className={cn(styles.statusLabel, styles[section.status])}>
+                  {statusLabels[section.status]} · {section.items.length}
                 </span>
               </div>
 
-              <h3 className={styles.cardTitle}>{tournament.name}</h3>
+              <div className={styles.grid}>
+                {section.items.map((tournament, index) => (
+                  <Link
+                    to={`/tournament/${tournament.id}`}
+                    className={cn(styles.card, styles[tournament.status])}
+                    key={tournament.id}
+                    style={{ '--i': index } as React.CSSProperties}>
+                    <div className={styles.cardGlow} aria-hidden />
 
-              <div className={styles.chips}>
-                <span className={styles.chip}>
-                  {tournament.type === 'national' ? t('pages.home.typeNational') : t('pages.home.typeClub')}
-                </span>
-                {tournament.groupNumber > 1 && (
-                  <span className={styles.chip}>
-                    {t('pages.home.groups', undefined, { count: tournament.groupNumber })}
-                  </span>
-                )}
-                {tournament.knockoutRound > 0 && (
-                  <span className={styles.chip}>
-                    {t('pages.home.playoff', undefined, { count: tournament.knockoutRound })}
-                  </span>
-                )}
+                    <div className={styles.cardTop}>
+                      <span className={styles.cardLogo}>
+                        <img src={resolveAssetUrl(tournament.logo)} alt={tournament.name} />
+                      </span>
+                      <span className={styles.statusBadge}>
+                        <span className={styles.statusDot} />
+                        {statusLabels[tournament.status]}
+                      </span>
+                    </div>
+
+                    <h3 className={styles.cardTitle}>{tournament.name}</h3>
+
+                    <div className={styles.chips}>
+                      <span className={styles.chip}>
+                        {tournament.type === 'national' ? t('pages.home.typeNational') : t('pages.home.typeClub')}
+                      </span>
+                      {tournament.groupNumber > 1 && (
+                        <span className={styles.chip}>
+                          {t('pages.home.groups', undefined, { count: tournament.groupNumber })}
+                        </span>
+                      )}
+                      {tournament.knockoutRound > 0 && (
+                        <span className={styles.chip}>
+                          {t('pages.home.playoff', undefined, { count: tournament.knockoutRound })}
+                        </span>
+                      )}
+                    </div>
+
+                    <span className={styles.cardCta}>
+                      {t('pages.home.cta')}
+                      <ArrowIcon className={styles.cardCtaIcon} />
+                    </span>
+                  </Link>
+                ))}
               </div>
-
-              <span className={styles.cardCta}>
-                {t('pages.home.cta')}
-                <ArrowIcon className={styles.cardCtaIcon} />
-              </span>
-            </Link>
+            </section>
           ))}
         </div>
       )}
