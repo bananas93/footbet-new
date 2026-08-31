@@ -3,7 +3,13 @@ import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useAppDispatch, useAppSelector } from 'store';
-import { getLeagueLabel, normalizeKnockoutRoundName, normalizeMatchDate, sliceMatches } from 'helpers';
+import {
+  getLeagueLabel,
+  normalizeKnockoutRoundName,
+  normalizeMatchDate,
+  normalizeMatchDateWithWeekday,
+  sliceMatches,
+} from 'helpers';
 import { IGames, IMatch, MatchStatus } from 'interfaces';
 import { toggleOnlyLiveMatches, toggleOnlyScheduledMatches } from 'store/slices/user';
 import { useTournament } from '../../Tournament';
@@ -73,7 +79,7 @@ const groupMatchesByDay = (items: IMatch[]): MatchDayGroup[] => {
     if (!groups.has(key)) {
       groups.set(key, {
         key,
-        label: normalizeMatchDate(match.matchDate),
+        label: normalizeMatchDateWithWeekday(match.matchDate),
         items: [],
       });
     }

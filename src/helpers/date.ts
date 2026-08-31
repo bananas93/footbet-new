@@ -18,6 +18,16 @@ export const normalizeMatchDate = (date: string | Date) => {
   return new Date(date).toLocaleDateString('uk-UA', options);
 };
 
+export const normalizeMatchDateWithWeekday = (date: string | Date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  };
+  return new Date(date).toLocaleDateString('uk-UA', options);
+};
+
 export const normalizeMatchTime = (date: string | Date) => {
   const options: Intl.DateTimeFormatOptions = {
     hour: 'numeric',
