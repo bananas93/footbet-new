@@ -190,6 +190,7 @@ export const deleteUserAccount = createAsyncThunk('user/deleteUserAccount', asyn
 interface IUserState {
   user: IUser | null;
   onlyLiveMatches: boolean;
+  onlyScheduledMatches: boolean;
   getUserProfileRequest: IHttpRequestResult<IUser>;
   editUserProfileRequest: IHttpRequestResult<IUser>;
   changeUserPasswordRequest: IHttpRequestResult<void>;
@@ -199,6 +200,7 @@ interface IUserState {
 const initialState: IUserState = {
   user: null,
   onlyLiveMatches: localStorage.getItem('onlyLiveMatches') === '1',
+  onlyScheduledMatches: localStorage.getItem('onlyScheduledMatches') === '1',
   getUserProfileRequest: createHttpRequestInitResult(),
   editUserProfileRequest: createHttpRequestInitResult(),
   changeUserPasswordRequest: createHttpRequestInitResult(),
@@ -212,6 +214,10 @@ export const UserSlice = createSlice({
     toggleOnlyLiveMatches: (state) => {
       state.onlyLiveMatches = !state.onlyLiveMatches;
       localStorage.setItem('onlyLiveMatches', state.onlyLiveMatches ? '1' : '0');
+    },
+    toggleOnlyScheduledMatches: (state) => {
+      state.onlyScheduledMatches = !state.onlyScheduledMatches;
+      localStorage.setItem('onlyScheduledMatches', state.onlyScheduledMatches ? '1' : '0');
     },
     clearUser: (state) => {
       state.user = null;
@@ -227,7 +233,7 @@ export const UserSlice = createSlice({
   },
 });
 
-export const { toggleOnlyLiveMatches } = UserSlice.actions;
+export const { toggleOnlyLiveMatches, toggleOnlyScheduledMatches } = UserSlice.actions;
 export const { clearUser } = UserSlice.actions;
 
 export default UserSlice.reducer;

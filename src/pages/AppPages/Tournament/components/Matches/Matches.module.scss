@@ -529,6 +529,40 @@ $live: #e0342b;
   }
 }
 
+.scheduledPill {
+  background-color: #fff8e8;
+  border-color: #f0dcae;
+  color: #7c5a0a;
+
+  &:hover {
+    background-color: #fff2d3;
+    border-color: #e6cc8f;
+  }
+}
+
+.scheduledPillActive {
+  color: #fff;
+  background: linear-gradient(135deg, #a3730c 0%, #f4c752 100%);
+  border-color: transparent;
+
+  &:hover {
+    background: linear-gradient(135deg, #b07b10 0%, #f8cf62 100%);
+    border-color: transparent;
+  }
+}
+
+.scheduledDot {
+  flex: 0 0 auto;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #d89f24;
+}
+
+.scheduledPillActive .scheduledDot {
+  background-color: #fff;
+}
+
 .liveDot {
   position: relative;
   flex: 0 0 auto;

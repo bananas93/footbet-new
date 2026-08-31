@@ -5,7 +5,7 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useAppDispatch, useAppSelector } from 'store';
 import { getLeagueLabel, normalizeKnockoutRoundName, normalizeMatchDate, sliceMatches } from 'helpers';
 import { IGames, IMatch, MatchStatus } from 'interfaces';
-import { toggleOnlyLiveMatches } from 'store/slices/user';
+import { toggleOnlyLiveMatches, toggleOnlyScheduledMatches } from 'store/slices/user';
 import { useTournament } from '../../Tournament';
 import MatchCard from './MatchCard/MatchCard';
 import styles from './Matches.module.scss';
@@ -96,9 +96,12 @@ const Matches: React.FC = () => {
     setActiveTab(index);
   };
 
-  const { onlyLiveMatches } = useAppSelector((state) => state.user);
+  const { onlyLiveMatches, onlyScheduledMatches } = useAppSelector((state) => state.user);
   const toggleLiveMatches = () => {
     dispatch(toggleOnlyLiveMatches());
+  };
+  const toggleScheduledMatches = () => {
+    dispatch(toggleOnlyScheduledMatches());
   };
 
   const matches = useAppSelector((state) => state.match.matches)[tournament.id] || [];
@@ -308,9 +311,21 @@ const Matches: React.FC = () => {
     const liveCount = countByStatus(roundMatches, MatchStatus.IN_PROGRESS);
     const finishedCount = countByStatus(roundMatches, MatchStatus.FINISHED);
     const scheduledCount = countByStatus(roundMatches, MatchStatus.SCHEDULED);
-    const visibleMatches = onlyLiveMatches
-      ? roundMatches.filter((match) => match.status === MatchStatus.IN_PROGRESS)
-      : roundMatches;
+    const visibleMatches = roundMatches.filter((match) => {
+      if (onlyLiveMatches && onlyScheduledMatches) {
+        return match.status === MatchStatus.IN_PROGRESS || match.status === MatchStatus.SCHEDULED;
+      }
+
+      if (onlyLiveMatches) {
+        return match.status === MatchStatus.IN_PROGRESS;
+      }
+
+      if (onlyScheduledMatches) {
+        return match.status === MatchStatus.SCHEDULED;
+      }
+
+      return true;
+    });
 
     const startDate = round.games?.startDate;
     const endDate = round.games?.endDate;
@@ -370,6 +385,17 @@ const Matches: React.FC = () => {
               <span className={styles.liveDot} />
               {onlyLiveMatches ? t('pages.matches.onlyLive') : t('pages.matches.showLive')}
             </button>
+
+            <button
+              type="button"
+              className={cn(styles.livePill, styles.scheduledPill, {
+                [styles.scheduledPillActive]: onlyScheduledMatches,
+              })}
+              onClick={toggleScheduledMatches}
+              aria-pressed={onlyScheduledMatches}>
+              <span className={styles.scheduledDot} />
+              {onlyScheduledMatches ? t('pages.matches.onlyScheduled') : t('pages.matches.showScheduled')}
+            </button>
           </div>
         </div>
 
@@ -382,20 +408,24 @@ const Matches: React.FC = () => {
               <CalendarIcon />
             </span>
             <p className={styles.emptyTitle}>
-              {onlyLiveMatches
+              {onlyLiveMatches && !onlyScheduledMatches
                 ? t('pages.matches.emptyRoundLive')
-                : isMultiLeague && !!activeLeague
-                  ? t('pages.matches.emptyRoundLeague', undefined, {
-                      league: t('pages.standings.league', undefined, { label: getLeagueLabel(activeLeague) }),
-                    })
-                  : t('pages.matches.emptyRound')}
+                : !onlyLiveMatches && onlyScheduledMatches
+                  ? t('pages.matches.emptyRoundScheduled')
+                  : isMultiLeague && !!activeLeague
+                    ? t('pages.matches.emptyRoundLeague', undefined, {
+                        league: t('pages.standings.league', undefined, { label: getLeagueLabel(activeLeague) }),
+                      })
+                    : t('pages.matches.emptyRound')}
             </p>
             <p className={styles.empty}>
-              {onlyLiveMatches
+              {onlyLiveMatches && !onlyScheduledMatches
                 ? t('pages.matches.emptyRoundLiveText')
-                : isMultiLeague && !!activeLeague
-                  ? t('pages.matches.emptyRoundLeagueText')
-                  : t('pages.matches.emptyRoundText')}
+                : !onlyLiveMatches && onlyScheduledMatches
+                  ? t('pages.matches.emptyRoundScheduledText')
+                  : isMultiLeague && !!activeLeague
+                    ? t('pages.matches.emptyRoundLeagueText')
+                    : t('pages.matches.emptyRoundText')}
             </p>
           </div>
         )}
