@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useMemo, useState } from 'react';
 import cn from 'classnames';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   normalizeMatchDate,
   normalizeMatchTime,
@@ -11,8 +11,10 @@ import {
   supabase,
   writeLocalCache,
 } from 'helpers';
-import { useAppSelector } from 'store';
+import { useAppDispatch, useAppSelector } from 'store';
 import { MatchStatus } from 'interfaces';
+import { setPredict } from 'store/slices/predict';
+import { AuthRoutesEnum } from 'routes/AuthRoutes';
 import styles from './MatchDetails.module.scss';
 import { useI18n } from 'i18n';
 
@@ -267,12 +269,18 @@ const EmptyIcon = () => (
 
 const MatchDetails: React.FC = () => {
   const { t, lang } = useI18n();
+  const dispatch = useAppDispatch();
+  const location = useLocation();
   const { tournamentId, matchId } = useParams<{ tournamentId: string; matchId: string }>();
   const matchesByTournament = useAppSelector((state) => state.match.matches);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [data, setData] = useState<MatchDetailsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSavingPredict, setIsSavingPredict] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [predictHomeScore, setPredictHomeScore] = useState('');
+  const [predictAwayScore, setPredictAwayScore] = useState('');
 
   const currentMatch = useMemo(() => {
     if (!tournamentId || !matchId) {
@@ -284,6 +292,11 @@ const MatchDetails: React.FC = () => {
   }, [matchId, matchesByTournament, tournamentId]);
 
   const fixtureId = currentMatch?.apiFixtureId;
+
+  useEffect(() => {
+    setPredictHomeScore(currentMatch?.predict?.homeScore?.toString() || '');
+    setPredictAwayScore(currentMatch?.predict?.awayScore?.toString() || '');
+  }, [currentMatch?.predict?.awayScore, currentMatch?.predict?.homeScore]);
 
   const fetchDetails = async (silent = false, forceRefresh = false) => {
     if (!fixtureId) {
@@ -350,6 +363,43 @@ const MatchDetails: React.FC = () => {
     setIsRefreshing(true);
     await fetchDetails(true, true);
     setIsRefreshing(false);
+  };
+
+  const isPredictionReady = predictHomeScore !== '' && predictAwayScore !== '';
+
+  const updatePredictInput = (setter: React.Dispatch<React.SetStateAction<string>>, value: string) => {
+    const sanitized = value.replace(/\D/g, '');
+    if (/^\d{0,2}$/.test(sanitized)) {
+      setter(sanitized);
+    }
+  };
+
+  const handlePredictSubmit = async () => {
+    if (!isAuthenticated) {
+      notify.error(t('pages.matchCard.signInToPredict'));
+      return;
+    }
+
+    if (!currentMatch || !tournamentId || !isPredictionReady) {
+      return;
+    }
+
+    setIsSavingPredict(true);
+    try {
+      await dispatch(
+        setPredict({
+          matchId: currentMatch.id,
+          tournamentId: Number(tournamentId),
+          homeScore: Number(predictHomeScore),
+          awayScore: Number(predictAwayScore),
+        }),
+      ).unwrap();
+      notify.success(t('pages.matchCard.saved'));
+    } catch (error: any) {
+      notify.error(error.message || t('pages.matchDetails.errors.fetchFailed'));
+    } finally {
+      setIsSavingPredict(false);
+    }
   };
 
   useEffect(() => {
@@ -658,6 +708,55 @@ const MatchDetails: React.FC = () => {
                 </span>
               )}
             </div>
+
+            {isScheduled && (
+              <div className={styles.predictBox}>
+                {isAuthenticated ? (
+                  <>
+                    <span className={styles.predictLabel}>{t('pages.matchCard.yourPrediction')}</span>
+                    <div className={styles.predictInputs}>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={2}
+                        value={predictHomeScore}
+                        onChange={(event) => updatePredictInput(setPredictHomeScore, event.target.value)}
+                        className={styles.predictInput}
+                        aria-label={t('pages.matchCard.predictionFor', undefined, { team: homeTeam.name })}
+                      />
+                      <span className={styles.predictDivider}>:</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={2}
+                        value={predictAwayScore}
+                        onChange={(event) => updatePredictInput(setPredictAwayScore, event.target.value)}
+                        className={styles.predictInput}
+                        aria-label={t('pages.matchCard.predictionFor', undefined, { team: awayTeam.name })}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className={styles.predictButton}
+                      onClick={() => void handlePredictSubmit()}
+                      disabled={!isPredictionReady || isSavingPredict}>
+                      {isSavingPredict ? t('pages.user.profile.saving') : t('pages.user.profile.save')}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.predictLabel}>{t('pages.matchCard.predictionsAfterLogin')}</span>
+                    <Link
+                      to={`${AuthRoutesEnum.SignIn}?from=${encodeURIComponent(`${location.pathname}${location.search}`)}`}
+                      className={styles.predictSignInLink}>
+                      {t('layout.header.signIn')}
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {renderTeam(awayTeam)}
