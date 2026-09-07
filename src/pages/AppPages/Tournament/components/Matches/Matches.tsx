@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useAppDispatch, useAppSelector } from 'store';
@@ -97,8 +97,10 @@ const Matches: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<number>(0);
   const [activeLeague, setActiveLeague] = useState<number | null>(null);
+  const isManualTabSelection = useRef(false);
 
   const handleTabChange = (index: number) => {
+    isManualTabSelection.current = true;
     setActiveTab(index);
   };
 
@@ -113,6 +115,10 @@ const Matches: React.FC = () => {
   const matches = useAppSelector((state) => state.match.matches)[tournament.id] || [];
   const { groupMatchNumber, knockoutRound, thirdPlaceMatch } = tournament;
   const knockoutRounds = normalizeKnockoutRoundName(knockoutRound, thirdPlaceMatch);
+
+  useEffect(() => {
+    isManualTabSelection.current = false;
+  }, [tournament.id]);
 
   const { groupMatches, knockoutMatches } = sliceMatches(matches, groupMatchNumber);
 
@@ -194,7 +200,7 @@ const Matches: React.FC = () => {
       }
 
       const isCurrentTabValid = currentTab >= 0 && currentTab < matches.length;
-      if (isCurrentTabValid) {
+      if (isManualTabSelection.current && isCurrentTabValid) {
         return currentTab;
       }
 
