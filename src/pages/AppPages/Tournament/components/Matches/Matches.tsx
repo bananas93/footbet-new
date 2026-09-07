@@ -188,20 +188,25 @@ const Matches: React.FC = () => {
     });
 
     const activeRound = roundsWithDates.find(({ roundStart, roundEnd }) => today >= roundStart && today <= roundEnd);
-    if (activeRound) {
-      setActiveTab(activeRound.index);
-      return;
-    }
+    setActiveTab((currentTab) => {
+      if (activeRound) {
+        return activeRound.index;
+      }
 
-    // If there is a gap between rounds, keep users on the latest completed round.
-    const previousRound = [...roundsWithDates].reverse().find(({ roundEnd }) => roundEnd < today);
-    if (previousRound) {
-      setActiveTab(previousRound.index);
-      return;
-    }
+      const isCurrentTabValid = currentTab >= 0 && currentTab < matches.length;
+      if (isCurrentTabValid) {
+        return currentTab;
+      }
 
-    const nextRound = roundsWithDates.find(({ roundStart }) => roundStart > today);
-    setActiveTab(nextRound ? nextRound.index : 0);
+      // If current tab is out of bounds after refresh, recover to the latest completed round.
+      const previousRound = [...roundsWithDates].reverse().find(({ roundEnd }) => roundEnd < today);
+      if (previousRound) {
+        return previousRound.index;
+      }
+
+      const nextRound = roundsWithDates.find(({ roundStart }) => roundStart > today);
+      return nextRound ? nextRound.index : 0;
+    });
   }, [matches]);
 
   const renderHero = () => (
