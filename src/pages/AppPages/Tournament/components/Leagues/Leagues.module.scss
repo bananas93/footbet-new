@@ -268,8 +268,9 @@ $radius: 1.25rem;
   background: linear-gradient(140deg, var(--tone-bright) 0%, var(--tone) 100%);
 
   img {
-    width: 100%;
-    height: 100%;
+    width: 2.5rem;
+    height: 2.5rem;
+    object-position: top;
     object-fit: cover;
     border-radius: inherit;
   }
@@ -602,8 +603,9 @@ $radius: 1.25rem;
   background: linear-gradient(140deg, var(--tone-bright, #8494bb) 0%, var(--tone, #4a5675) 100%);
 
   img {
-    width: 100%;
-    height: 100%;
+    width: 1.85rem;
+    height: 1.85rem;
+    object-position: top;
     object-fit: cover;
     border-radius: inherit;
   }

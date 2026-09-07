@@ -177,21 +177,31 @@ const Matches: React.FC = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const activeIndex = matches.findIndex((round) => {
-      if (!round.startDate) {
-        return false;
-      }
-
-      const roundStart = new Date(round.startDate);
+    const roundsWithDates = matches.map((round, index) => {
+      const roundStart = new Date(round.startDate || round.endDate || 0);
       roundStart.setHours(0, 0, 0, 0);
 
-      const roundEnd = new Date(round.endDate || round.startDate);
+      const roundEnd = new Date(round.endDate || round.startDate || 0);
       roundEnd.setHours(23, 59, 59, 999);
 
-      return today >= roundStart && today <= roundEnd;
+      return { index, roundStart, roundEnd };
     });
 
-    setActiveTab(activeIndex !== -1 ? activeIndex : 0);
+    const activeRound = roundsWithDates.find(({ roundStart, roundEnd }) => today >= roundStart && today <= roundEnd);
+    if (activeRound) {
+      setActiveTab(activeRound.index);
+      return;
+    }
+
+    // If there is a gap between rounds, keep users on the latest completed round.
+    const previousRound = [...roundsWithDates].reverse().find(({ roundEnd }) => roundEnd < today);
+    if (previousRound) {
+      setActiveTab(previousRound.index);
+      return;
+    }
+
+    const nextRound = roundsWithDates.find(({ roundStart }) => roundStart > today);
+    setActiveTab(nextRound ? nextRound.index : 0);
   }, [matches]);
 
   const renderHero = () => (
