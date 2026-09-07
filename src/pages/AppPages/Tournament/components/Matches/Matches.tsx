@@ -68,6 +68,15 @@ type MatchDayGroup = {
   items: IMatch[];
 };
 
+const parseGroupTourNumber = (stage?: string) => {
+  if (!stage) {
+    return null;
+  }
+
+  const match = stage.match(/^(\d+)\s+tour$/i);
+  return match ? Number(match[1]) : null;
+};
+
 const groupMatchesByDay = (items: IMatch[]): MatchDayGroup[] => {
   const groups = new Map<string, MatchDayGroup>();
 
@@ -125,7 +134,7 @@ const Matches: React.FC = () => {
   const rounds = useMemo<RoundTab[]>(() => {
     const groupTabs = groupMatches.map((games, index) => ({
       key: `group-${index}`,
-      label: t('pages.matches.round', undefined, { index: index + 1 }),
+      label: t('pages.matches.round', undefined, { index: parseGroupTourNumber(games.stage) || index + 1 }),
       isKnockout: false,
       games,
     }));
@@ -183,20 +192,32 @@ const Matches: React.FC = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const roundsWithDates = matches.map((round, index) => {
-      const roundStart = new Date(round.startDate || round.endDate || 0);
-      roundStart.setHours(0, 0, 0, 0);
+    const liveRoundIndex = matches.findIndex((round) =>
+      (round.data || []).some((match) => match.status === MatchStatus.IN_PROGRESS),
+    );
 
-      const roundEnd = new Date(round.endDate || round.startDate || 0);
-      roundEnd.setHours(23, 59, 59, 999);
+    const upcomingRoundCandidates = matches
+      .map((round, index) => {
+        const upcomingDates = (round.data || [])
+          .filter((match) => match.status === MatchStatus.SCHEDULED || match.status === MatchStatus.POSTPONED)
+          .map((match) => new Date(match.matchDate).getTime())
+          .filter((timestamp) => timestamp >= today.getTime())
+          .sort((a, b) => a - b);
 
-      return { index, roundStart, roundEnd };
-    });
+        return {
+          index,
+          nextUpcoming: upcomingDates[0],
+        };
+      })
+      .filter((item) => item.nextUpcoming !== undefined)
+      .sort((a, b) => (a.nextUpcoming as number) - (b.nextUpcoming as number));
 
-    const activeRound = roundsWithDates.find(({ roundStart, roundEnd }) => today >= roundStart && today <= roundEnd);
+    const activeRoundIndex =
+      liveRoundIndex >= 0 ? liveRoundIndex : upcomingRoundCandidates.length ? upcomingRoundCandidates[0].index : -1;
+
     setActiveTab((currentTab) => {
-      if (activeRound) {
-        return activeRound.index;
+      if (activeRoundIndex >= 0) {
+        return activeRoundIndex;
       }
 
       const isCurrentTabValid = currentTab >= 0 && currentTab < matches.length;
@@ -204,14 +225,18 @@ const Matches: React.FC = () => {
         return currentTab;
       }
 
-      // If current tab is out of bounds after refresh, recover to the latest completed round.
-      const previousRound = [...roundsWithDates].reverse().find(({ roundEnd }) => roundEnd < today);
-      if (previousRound) {
-        return previousRound.index;
+      const latestRoundWithPlayedMatch = [...matches]
+        .map((round, index) => ({ round, index }))
+        .reverse()
+        .find(({ round }) =>
+          (round.data || []).some((match) => [MatchStatus.FINISHED, MatchStatus.IN_PROGRESS].includes(match.status)),
+        );
+
+      if (latestRoundWithPlayedMatch) {
+        return latestRoundWithPlayedMatch.index;
       }
 
-      const nextRound = roundsWithDates.find(({ roundStart }) => roundStart > today);
-      return nextRound ? nextRound.index : 0;
+      return 0;
     });
   }, [matches]);
 

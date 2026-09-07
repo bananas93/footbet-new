@@ -2,6 +2,30 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { createExtraReducersForResponses, createHttpRequestInitResult, supabase } from 'helpers';
 import { IGames, IHttpRequestResult, IMatch, MatchStage } from 'interfaces';
 
+const KNOCKOUT_STAGE_ORDER: MatchStage[] = [
+  MatchStage.KNOCKOUT_PLAYOFF,
+  MatchStage.ROUND_OF_16,
+  MatchStage.QUARTERFINALS,
+  MatchStage.SEMIFINALS,
+  MatchStage.THIRD_PLACE_PLAYOFF,
+  MatchStage.FINAL,
+];
+
+const parseGroupTourNumber = (stage: string) => {
+  const match = stage.match(/^(\d+)\s+tour$/i);
+  return match ? Number(match[1]) : null;
+};
+
+const getStageSortRank = (stage: string) => {
+  const groupTour = parseGroupTourNumber(stage);
+  if (groupTour !== null) {
+    return groupTour;
+  }
+
+  const knockoutIndex = KNOCKOUT_STAGE_ORDER.indexOf(stage as MatchStage);
+  return knockoutIndex >= 0 ? 1000 + knockoutIndex : 2000;
+};
+
 export const getMatches = createAsyncThunk(
   'match/getMatches',
   async ({ tournamentId, _background = false }: { tournamentId: number; _background?: boolean }) => {
@@ -119,16 +143,18 @@ export const getMatches = createAsyncThunk(
     });
 
     let groupId = 1;
-    return Object.keys(groupedMatches).map((stage) => {
-      const stageMatches = groupedMatches[stage];
-      return {
-        id: groupId++,
-        stage,
-        startDate: stageMatches[0].matchDate,
-        endDate: stageMatches[stageMatches.length - 1].matchDate,
-        data: stageMatches,
-      } as IGames;
-    });
+    return Object.keys(groupedMatches)
+      .sort((a, b) => getStageSortRank(a) - getStageSortRank(b))
+      .map((stage) => {
+        const stageMatches = groupedMatches[stage];
+        return {
+          id: groupId++,
+          stage,
+          startDate: stageMatches[0].matchDate,
+          endDate: stageMatches[stageMatches.length - 1].matchDate,
+          data: stageMatches,
+        } as IGames;
+      });
   },
 );
 
