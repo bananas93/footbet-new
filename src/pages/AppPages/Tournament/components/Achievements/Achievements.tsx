@@ -35,6 +35,20 @@ type RankBadge = {
   className: RankBadgeType;
 };
 
+const EFFICIENCY_MIN_MATCHES_SHARE = 0.6;
+
+const getEfficiencyValue = (row: { points: number; totalMatches: number }) =>
+  row.totalMatches > 0 ? row.points / row.totalMatches : 0;
+
+const getEfficiencyMinMatches = (rows: Array<{ totalMatches: number }>) => {
+  if (!rows.length) {
+    return 1;
+  }
+
+  const maxMatches = Math.max(...rows.map((item) => item.totalMatches));
+  return Math.max(1, Math.ceil(maxMatches * EFFICIENCY_MIN_MATCHES_SHARE));
+};
+
 const iconPaths: Record<IconName, React.ReactNode> = {
   trophy: (
     <>
@@ -232,6 +246,8 @@ const Achievements = () => {
       return [];
     }
 
+    const efficiencyMinMatches = getEfficiencyMinMatches(table);
+
     const entries = (getter: (row: (typeof table)[number]) => number) =>
       table.map((item) => ({ id: item.id, name: item.name, avatar: item.avatar, value: getter(item) }));
 
@@ -244,8 +260,8 @@ const Achievements = () => {
 
     const efficiency = getRankedWinners(
       table
-        .filter((item) => item.totalMatches > 0)
-        .map((item) => ({ id: item.id, name: item.name, avatar: item.avatar, value: item.points / item.totalMatches })),
+        .filter((item) => item.totalMatches >= efficiencyMinMatches)
+        .map((item) => ({ id: item.id, name: item.name, avatar: item.avatar, value: getEfficiencyValue(item) })),
       0,
     );
 
@@ -377,7 +393,24 @@ const Achievements = () => {
       return higher + 1;
     };
 
-    const safeEfficiency = (row: (typeof table)[number]) => (row.totalMatches > 0 ? row.points / row.totalMatches : 0);
+    const efficiencyMinMatches = getEfficiencyMinMatches(table);
+    const efficiencyEligibleRows = table.filter((row) => row.totalMatches >= efficiencyMinMatches);
+    const myEfficiencyEligible = myRow.totalMatches >= efficiencyMinMatches;
+
+    const rankByEfficiency = (): number | null => {
+      if (!myEfficiencyEligible || !efficiencyEligibleRows.length) {
+        return null;
+      }
+
+      const maxValue = Math.max(...efficiencyEligibleRows.map((row) => getEfficiencyValue(row)));
+      if (maxValue <= 0) {
+        return null;
+      }
+
+      const myValue = getEfficiencyValue(myRow);
+      const higher = efficiencyEligibleRows.filter((row) => getEfficiencyValue(row) > myValue).length;
+      return higher + 1;
+    };
 
     return {
       found: true,
@@ -393,8 +426,8 @@ const Achievements = () => {
       exactRank: rankByMetric((row) => row.correctScore),
       outcomeRank: rankByMetric((row) => row.correctResult),
       differenceRank: rankByMetric((row) => row.correctDifference),
-      efficiencyRank: rankByMetric((row) => safeEfficiency(row)),
-      efficiencyValue: safeEfficiency(myRow),
+      efficiencyRank: rankByEfficiency(),
+      efficiencyValue: getEfficiencyValue(myRow),
     } as const;
   }, [selectedUserId, table, user]);
 

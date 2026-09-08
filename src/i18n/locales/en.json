@@ -420,7 +420,7 @@
         },
         "efficiency": {
           "title": "Round efficiency",
-          "description": "Highest average points per match",
+          "description": "Highest average points per match among active players",
           "unit": "pts/match"
         }
       }
