@@ -216,13 +216,13 @@ const Matches: React.FC = () => {
       liveRoundIndex >= 0 ? liveRoundIndex : upcomingRoundCandidates.length ? upcomingRoundCandidates[0].index : -1;
 
     setActiveTab((currentTab) => {
-      if (activeRoundIndex >= 0) {
-        return activeRoundIndex;
-      }
-
       const isCurrentTabValid = currentTab >= 0 && currentTab < matches.length;
       if (isManualTabSelection.current && isCurrentTabValid) {
         return currentTab;
+      }
+
+      if (activeRoundIndex >= 0) {
+        return activeRoundIndex;
       }
 
       const latestRoundWithPlayedMatch = [...matches]

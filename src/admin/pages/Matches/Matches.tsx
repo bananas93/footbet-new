@@ -7,6 +7,7 @@ import {
   InputLabel,
   MenuItem,
   Paper,
+  Pagination,
   Select,
   SelectChangeEvent,
   Stack,
@@ -18,7 +19,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { supabase } from '../../helpers/supabase';
 import useSelection from '../../hooks/useSelection';
 import useModal from '../../hooks/useModal';
@@ -33,6 +34,8 @@ import { ITeam } from '../../interfaces/team';
 import { mapMatchFromDb, mapTournamentOptionFromDb } from '../../helpers/mappers';
 import ImportMatchesModal from './components/ImportMatchesModal';
 import { getLeagueLabel } from '../../helpers/league';
+
+const PAGE_SIZE = 50;
 
 function createData(
   id: number,
@@ -69,6 +72,8 @@ function createData(
 const Matches = () => {
   const [tournaments, setTournaments] = useState<ITournament[]>([]);
   const [tournament, setTournament] = useState('all');
+  const [status, setStatus] = useState('all');
+  const [page, setPage] = useState(1);
 
   const { selected, isSelected, toggleSelection, resetSelection } = useSelection();
   const { isOpen: createModalOpen, toggle: toggleCreateModal } = useModal();
@@ -82,7 +87,7 @@ const Matches = () => {
   const { isOpen: importModalOpen, toggle: toggleImportModal } = useModal();
 
   const { isLoading, data } = useQuery({
-    queryKey: ['matches', tournament],
+    queryKey: ['matches', tournament, status, page],
     queryFn: async () => {
       let query = supabase
         .from('matches')
@@ -103,20 +108,30 @@ const Matches = () => {
           homeTeam:teams!matches_home_team_id_fkey(id, api_team_id, name, logo),
           awayTeam:teams!matches_away_team_id_fkey(id, api_team_id, name, logo)
         `,
+          { count: 'exact' },
         )
-        .order('match_date', { ascending: true });
+        .order('match_date', { ascending: true })
+        .order('id', { ascending: true });
 
       if (tournament !== 'all') {
         query = query.eq('tournament_id', Number(tournament));
       }
 
-      const { data, error } = await query;
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      const { data, count, error } = await query.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
       if (error) {
         throw new Error(error.message);
       }
 
-      return (data || []).map(mapMatchFromDb) as IMatch[];
+      return {
+        matches: (data || []).map(mapMatchFromDb) as IMatch[],
+        count: count ?? 0,
+      };
     },
+    placeholderData: keepPreviousData,
   });
 
   const getTournamentType = async () => {
@@ -136,11 +151,25 @@ const Matches = () => {
 
   const handleChange = (event: SelectChangeEvent<string>) => {
     setTournament(event.target.value);
+    setPage(1);
   };
+
+  const handleStatusChange = (event: SelectChangeEvent<string>) => {
+    setStatus(event.target.value);
+    setPage(1);
+  };
+
+  const pageCount = Math.ceil((data?.count ?? 0) / PAGE_SIZE);
+
+  useEffect(() => {
+    if (pageCount > 0 && page > pageCount) {
+      setPage(pageCount);
+    }
+  }, [page, pageCount]);
 
   if (isLoading) return <div>Loading...</div>;
 
-  const rows = (data || []).map((match: IMatch) =>
+  const rows = (data?.matches || []).map((match: IMatch) =>
     createData(
       match.id,
       match.apiFixtureId,
@@ -182,6 +211,21 @@ const Matches = () => {
             onChange={handleChange}>
             <MenuItem value="all">Усі</MenuItem>
             {tournamentsList}
+          </Select>
+        </FormControl>
+        <FormControl style={{ width: '220px' }}>
+          <InputLabel id="match-status-label">Фільтр по статусу</InputLabel>
+          <Select
+            labelId="match-status-label"
+            id="match-status-select"
+            value={status}
+            label="Фільтр по статусу"
+            size="small"
+            onChange={handleStatusChange}>
+            <MenuItem value="all">Усі статуси</MenuItem>
+            <MenuItem value="Finished">Завершений</MenuItem>
+            <MenuItem value="Live">Live</MenuItem>
+            <MenuItem value="Scheduled">Scheduled</MenuItem>
           </Select>
         </FormControl>
         <Button onClick={toggleCreateModal} size="small" variant="contained">
@@ -253,6 +297,15 @@ const Matches = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Stack spacing={1} alignItems="center" mt={2}>
+        <Typography variant="body2">
+          Показано {rows.length > 0 ? (page - 1) * PAGE_SIZE + 1 : 0}–
+          {(page - 1) * PAGE_SIZE + rows.length} із {data?.count ?? 0} матчів
+        </Typography>
+        {pageCount > 1 && (
+          <Pagination count={pageCount} page={page} onChange={(_, nextPage) => setPage(nextPage)} color="primary" />
+        )}
+      </Stack>
       {createModalOpen && (
         <CreateMatchModal
           createModalOpen={createModalOpen}
