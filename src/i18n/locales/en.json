@@ -340,6 +340,24 @@
       "emptyFilteredText": "Try changing the query or resetting filters.",
       "emptyText": "Ranking will appear after the first predictions in the tournament.",
       "showMore": "Show {{count}} more",
+      "roundPoints": {
+        "eyebrow": "By round",
+        "title": "Points per round",
+        "subtitle": "How many points each player scored in the selected round",
+        "unknownUser": "Unknown user",
+        "metrics": {
+          "best": "Best",
+          "exact": "Exact",
+          "players": "Players"
+        },
+        "emptyTitle": "No predictions",
+        "emptyText": "Nobody predicted the matches of this round.",
+        "notPlayedTitle": "Round not played yet",
+        "notPlayedText": "Other players' predictions open once the matches kick off.",
+        "inProgressText": "The round is still running, points can change.",
+        "errorTitle": "Could not load the round",
+        "errorText": "Check your connection and pick the round again."
+      },
       "table": {
         "player": "Player",
         "matchesShort": "M",

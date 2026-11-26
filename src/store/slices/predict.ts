@@ -170,6 +170,78 @@ export const getMatchPredicts = createAsyncThunk('predict/getMatchPredicts', asy
   })) as IPredict[];
 });
 
+export interface IRoundPredictRow {
+  userId: string;
+  matchId: number;
+  homeScore: number;
+  awayScore: number;
+  points: number;
+}
+
+interface IGetRoundPredictsPayload {
+  tournamentId: number;
+  roundKey: string;
+  matchIds: number[];
+}
+
+export interface IRoundPredictsResponse {
+  key: string;
+  rows: IRoundPredictRow[];
+}
+
+export const buildRoundPredictsKey = (tournamentId: number, roundKey: string) => `${tournamentId}:${roundKey}`;
+
+// PostgREST caps a response at 1000 rows, and one round holds a row per player
+// per match, so the result is read page by page.
+const ROUND_PREDICTS_PAGE_SIZE = 1000;
+const ROUND_PREDICTS_MAX_PAGES = 20;
+
+export const getRoundPredicts = createAsyncThunk(
+  'predict/getRoundPredicts',
+  async ({ tournamentId, roundKey, matchIds }: IGetRoundPredictsPayload) => {
+    const key = buildRoundPredictsKey(tournamentId, roundKey);
+
+    if (!matchIds.length) {
+      return { key, rows: [] as IRoundPredictRow[] };
+    }
+
+    const rows: IRoundPredictRow[] = [];
+
+    for (let page = 0; page < ROUND_PREDICTS_MAX_PAGES; page += 1) {
+      const from = page * ROUND_PREDICTS_PAGE_SIZE;
+
+      const { data, error } = await supabase
+        .from('predictions')
+        .select('user_id, match_id, home_score, away_score, points')
+        .eq('tournament_id', tournamentId)
+        .in('match_id', matchIds)
+        .order('match_id', { ascending: true })
+        .order('user_id', { ascending: true })
+        .range(from, from + ROUND_PREDICTS_PAGE_SIZE - 1);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      (data || []).forEach((item: any) => {
+        rows.push({
+          userId: item.user_id,
+          matchId: item.match_id,
+          homeScore: item.home_score,
+          awayScore: item.away_score,
+          points: item.points || 0,
+        });
+      });
+
+      if (!data || data.length < ROUND_PREDICTS_PAGE_SIZE) {
+        break;
+      }
+    }
+
+    return { key, rows };
+  },
+);
+
 interface IPredictState {
   setPredictRequest: IHttpRequestResult<ISetPredictResponse>;
   getPredictsTableRequest: IHttpRequestResult<IPredictTableResponse[]>;
@@ -179,6 +251,14 @@ interface IPredictState {
   matchPredictsMatchId: number | null;
   // Guards against out-of-order responses: only the latest request may write.
   matchPredictsRequestId: string | null;
+  getRoundPredictsRequest: IHttpRequestResult<IRoundPredictsResponse>;
+  // Round the data in getRoundPredictsRequest belongs to, same guard as above.
+  roundPredictsKey: string | null;
+  roundPredictsRequestId: string | null;
+  // Cached per `${tournamentId}:${roundKey}` so switching rounds is instant.
+  roundPredicts: {
+    [key: string]: IRoundPredictRow[];
+  };
   table: {
     [key: number]: IPredictTableResponse[];
   };
@@ -190,6 +270,10 @@ const initialState: IPredictState = {
   getMatchPredictsRequest: createHttpRequestInitResult(),
   matchPredictsMatchId: null,
   matchPredictsRequestId: null,
+  getRoundPredictsRequest: createHttpRequestInitResult(),
+  roundPredictsKey: null,
+  roundPredictsRequestId: null,
+  roundPredicts: {},
   table: {},
 };
 
@@ -199,6 +283,47 @@ export const PredictSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     createExtraReducersForResponses(builder, setPredict, 'setPredictRequest');
+    builder.addCase(getRoundPredicts.pending, (state, action) => {
+      state.getRoundPredictsRequest.isLoading = true;
+      state.getRoundPredictsRequest.isSuccess = false;
+      state.getRoundPredictsRequest.isError = false;
+      state.getRoundPredictsRequest.error = undefined;
+      state.roundPredictsKey = buildRoundPredictsKey(action.meta.arg.tournamentId, action.meta.arg.roundKey);
+      state.roundPredictsRequestId = action.meta.requestId;
+    });
+    builder.addCase(getRoundPredicts.fulfilled, (state, action) => {
+      // Cache every answer, even a late one: it is keyed by its own round.
+      state.roundPredicts[action.payload.key] = action.payload.rows;
+
+      if (state.roundPredictsRequestId !== action.meta.requestId) {
+        return;
+      }
+
+      state.getRoundPredictsRequest.isUninitialized = false;
+      state.getRoundPredictsRequest.isLoading = false;
+      state.getRoundPredictsRequest.isSuccess = true;
+      state.getRoundPredictsRequest.isError = false;
+      state.getRoundPredictsRequest.error = undefined;
+      state.getRoundPredictsRequest.data = action.payload;
+    });
+    builder.addCase(getRoundPredicts.rejected, (state, action) => {
+      if (state.roundPredictsRequestId !== action.meta.requestId) {
+        return;
+      }
+
+      state.getRoundPredictsRequest.isLoading = false;
+      state.getRoundPredictsRequest.isSuccess = false;
+
+      if (action.meta.aborted) {
+        state.roundPredictsKey = null;
+        state.roundPredictsRequestId = null;
+        return;
+      }
+
+      state.getRoundPredictsRequest.isUninitialized = false;
+      state.getRoundPredictsRequest.isError = true;
+      state.getRoundPredictsRequest.error = action.error;
+    });
     createExtraReducersForResponses(builder, getPredictsTable, 'getPredictsTableRequest', (state, action) => {
       const tournamentId = action.meta.arg;
       state.table[tournamentId] = action.payload || [];

@@ -5,6 +5,7 @@ import { useAppSelector } from 'store';
 import { useMobile } from 'hooks';
 import { getUserInitials, resolveAssetUrl } from 'helpers';
 import { useTournament } from '../../Tournament';
+import RoundPoints from './RoundPoints/RoundPoints';
 import styles from './Leagues.module.scss';
 import { useI18n } from 'i18n';
 
@@ -203,6 +204,8 @@ const Leagues: React.FC = () => {
           })}
         </div>
       )}
+
+      <RoundPoints table={table} />
 
       <section className={styles.panel}>
         <div className={styles.panelHead}>

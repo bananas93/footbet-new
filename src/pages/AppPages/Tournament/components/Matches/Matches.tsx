@@ -4,25 +4,19 @@ import cn from 'classnames';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import { useAppDispatch, useAppSelector } from 'store';
 import {
+  buildRoundTabs,
+  IRoundTab,
   getLeagueLabel,
   normalizeKnockoutRoundName,
   normalizeMatchDate,
   normalizeMatchDateWithWeekday,
-  sliceMatches,
 } from 'helpers';
-import { IGames, IMatch, MatchStatus } from 'interfaces';
+import { IMatch, MatchStatus } from 'interfaces';
 import { toggleOnlyLiveMatches, toggleOnlyScheduledMatches } from 'store/slices/user';
 import { useTournament } from '../../Tournament';
 import MatchCard from './MatchCard/MatchCard';
 import styles from './Matches.module.scss';
 import { useI18n } from 'i18n';
-
-type RoundTab = {
-  key: string;
-  label: string;
-  isKnockout: boolean;
-  games?: IGames;
-};
 
 const LEAGUE_TONES = ['toneA', 'toneB', 'toneC', 'toneD'];
 
@@ -66,15 +60,6 @@ type MatchDayGroup = {
   key: string;
   label: string;
   items: IMatch[];
-};
-
-const parseGroupTourNumber = (stage?: string) => {
-  if (!stage) {
-    return null;
-  }
-
-  const match = stage.match(/^(\d+)\s+tour$/i);
-  return match ? Number(match[1]) : null;
 };
 
 const groupMatchesByDay = (items: IMatch[]): MatchDayGroup[] => {
@@ -129,30 +114,10 @@ const Matches: React.FC = () => {
     isManualTabSelection.current = false;
   }, [tournament.id]);
 
-  const { groupMatches, knockoutMatches } = sliceMatches(matches, groupMatchNumber);
-
-  const rounds = useMemo<RoundTab[]>(() => {
-    const groupTabs = groupMatches.map((games, index) => ({
-      key: `group-${index}`,
-      label: t('pages.matches.round', undefined, { index: parseGroupTourNumber(games.stage) || index + 1 }),
-      isKnockout: false,
-      games,
-    }));
-
-    if (!knockoutMatches.length) {
-      return groupTabs;
-    }
-
-    return [
-      ...groupTabs,
-      ...knockoutRounds.map((label, index) => ({
-        key: `knockout-${index}`,
-        label,
-        isKnockout: true,
-        games: knockoutMatches[index],
-      })),
-    ];
-  }, [groupMatchNumber, groupMatches, knockoutMatches, knockoutRound, t, thirdPlaceMatch]);
+  const rounds = useMemo<IRoundTab[]>(
+    () => buildRoundTabs(matches, groupMatchNumber, knockoutRounds),
+    [matches, groupMatchNumber, knockoutRound, t, thirdPlaceMatch],
+  );
 
   // League count comes from backend; tabs are built from leagues that exist in matches.
   const leagues = useMemo(() => {
@@ -358,7 +323,7 @@ const Matches: React.FC = () => {
     </div>
   );
 
-  const renderPanel = (round: RoundTab) => {
+  const renderPanel = (round: IRoundTab) => {
     const roundMatches = filterByLeague(round.games?.data || []);
     const liveCount = countByStatus(roundMatches, MatchStatus.IN_PROGRESS);
     const finishedCount = countByStatus(roundMatches, MatchStatus.FINISHED);
