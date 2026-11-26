@@ -340,6 +340,10 @@
       "emptyFilteredText": "Try changing the query or resetting filters.",
       "emptyText": "Ranking will appear after the first predictions in the tournament.",
       "showMore": "Show {{count}} more",
+      "tabs": {
+        "overall": "Overall table",
+        "rounds": "By round"
+      },
       "roundPoints": {
         "eyebrow": "By round",
         "title": "Points per round",

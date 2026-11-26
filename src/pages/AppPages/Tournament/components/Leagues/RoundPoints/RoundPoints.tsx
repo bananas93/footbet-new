@@ -231,9 +231,7 @@ const RoundPoints: React.FC<Props> = ({ table }) => {
   const shownRows = roundTable.slice(0, visibleRows);
   const isMyRowHidden = !!myRow && !shownRows.some((item) => item.userId === myRow.userId);
 
-  if (!rounds.length || !table.length) {
-    return null;
-  }
+  const hasRounds = !!rounds.length && !!table.length;
 
   const renderRow = (item: IRoundRow, pinned = false) => {
     const isMe = !!user && item.userId === user.id;
@@ -297,90 +295,105 @@ const RoundPoints: React.FC<Props> = ({ table }) => {
         )}
       </div>
 
-      <div
-        className={styles.roundList}
-        role="tablist"
-        aria-label={t('pages.leagues.roundPoints.title')}
-        ref={roundListRef}>
-        {rounds.map((round) => {
-          const isActive = round.key === activeRoundKey;
-
-          return (
-            <button
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              className={cn(styles.roundChip, { [styles.roundChipActive]: isActive })}
-              key={round.key}
-              ref={isActive ? activeChipRef : undefined}
-              onClick={() => setSelectedRoundKey(round.key)}>
-              {round.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {hasStarted && !isRoundFinished && !isPending && !!roundTable.length && (
-        <p className={styles.note}>{t('pages.leagues.roundPoints.inProgressText')}</p>
+      {!hasRounds && (
+        <div className={styles.tableWrap}>
+          <div className={styles.emptyRow}>
+            <p className={styles.emptyTitle}>{t('pages.leagues.emptyTitle')}</p>
+            <p className={styles.empty}>{t('pages.leagues.emptyText')}</p>
+          </div>
+        </div>
       )}
 
-      <div className={styles.tableWrap}>
-        <div className={cn(styles.row, styles.headRow)}>
-          <div className={cn(styles.col, styles.colRank)}>#</div>
-          <div className={cn(styles.col, styles.colName)}>{t('pages.leagues.table.player')}</div>
-          <div className={styles.col}>
-            {isMobile ? t('pages.leagues.table.matchesShort') : t('pages.leagues.table.matches')}
-          </div>
-          <div className={styles.col}>
-            {isMobile ? t('pages.leagues.table.exactShort') : t('pages.leagues.table.exact')}
-          </div>
-          <div className={cn(styles.col, styles.colPoints)}>
-            {isMobile ? t('pages.leagues.table.pointsShort') : t('pages.leagues.table.points')}
-          </div>
-        </div>
+      {hasRounds && (
+        <>
+          <div
+            className={styles.roundList}
+            role="tablist"
+            aria-label={t('pages.leagues.roundPoints.title')}
+            ref={roundListRef}>
+            {rounds.map((round) => {
+              const isActive = round.key === activeRoundKey;
 
-        {isPending && (
-          <div className={styles.loading}>
-            {Array.from({ length: 6 }, (_, index) => (
-              <span className={styles.loadingRow} key={index} />
-            ))}
-          </div>
-        )}
-
-        {!isPending && shownRows.map((item) => renderRow(item))}
-
-        {!isPending && isMyRowHidden && myRow && renderRow(myRow, true)}
-
-        {!isPending && isError && !roundTable.length && (
-          <div className={styles.emptyRow}>
-            <p className={styles.emptyTitle}>{t('pages.leagues.roundPoints.errorTitle')}</p>
-            <p className={styles.empty}>{t('pages.leagues.roundPoints.errorText')}</p>
-          </div>
-        )}
-
-        {!isPending && !isError && !roundTable.length && (
-          <div className={styles.emptyRow}>
-            <p className={styles.emptyTitle}>
-              {hasStarted ? t('pages.leagues.roundPoints.emptyTitle') : t('pages.leagues.roundPoints.notPlayedTitle')}
-            </p>
-            <p className={styles.empty}>
-              {hasStarted ? t('pages.leagues.roundPoints.emptyText') : t('pages.leagues.roundPoints.notPlayedText')}
-            </p>
-          </div>
-        )}
-      </div>
-
-      {!isPending && visibleRows < roundTable.length && (
-        <div className={styles.moreWrap}>
-          <button
-            type="button"
-            className={styles.moreButton}
-            onClick={() => setVisibleRows((prev) => prev + PAGE_SIZE)}>
-            {t('pages.leagues.showMore', undefined, {
-              count: Math.min(PAGE_SIZE, roundTable.length - visibleRows),
+              return (
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  className={cn(styles.roundChip, { [styles.roundChipActive]: isActive })}
+                  key={round.key}
+                  ref={isActive ? activeChipRef : undefined}
+                  onClick={() => setSelectedRoundKey(round.key)}>
+                  {round.label}
+                </button>
+              );
             })}
-          </button>
-        </div>
+          </div>
+
+          {hasStarted && !isRoundFinished && !isPending && !!roundTable.length && (
+            <p className={styles.note}>{t('pages.leagues.roundPoints.inProgressText')}</p>
+          )}
+
+          <div className={styles.tableWrap}>
+            <div className={cn(styles.row, styles.headRow)}>
+              <div className={cn(styles.col, styles.colRank)}>#</div>
+              <div className={cn(styles.col, styles.colName)}>{t('pages.leagues.table.player')}</div>
+              <div className={styles.col}>
+                {isMobile ? t('pages.leagues.table.matchesShort') : t('pages.leagues.table.matches')}
+              </div>
+              <div className={styles.col}>
+                {isMobile ? t('pages.leagues.table.exactShort') : t('pages.leagues.table.exact')}
+              </div>
+              <div className={cn(styles.col, styles.colPoints)}>
+                {isMobile ? t('pages.leagues.table.pointsShort') : t('pages.leagues.table.points')}
+              </div>
+            </div>
+
+            {isPending && (
+              <div className={styles.loading}>
+                {Array.from({ length: 6 }, (_, index) => (
+                  <span className={styles.loadingRow} key={index} />
+                ))}
+              </div>
+            )}
+
+            {!isPending && shownRows.map((item) => renderRow(item))}
+
+            {!isPending && isMyRowHidden && myRow && renderRow(myRow, true)}
+
+            {!isPending && isError && !roundTable.length && (
+              <div className={styles.emptyRow}>
+                <p className={styles.emptyTitle}>{t('pages.leagues.roundPoints.errorTitle')}</p>
+                <p className={styles.empty}>{t('pages.leagues.roundPoints.errorText')}</p>
+              </div>
+            )}
+
+            {!isPending && !isError && !roundTable.length && (
+              <div className={styles.emptyRow}>
+                <p className={styles.emptyTitle}>
+                  {hasStarted
+                    ? t('pages.leagues.roundPoints.emptyTitle')
+                    : t('pages.leagues.roundPoints.notPlayedTitle')}
+                </p>
+                <p className={styles.empty}>
+                  {hasStarted ? t('pages.leagues.roundPoints.emptyText') : t('pages.leagues.roundPoints.notPlayedText')}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {!isPending && visibleRows < roundTable.length && (
+            <div className={styles.moreWrap}>
+              <button
+                type="button"
+                className={styles.moreButton}
+                onClick={() => setVisibleRows((prev) => prev + PAGE_SIZE)}>
+                {t('pages.leagues.showMore', undefined, {
+                  count: Math.min(PAGE_SIZE, roundTable.length - visibleRows),
+                })}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

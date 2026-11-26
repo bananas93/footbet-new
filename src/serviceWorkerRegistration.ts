@@ -15,7 +15,9 @@ type AssetManifest = {
 
 const getDeployRevision = async (): Promise<string | null> => {
   try {
-    const response = await fetch(assetManifestUrl, { cache: 'no-store' });
+    // The query string defeats an older service worker that still serves
+    // asset-manifest.json from its own cache and hides every new deploy.
+    const response = await fetch(`${assetManifestUrl}?v=${Date.now()}`, { cache: 'no-store' });
     if (!response.ok) {
       return null;
     }
@@ -67,11 +69,50 @@ const resetServiceWorkerAndCaches = async () => {
   }
 };
 
+// An installed PWA can stay open for days without a single navigation, so the
+// browser never checks for a new service worker on its own.
+const watchForUpdates = (registration: ServiceWorkerRegistration) => {
+  const checkForUpdate = () => {
+    if (document.visibilityState !== 'visible') {
+      return;
+    }
+
+    void registration.update().catch(() => {
+      // Offline or the check failed: the next one will pick it up.
+    });
+  };
+
+  document.addEventListener('visibilitychange', checkForUpdate);
+  window.addEventListener('focus', checkForUpdate);
+  checkForUpdate();
+};
+
+const reloadOnNewServiceWorker = () => {
+  // A page with no controller is a first visit: nothing to reload into.
+  if (!navigator.serviceWorker.controller) {
+    return;
+  }
+
+  let reloading = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) {
+      return;
+    }
+
+    reloading = true;
+    window.location.reload();
+  });
+};
+
 const registerValidSW = async () => {
   try {
+    reloadOnNewServiceWorker();
+
     // updateViaCache: 'none' stops the browser from serving a stale sw.js
     // from its HTTP cache (up to 24h by default) and delaying every update.
-    await navigator.serviceWorker.register(swUrl, { updateViaCache: 'none' });
+    const registration = await navigator.serviceWorker.register(swUrl, { updateViaCache: 'none' });
+    watchForUpdates(registration);
   } catch (error) {
     console.error('Service worker registration failed:', error);
   }
