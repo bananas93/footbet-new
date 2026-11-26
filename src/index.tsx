@@ -5,6 +5,7 @@ import { store } from 'store/store';
 import 'styles/main.scss';
 import 'react-loading-skeleton/dist/skeleton.css';
 import App from 'App';
+import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import { BrowserRouter } from 'react-router-dom';
 import { registerServiceWorker } from './serviceWorkerRegistration';
 import { addLangPrefix, getLangFromPath, I18nProvider } from 'i18n';
@@ -22,13 +23,15 @@ if (!pathLang) {
 
   root.render(
     <Wrapper>
-      <BrowserRouter basename={basename}>
-        <Provider store={store}>
-          <I18nProvider lang={pathLang}>
-            <App />
-          </I18nProvider>
-        </Provider>
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter basename={basename}>
+          <Provider store={store}>
+            <I18nProvider lang={pathLang}>
+              <App />
+            </I18nProvider>
+          </Provider>
+        </BrowserRouter>
+      </ErrorBoundary>
     </Wrapper>,
   );
 }

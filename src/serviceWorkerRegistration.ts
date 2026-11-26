@@ -5,6 +5,25 @@ const isLocalhost = Boolean(
 );
 
 const SW_DEPLOY_STORAGE_KEY = 'sw:deploy-revision';
+const SW_RESET_GUARD_KEY = 'sw:last-reset';
+const RESET_COOLDOWN_MS = 60 * 1000;
+
+const readStorage = (key: string): string | null => {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeStorage = (key: string, value: string): boolean => {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 const swUrl = `${process.env.PUBLIC_URL}/sw.js`;
 const assetManifestUrl = `${process.env.PUBLIC_URL}/asset-manifest.json`;
@@ -45,9 +64,9 @@ const shouldResetCachesForDeploy = async (): Promise<boolean> => {
     return false;
   }
 
-  const previousRevision = localStorage.getItem(SW_DEPLOY_STORAGE_KEY);
+  const previousRevision = readStorage(SW_DEPLOY_STORAGE_KEY);
   if (!previousRevision) {
-    localStorage.setItem(SW_DEPLOY_STORAGE_KEY, currentRevision);
+    writeStorage(SW_DEPLOY_STORAGE_KEY, currentRevision);
     return false;
   }
 
@@ -55,7 +74,20 @@ const shouldResetCachesForDeploy = async (): Promise<boolean> => {
     return false;
   }
 
-  localStorage.setItem(SW_DEPLOY_STORAGE_KEY, currentRevision);
+  // The reset ends in a reload, so it must never be able to repeat. An installed
+  // PWA has no address bar: a reload loop there is a blank screen the user cannot
+  // escape. Skip the reset unless the new revision was written down, and never
+  // run two resets within a minute.
+  if (!writeStorage(SW_DEPLOY_STORAGE_KEY, currentRevision)) {
+    return false;
+  }
+
+  const lastReset = Number(readStorage(SW_RESET_GUARD_KEY)) || 0;
+  if (Date.now() - lastReset < RESET_COOLDOWN_MS) {
+    return false;
+  }
+
+  writeStorage(SW_RESET_GUARD_KEY, String(Date.now()));
   return true;
 };
 
@@ -87,28 +119,11 @@ const watchForUpdates = (registration: ServiceWorkerRegistration) => {
   checkForUpdate();
 };
 
-const reloadOnNewServiceWorker = () => {
-  // A page with no controller is a first visit: nothing to reload into.
-  if (!navigator.serviceWorker.controller) {
-    return;
-  }
-
-  let reloading = false;
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloading) {
-      return;
-    }
-
-    reloading = true;
-    window.location.reload();
-  });
-};
-
 const registerValidSW = async () => {
   try {
-    reloadOnNewServiceWorker();
-
+    // No automatic reload when a new worker takes over. An installed PWA has no
+    // address bar, so a reload that goes wrong leaves a blank screen with no way
+    // out. The new worker takes over on the next launch instead.
     // updateViaCache: 'none' stops the browser from serving a stale sw.js
     // from its HTTP cache (up to 24h by default) and delaying every update.
     const registration = await navigator.serviceWorker.register(swUrl, { updateViaCache: 'none' });

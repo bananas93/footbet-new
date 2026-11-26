@@ -1,6 +1,8 @@
 {
   "name": "Footbet",
   "short_name": "Footbet",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

@@ -10,6 +10,7 @@ import CookieConsent from './CookieConsent/CookieConsent';
 import Toast from './Toast/Toast';
 import InstallBanner from './InstallBanner/InstallBanner';
 import ProjectSupportPopup from './ProjectSupportPopup/ProjectSupportPopup';
+import ErrorBoundary from './ErrorBoundary/ErrorBoundary';
 
 export {
   Layout,
@@ -24,4 +25,5 @@ export {
   Toast,
   InstallBanner,
   ProjectSupportPopup,
+  ErrorBoundary,
 };

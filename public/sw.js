@@ -2,8 +2,9 @@ const CACHE_NAME = 'footbet-cache-v2';
 
 // Must never be served from the cache: they are how the app detects a new deploy.
 const NETWORK_ONLY_PATHS = ['/asset-manifest.json', '/sw.js', '/index.html'];
+// '/' is deliberately absent: on this project it redirects, and a redirected
+// response makes the whole install fail.
 const APP_SHELL = [
-  '/',
   '/index.html',
   '/site.webmanifest',
   '/favicon.ico',
@@ -15,7 +16,9 @@ const APP_SHELL = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(APP_SHELL);
+      // One unreachable file must not fail the whole install, which would leave
+      // the previous worker in charge and the app stuck on an old build.
+      return Promise.all(APP_SHELL.map((url) => cache.add(url).catch(() => undefined)));
     }),
   );
   self.skipWaiting();

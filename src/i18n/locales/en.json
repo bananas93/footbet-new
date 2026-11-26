@@ -1,5 +1,11 @@
 {
   "app": {
+    "error": {
+      "title": "Something went wrong",
+      "text": "The page failed to render. Try reloading. If that does not help, clear the app data.",
+      "reload": "Reload",
+      "reset": "Clear data and reload"
+    },
     "defaultTitle": "Prediction Tournament | Footbet",
     "routes": {
       "home": "Home | Footbet",
