@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import cn from 'classnames';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
@@ -292,6 +292,16 @@ const MatchDetails: React.FC = () => {
   }, [matchId, matchesByTournament, tournamentId]);
 
   const fixtureId = currentMatch?.apiFixtureId;
+  // Latest fixture the page is showing: used to drop responses of a match the user already left.
+  const activeFixtureIdRef = useRef<number | undefined>(fixtureId);
+  activeFixtureIdRef.current = fixtureId;
+
+  useEffect(() => {
+    // Reset on navigation, otherwise the previous match stays on screen
+    // (and stays forever when the new match has no external fixture).
+    setData(null);
+    setLastUpdated(null);
+  }, [matchId]);
 
   useEffect(() => {
     setPredictHomeScore(currentMatch?.predict?.homeScore?.toString() || '');
@@ -299,23 +309,31 @@ const MatchDetails: React.FC = () => {
   }, [currentMatch?.predict?.awayScore, currentMatch?.predict?.homeScore]);
 
   const fetchDetails = async (silent = false, forceRefresh = false) => {
-    if (!fixtureId) {
+    const requestedFixtureId = fixtureId;
+
+    if (!requestedFixtureId) {
       if (!silent) {
         setIsLoading(false);
       }
       return;
     }
 
+    const isStale = () => activeFixtureIdRef.current !== requestedFixtureId;
+
     if (!silent) {
       setIsLoading(true);
     }
 
     try {
-      const cacheKey = `football-details:match:${fixtureId}`;
+      const cacheKey = `football-details:match:${requestedFixtureId}`;
 
       if (!forceRefresh) {
         const cached = readLocalCache<MatchDetailsCacheEntry>(cacheKey);
         if (cached) {
+          if (isStale()) {
+            return;
+          }
+
           setData(cached.payload);
           setLastUpdated(new Date(cached.cachedAt));
           return;
@@ -325,13 +343,17 @@ const MatchDetails: React.FC = () => {
       const { data: json, error } = await supabase.functions.invoke('football-details', {
         body: {
           type: 'match',
-          fixtureId,
+          fixtureId: requestedFixtureId,
           forceRefresh,
         },
       });
 
       if (error) {
         throw new Error(error.message || t('pages.matchDetails.errors.fetchFailed'));
+      }
+
+      if (isStale()) {
+        return;
       }
 
       const resolvedData = json as MatchDetailsResponse;
@@ -347,9 +369,11 @@ const MatchDetails: React.FC = () => {
         MATCH_LOCAL_CACHE_TTL_SECONDS,
       );
     } catch (error: any) {
-      notify.error(error.message || t('pages.matchDetails.errors.fetchFailed'));
+      if (!isStale()) {
+        notify.error(error.message || t('pages.matchDetails.errors.fetchFailed'));
+      }
     } finally {
-      if (!silent) {
+      if (!silent && !isStale()) {
         setIsLoading(false);
       }
     }

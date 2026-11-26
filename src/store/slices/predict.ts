@@ -174,6 +174,11 @@ interface IPredictState {
   setPredictRequest: IHttpRequestResult<ISetPredictResponse>;
   getPredictsTableRequest: IHttpRequestResult<IPredictTableResponse[]>;
   getMatchPredictsRequest: IHttpRequestResult<IPredict[]>;
+  // Which match the data in getMatchPredictsRequest belongs to, so a consumer
+  // never renders another match's predictions.
+  matchPredictsMatchId: number | null;
+  // Guards against out-of-order responses: only the latest request may write.
+  matchPredictsRequestId: string | null;
   table: {
     [key: number]: IPredictTableResponse[];
   };
@@ -183,6 +188,8 @@ const initialState: IPredictState = {
   setPredictRequest: createHttpRequestInitResult(),
   getPredictsTableRequest: createHttpRequestInitResult(),
   getMatchPredictsRequest: createHttpRequestInitResult(),
+  matchPredictsMatchId: null,
+  matchPredictsRequestId: null,
   table: {},
 };
 
@@ -196,7 +203,55 @@ export const PredictSlice = createSlice({
       const tournamentId = action.meta.arg;
       state.table[tournamentId] = action.payload || [];
     });
-    createExtraReducersForResponses(builder, getMatchPredicts, 'getMatchPredictsRequest');
+    builder.addCase(getMatchPredicts.pending, (state, action) => {
+      state.getMatchPredictsRequest.isLoading = true;
+      state.getMatchPredictsRequest.isSuccess = false;
+      state.getMatchPredictsRequest.isError = false;
+      state.getMatchPredictsRequest.error = undefined;
+      // Drop the previous match's rows immediately, otherwise they are rendered
+      // under the new match's header until the new response arrives.
+      state.getMatchPredictsRequest.data = undefined;
+      state.matchPredictsMatchId = action.meta.arg;
+      state.matchPredictsRequestId = action.meta.requestId;
+    });
+    builder.addCase(getMatchPredicts.fulfilled, (state, action) => {
+      if (state.matchPredictsRequestId !== action.meta.requestId) {
+        return;
+      }
+
+      state.getMatchPredictsRequest.isUninitialized = false;
+      state.getMatchPredictsRequest.isLoading = false;
+      state.getMatchPredictsRequest.isSuccess = true;
+      state.getMatchPredictsRequest.isError = false;
+      state.getMatchPredictsRequest.error = undefined;
+      state.getMatchPredictsRequest.data = action.payload;
+      state.matchPredictsMatchId = action.meta.arg;
+    });
+    builder.addCase(getMatchPredicts.rejected, (state, action) => {
+      if (state.matchPredictsRequestId !== action.meta.requestId) {
+        return;
+      }
+
+      if (action.meta.aborted) {
+        // Modal closed or switched match: reset instead of surfacing an error.
+        state.getMatchPredictsRequest.isLoading = false;
+        state.getMatchPredictsRequest.isSuccess = false;
+        state.getMatchPredictsRequest.isError = false;
+        state.getMatchPredictsRequest.error = undefined;
+        state.getMatchPredictsRequest.data = undefined;
+        state.matchPredictsMatchId = null;
+        state.matchPredictsRequestId = null;
+        return;
+      }
+
+      state.getMatchPredictsRequest.isUninitialized = false;
+      state.getMatchPredictsRequest.isLoading = false;
+      state.getMatchPredictsRequest.isSuccess = false;
+      state.getMatchPredictsRequest.isError = true;
+      state.getMatchPredictsRequest.error = action.error;
+      state.getMatchPredictsRequest.data = undefined;
+      state.matchPredictsMatchId = action.meta.arg;
+    });
   },
 });
 

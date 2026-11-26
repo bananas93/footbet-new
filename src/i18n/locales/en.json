@@ -461,6 +461,8 @@
       "me": "You",
       "emptyTitle": "No predictions",
       "emptyText": "No one has made a prediction for this match yet.",
+      "errorTitle": "Could not load predictions",
+      "errorText": "Check your connection and open it again.",
       "chipTotal": "Predictions: {{count}}",
       "chipExact": "Exact: {{count}}",
       "chipBest": "Best: {{value}} pts",

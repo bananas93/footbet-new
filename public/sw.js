@@ -1,4 +1,7 @@
-const CACHE_NAME = 'footbet-cache-v1';
+const CACHE_NAME = 'footbet-cache-v2';
+
+// Must never be served from the cache: they are how the app detects a new deploy.
+const NETWORK_ONLY_PATHS = ['/asset-manifest.json', '/sw.js', '/index.html'];
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -66,6 +69,21 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  if (NETWORK_ONLY_PATHS.includes(url.pathname)) {
+    event.respondWith(
+      fetch(request).catch(async () => {
+        const cached = await caches.match(request);
+        return cached || Response.error();
+      }),
+    );
+    return;
+  }
+
+  // Never cache API/auth traffic or anything with a query string.
+  if (url.search) {
     return;
   }
 

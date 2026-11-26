@@ -38,8 +38,12 @@ const getPointsTone = (points: number) => {
 const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
   const { t } = useI18n();
   const dispatch = useAppDispatch();
-  const { isLoading, data } = useAppSelector((state) => state.predict.getMatchPredictsRequest);
+  const { isLoading, isError, data } = useAppSelector((state) => state.predict.getMatchPredictsRequest);
+  const loadedMatchId = useAppSelector((state) => state.predict.matchPredictsMatchId);
   const user = useAppSelector((state) => state.user.user);
+  // Never render rows that belong to a different match (fast re-open, slow response).
+  const predicts = loadedMatchId === match.id ? data : undefined;
+  const isPending = isLoading || loadedMatchId !== match.id;
   const title = t('pages.showPredicts.title', undefined, { home: match.homeTeam.name, away: match.awayTeam.name });
 
   const statusLabels: Record<string, string> = {
@@ -53,21 +57,22 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
   const isLive = match.status === MatchStatus.IN_PROGRESS;
 
   useEffect(() => {
-    const getPredicts = async () => {
-      await dispatch(getMatchPredicts(match.id)).unwrap();
-    };
+    const promise = dispatch(getMatchPredicts(match.id));
 
-    getPredicts();
+    return () => {
+      // Abort on close/match change so a late response cannot land on another match.
+      promise.abort();
+    };
   }, [dispatch, match.id]);
 
   const summary = useMemo(() => {
-    const predicts = data || [];
+    const items = predicts || [];
     return {
-      total: predicts.length,
-      best: predicts.reduce((acc, item) => Math.max(acc, item.points || 0), 0),
-      exact: predicts.filter((item) => item.homeScore === match.homeScore && item.awayScore === match.awayScore).length,
+      total: items.length,
+      best: items.reduce((acc, item) => Math.max(acc, item.points || 0), 0),
+      exact: items.filter((item) => item.homeScore === match.homeScore && item.awayScore === match.awayScore).length,
     };
-  }, [data, match.awayScore, match.homeScore]);
+  }, [predicts, match.awayScore, match.homeScore]);
 
   const renderTeam = (team: IMatch['homeTeam']) => (
     <div className={styles.team}>
@@ -115,7 +120,7 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
         </div>
       </div>
 
-      {!isLoading && !!summary.total && (
+      {!isPending && !!summary.total && (
         <div className={styles.chips}>
           <span className={styles.chip}>{t('pages.showPredicts.chipTotal', undefined, { count: summary.total })}</span>
           {!isScheduled && (
@@ -136,7 +141,7 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
           <div className={cn(styles.col, styles.colPoints)}>{t('pages.showPredicts.table.points')}</div>
         </div>
 
-        {isLoading && (
+        {isPending && (
           <div className={styles.loading}>
             {Array.from({ length: 6 }, (_, index) => (
               <span className={styles.loadingRow} key={index} />
@@ -144,8 +149,8 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
           </div>
         )}
 
-        {!isLoading &&
-          data?.map((item) => {
+        {!isPending &&
+          predicts?.map((item) => {
             const isMe = !!user && item.user?.id === user.id;
             const tone = getPointsTone(item.points || 0);
 
@@ -186,7 +191,14 @@ const ShowPredicts: React.FC<Props> = ({ match, isOpen, onClose }) => {
             );
           })}
 
-        {!isLoading && !data?.length && (
+        {!isPending && isError && (
+          <div className={styles.empty}>
+            <p className={styles.emptyTitle}>{t('pages.showPredicts.errorTitle')}</p>
+            <p className={styles.emptyText}>{t('pages.showPredicts.errorText')}</p>
+          </div>
+        )}
+
+        {!isPending && !isError && !predicts?.length && (
           <div className={styles.empty}>
             <p className={styles.emptyTitle}>{t('pages.showPredicts.emptyTitle')}</p>
             <p className={styles.emptyText}>{t('pages.showPredicts.emptyText')}</p>

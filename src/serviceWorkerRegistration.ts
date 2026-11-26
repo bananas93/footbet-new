@@ -69,7 +69,9 @@ const resetServiceWorkerAndCaches = async () => {
 
 const registerValidSW = async () => {
   try {
-    await navigator.serviceWorker.register(swUrl);
+    // updateViaCache: 'none' stops the browser from serving a stale sw.js
+    // from its HTTP cache (up to 24h by default) and delaying every update.
+    await navigator.serviceWorker.register(swUrl, { updateViaCache: 'none' });
   } catch (error) {
     console.error('Service worker registration failed:', error);
   }
